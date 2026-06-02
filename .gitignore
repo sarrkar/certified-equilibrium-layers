@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Envs
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# Data / artifacts (cached repro outputs live under data/cache and verify/_out)
+data/raw/
+data/cache/
+verify/_out/
+
+# OS
+.DS_Store
