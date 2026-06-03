@@ -148,10 +148,12 @@ silently.
 
 ## Empirical gate (GO / NO-GO)
 
-`experiments/run_baseline_gonogo.py` runs the CASCADE off-target model against
-the additive-linear and mean baselines on a held-out split and writes
-`results/baseline_gonogo.json` with a `go` boolean: GO when CASCADE at least
-ties the baselines. This gate must be GO before the empirical sections of
+`python -m cascade.eval.baseline_gonogo --seeds 0 1 2` (or the thin wrapper
+`experiments/run_baseline_gonogo.py --seeds ...`) runs the CASCADE off-target
+model against the additive-linear and mean baselines on a held-out split, across
+the given seeds, and writes `results/baseline_gonogo.json`. The aggregate
+verdict is conservative: `go` is true only when CASCADE at least ties the best
+baseline on every seed. This gate must be GO before the empirical sections of
 either paper are written. Until the real GSE184929 / STRING join is wired (see
 the tracked data gaps), the gate runs on the synthetic propagation proxy and
 records that provenance in the JSON.

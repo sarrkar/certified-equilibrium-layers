@@ -48,13 +48,17 @@ def test_regression_metrics_constant_pred_pearson_nan() -> None:
 
 
 def test_committed_gonogo_json_is_valid_and_go() -> None:
-    # The committed gate result must parse and record a GO verdict.
+    # The committed (multi-seed) gate result must parse and record a GO verdict.
     path = Path(__file__).resolve().parents[1] / "results" / "baseline_gonogo.json"
     result = json.loads(path.read_text())
     assert result["go"] is True
-    assert result["cascade"]["test_mse"] <= result["best_baseline_test_mse"] * (
+    assert result["n_go"] == result["n_seeds"]
+    assert result["cascade_test_mse_mean"] <= result["best_baseline_test_mse_mean"] * (
         1.0 + result["tie_band"]
     )
+    # Every seed individually ties or beats the best baseline within the tie band.
+    for r in result["per_seed"]:
+        assert r["cascade"]["test_mse"] <= r["best_baseline_test_mse"] * (1.0 + result["tie_band"])
 
 
 def test_gonogo_runs_end_to_end(tmp_path: Path) -> None:
