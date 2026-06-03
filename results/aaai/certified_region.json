@@ -1,0 +1,49 @@
+{
+  "seed": 0,
+  "alpha": 0.2,
+  "base_std": 0.15,
+  "gamma": 0.05,
+  "n_samples": 2000,
+  "num_nodes": 4,
+  "spectral_gap": 0.9604789285492397,
+  "noise_model": "confidence-calibrated random-edge (edge std = base_std * (1 - confidence))",
+  "per_delta": [
+    {
+      "delta": 0.2,
+      "radius_mc": 0.018647187407093313,
+      "radius_analytic": 0.11296847170279806,
+      "coverage_out_of_sample": 0.8375,
+      "covers_nominal": true,
+      "analytic_dominates": true,
+      "insufficient_samples": false
+    },
+    {
+      "delta": 0.1,
+      "radius_mc": 0.026851647670863562,
+      "radius_analytic": 0.11296847170279806,
+      "coverage_out_of_sample": 0.931,
+      "covers_nominal": true,
+      "analytic_dominates": true,
+      "insufficient_samples": false
+    },
+    {
+      "delta": 0.05,
+      "radius_mc": 0.033778179940388134,
+      "radius_analytic": 0.11296847170279806,
+      "coverage_out_of_sample": 0.9735,
+      "covers_nominal": true,
+      "analytic_dominates": true,
+      "insufficient_samples": false
+    },
+    {
+      "delta": 0.01,
+      "radius_mc": 0.044615997889973974,
+      "radius_analytic": 0.11296847170279806,
+      "coverage_out_of_sample": 0.996,
+      "covers_nominal": true,
+      "analytic_dominates": true,
+      "insufficient_samples": false
+    }
+  ],
+  "all_calibrated": true
+}
