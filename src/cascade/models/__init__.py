@@ -7,9 +7,10 @@ exported there.
 """
 
 try:
+    from .cascade import CASCADE
     from .ccmp_backbone import CCMPBackbone, ConceptStream
     from .propagation_head import PropagationHead
 
-    __all__ = ["CCMPBackbone", "ConceptStream", "PropagationHead"]
+    __all__ = ["CASCADE", "CCMPBackbone", "ConceptStream", "PropagationHead"]
 except ImportError:  # torch not installed
     __all__ = []

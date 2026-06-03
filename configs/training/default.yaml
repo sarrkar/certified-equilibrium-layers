@@ -1,0 +1,6 @@
+# Full training schedule (used for real runs, not the smoke fixture).
+
+epochs: 300
+lr: 0.005
+weight_decay: 1.0e-5
+log_every: 10

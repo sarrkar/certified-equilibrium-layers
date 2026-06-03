@@ -24,5 +24,8 @@ data/raw/
 data/cache/
 verify/_out/
 
+# Training run outputs (hydra run dirs, metrics, checkpoints)
+outputs/
+
 # OS
 .DS_Store

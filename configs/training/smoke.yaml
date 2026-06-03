@@ -1,0 +1,6 @@
+# Short smoke-train: a handful of epochs to exercise the full loop end to end.
+
+epochs: 40
+lr: 0.02
+weight_decay: 0.0
+log_every: 5

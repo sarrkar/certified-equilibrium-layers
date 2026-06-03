@@ -1,0 +1,22 @@
+# Fixture dataset for the smoke train: the committed tiny STRING graph with
+# deterministic synthetic per-node features and a propagated-signal label.
+# The real GSE184929 / STRING join lands in a later commit (see
+# cascade.data.cascade_dataset docstring).
+
+graph: tests/fixtures/string_tiny.txt
+threshold: 700
+cache: outputs/cache
+
+synthetic: true
+synthetic_alpha: 0.2   # teleport used to generate the synthetic label signal
+synthetic_noise: 0.05
+
+# Used only when graph: synthetic
+n_nodes: 24
+edge_p: 0.35
+
+split:
+  mode: standard       # 'standard' or 'held_out_gene'
+  val_frac: 0.25
+  test_frac: 0.25
+  n_genes: 2
