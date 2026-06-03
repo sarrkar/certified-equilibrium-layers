@@ -26,6 +26,7 @@ from .reactome import load_reactome_graph
 from .string_grn import (
     DEFAULT_THRESHOLD,
     StringGRN,
+    load_string_confidence,
     load_string_grn,
 )
 
@@ -50,6 +51,7 @@ __all__ = [
     # STRING GRN
     "StringGRN",
     "load_string_grn",
+    "load_string_confidence",
     "DEFAULT_THRESHOLD",
     # Reactome GRN (tracked gap)
     "load_reactome_graph",

@@ -85,8 +85,14 @@ def _symmetric_normalize(adj: sp.csr_matrix) -> sp.csr_matrix:
     return (d @ adj @ d).tocsr()
 
 
-def _parse(path: Path, threshold: int) -> StringGRN:
-    # STRING links files are space-separated with a header row.
+def _confidence_adjacency(path: Path, threshold: int) -> tuple[list[str], sp.csr_matrix]:
+    """Parse STRING into the score-weighted confidence adjacency A (weights in [0, 1]).
+
+    A is symmetric with A_ij = combined_score / 1000 (the per-edge confidence) on
+    the thresholded, undirected support. This is the mean adjacency A_bar used by
+    the inhomogeneous random-subgraph noise model; the symmetric normalization
+    that produces S is applied separately.
+    """
     df = pd.read_csv(
         path,
         sep=r"\s+",
@@ -116,8 +122,11 @@ def _parse(path: Path, threshold: int) -> StringGRN:
     rows = np.concatenate([pairs["lo"].to_numpy(), pairs["hi"].to_numpy()])
     cols = np.concatenate([pairs["hi"].to_numpy(), pairs["lo"].to_numpy()])
     data = np.concatenate([pairs["w"].to_numpy(), pairs["w"].to_numpy()])
-    adj = sp.coo_matrix((data, (rows, cols)), shape=(n, n)).tocsr()
+    return nodes, sp.coo_matrix((data, (rows, cols)), shape=(n, n)).tocsr()
 
+
+def _parse(path: Path, threshold: int) -> StringGRN:
+    nodes, adj = _confidence_adjacency(path, threshold)
     s = _symmetric_normalize(adj)
     return StringGRN(nodes=nodes, S=s, threshold=threshold)
 
@@ -188,3 +197,25 @@ def load_string_grn(
     grn = _parse(raw_path, threshold=threshold)
     _write_cache(cdir, grn)
     return grn
+
+
+def load_string_confidence(
+    raw_path: str | Path | None = None,
+    threshold: int = DEFAULT_THRESHOLD,
+    taxid: int = DEFAULT_TAXID,
+) -> tuple[list[str], sp.csr_matrix]:
+    """Load the raw STRING confidence adjacency A_bar (combined_score / 1000).
+
+    Returns ``(nodes, A_bar)`` where ``A_bar`` is the symmetric score-weighted
+    adjacency with entries in [0, 1] on the thresholded support. This is the mean
+    adjacency of the inhomogeneous random-subgraph noise model
+    (:mod:`certification.noise_model`); ``load_string_grn`` returns the
+    symmetric-normalized S used for propagation, which this does not.
+    """
+    raw_path = Path(raw_path) if raw_path is not None else default_raw_path(taxid)
+    if not raw_path.exists():
+        raise FileNotFoundError(
+            f"STRING links file not found at {raw_path}. Run scripts/download_data.sh "
+            "(optionally with STRING_TAXID); see docs/DATA_CARD.md section 3."
+        )
+    return _confidence_adjacency(raw_path, threshold=threshold)
