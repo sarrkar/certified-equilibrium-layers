@@ -44,6 +44,9 @@ dev = [
     "pytest-cov==5.0.0",
     "ruff==0.5.5",
     "pre-commit==3.7.1",
+    # Plotting for the verify/ scripts (decay-vs-envelope figures). Optional at
+    # runtime: the library imports it lazily and degrades to CSV-only output.
+    "matplotlib==3.9.2",
 ]
 
 [project.urls]
@@ -97,3 +100,7 @@ minversion = "8.0"
 testpaths = ["tests"]
 addopts = "-ra --strict-markers --strict-config"
 pythonpath = ["src"]
+filterwarnings = [
+    # Benign torch sparse-tensor notice raised when building the propagation operator.
+    "ignore:Sparse invariant checks are implicitly disabled:UserWarning",
+]

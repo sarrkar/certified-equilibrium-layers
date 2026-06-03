@@ -34,7 +34,7 @@ test:
 # Each script under verify/ corresponds to a theorem and exits non-zero on
 # bound violation. Add new entries here as theorems are added.
 verify:
-	@echo "No verification scripts yet. Add them under verify/ and list them here."
+	python verify/containment.py --seed 0
 
 repro: verify test
 	@echo "Headline numbers reproduced."

@@ -8,7 +8,8 @@ exported there.
 
 try:
     from .ccmp_backbone import CCMPBackbone, ConceptStream
+    from .propagation_head import PropagationHead
 
-    __all__ = ["CCMPBackbone", "ConceptStream"]
+    __all__ = ["CCMPBackbone", "ConceptStream", "PropagationHead"]
 except ImportError:  # torch not installed
     __all__ = []
