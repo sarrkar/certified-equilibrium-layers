@@ -29,3 +29,10 @@ outputs/
 
 # OS
 .DS_Store
+
+# Generated figures under results/ (JSON and markdown summaries stay tracked)
+results/**/*.png
+results/**/*.svg
+
+# Transient GO/NO-GO training run artifacts (the gate JSON itself is tracked)
+results/_gonogo_run/
