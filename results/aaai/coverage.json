@@ -1,0 +1,372 @@
+{
+  "seed": 0,
+  "n_samples": 20000,
+  "delta_grid": [
+    0.3,
+    0.2,
+    0.1,
+    0.05,
+    0.02,
+    0.01
+  ],
+  "regime": "spectrally-bounded random matchings (||A||_op <= 1), the regime where the un-normalized P_alpha certificate assumption ||P_alpha||=1 holds",
+  "max_observed_spectral_norm": 1.0,
+  "configs": [
+    {
+      "id": 0,
+      "n_nodes": 6,
+      "n_edges": 3,
+      "alpha": 0.5,
+      "confidences": [
+        0.7503,
+        0.5484,
+        0.4225
+      ],
+      "x0_norm": 1.8765176381249573,
+      "v": 0.2476591150596644,
+      "L": 0.7503289280267998,
+      "max_spectral_norm_observed": 1.0,
+      "max_deviation_observed": 0.40069852934933475,
+      "per_delta": [
+        {
+          "delta": 0.3,
+          "nominal_coverage": 0.7,
+          "radius": 5.999183517256939,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        },
+        {
+          "delta": 0.2,
+          "nominal_coverage": 0.8,
+          "radius": 6.515550698444181,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        },
+        {
+          "delta": 0.1,
+          "nominal_coverage": 0.9,
+          "radius": 7.383550205530595,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        },
+        {
+          "delta": 0.05,
+          "nominal_coverage": 0.95,
+          "radius": 8.236305996797226,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        },
+        {
+          "delta": 0.02,
+          "nominal_coverage": 0.98,
+          "radius": 9.344870428993623,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        },
+        {
+          "delta": 0.01,
+          "nominal_coverage": 0.99,
+          "radius": 10.17182282215112,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "n_nodes": 10,
+      "n_edges": 5,
+      "alpha": 0.5,
+      "confidences": [
+        0.861,
+        0.7895,
+        0.3016,
+        0.8144,
+        0.3202
+      ],
+      "x0_norm": 2.488138637509658,
+      "v": 0.21765446136061578,
+      "L": 0.861043454272661,
+      "max_spectral_norm_observed": 1.0,
+      "max_deviation_observed": 0.7937468471646063,
+      "per_delta": [
+        {
+          "delta": 0.3,
+          "nominal_coverage": 0.7,
+          "radius": 9.362493497251752,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        },
+        {
+          "delta": 0.2,
+          "nominal_coverage": 0.8,
+          "radius": 10.10026384817717,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        },
+        {
+          "delta": 0.1,
+          "nominal_coverage": 0.9,
+          "radius": 11.346093540445843,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        },
+        {
+          "delta": 0.05,
+          "nominal_coverage": 0.95,
+          "radius": 12.575667935160782,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        },
+        {
+          "delta": 0.02,
+          "nominal_coverage": 0.98,
+          "radius": 14.180708664359459,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        },
+        {
+          "delta": 0.01,
+          "nominal_coverage": 0.99,
+          "radius": 15.382003023133723,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "n_nodes": 16,
+      "n_edges": 8,
+      "alpha": 0.3,
+      "confidences": [
+        0.7769,
+        0.6727,
+        0.9487,
+        0.9414,
+        0.8085,
+        0.7927,
+        0.8098,
+        0.675
+      ],
+      "x0_norm": 4.02684009925386,
+      "v": 0.22019028570701296,
+      "L": 0.9487444711051449,
+      "max_spectral_norm_observed": 1.0,
+      "max_deviation_observed": 1.574588982232313,
+      "per_delta": [
+        {
+          "delta": 0.3,
+          "nominal_coverage": 0.7,
+          "radius": 41.2257711828839,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        },
+        {
+          "delta": 0.2,
+          "nominal_coverage": 0.8,
+          "radius": 44.20820925325595,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        },
+        {
+          "delta": 0.1,
+          "nominal_coverage": 0.9,
+          "radius": 49.256066307545495,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        },
+        {
+          "delta": 0.05,
+          "nominal_coverage": 0.95,
+          "radius": 54.24961805771842,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        },
+        {
+          "delta": 0.02,
+          "nominal_coverage": 0.98,
+          "radius": 60.781617312889026,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        },
+        {
+          "delta": 0.01,
+          "nominal_coverage": 0.99,
+          "radius": 65.6786601100453,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "n_nodes": 16,
+      "n_edges": 8,
+      "alpha": 0.7,
+      "confidences": [
+        0.2504,
+        0.6996,
+        0.6723,
+        0.3436,
+        0.7259,
+        0.2351,
+        0.4017,
+        0.2902
+      ],
+      "x0_norm": 4.182347384754125,
+      "v": 0.2403312575760899,
+      "L": 0.7648591791168834,
+      "max_spectral_norm_observed": 1.0,
+      "max_deviation_observed": 0.7477498016788289,
+      "per_delta": [
+        {
+          "delta": 0.3,
+          "nominal_coverage": 0.7,
+          "radius": 6.95338540597857,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        },
+        {
+          "delta": 0.2,
+          "nominal_coverage": 0.8,
+          "radius": 7.438128063956112,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        },
+        {
+          "delta": 0.1,
+          "nominal_coverage": 0.9,
+          "radius": 8.25670564783584,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        },
+        {
+          "delta": 0.05,
+          "nominal_coverage": 0.95,
+          "radius": 9.064460162165622,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        },
+        {
+          "delta": 0.02,
+          "nominal_coverage": 0.98,
+          "radius": 10.11847848250664,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        },
+        {
+          "delta": 0.01,
+          "nominal_coverage": 0.99,
+          "radius": 10.906998722621726,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "n_nodes": 24,
+      "n_edges": 12,
+      "alpha": 0.5,
+      "confidences": [
+        0.4762,
+        0.6818,
+        0.5,
+        0.4701,
+        0.5481,
+        0.698,
+        0.6796,
+        0.484,
+        0.6031,
+        0.499,
+        0.5117,
+        0.6143
+      ],
+      "x0_norm": 4.707658981685134,
+      "v": 0.24999999826323396,
+      "L": 0.6980386020941296,
+      "max_spectral_norm_observed": 1.0,
+      "max_deviation_observed": 1.0918918871900796,
+      "per_delta": [
+        {
+          "delta": 0.3,
+          "nominal_coverage": 0.7,
+          "radius": 18.617655136157065,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        },
+        {
+          "delta": 0.2,
+          "nominal_coverage": 0.8,
+          "radius": 19.7997359898908,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        },
+        {
+          "delta": 0.1,
+          "nominal_coverage": 0.9,
+          "radius": 21.79638087609945,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        },
+        {
+          "delta": 0.05,
+          "nominal_coverage": 0.95,
+          "radius": 23.76685765581492,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        },
+        {
+          "delta": 0.02,
+          "nominal_coverage": 0.98,
+          "radius": 26.337990444968753,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        },
+        {
+          "delta": 0.01,
+          "nominal_coverage": 0.99,
+          "radius": 28.261214232760683,
+          "empirical_coverage": 1.0,
+          "violation_rate": 0.0,
+          "violated": false
+        }
+      ]
+    }
+  ],
+  "n_violations": 0,
+  "violations": [],
+  "max_excess_violation": -0.01,
+  "any_violation": false,
+  "verdict": "PASS"
+}
