@@ -54,7 +54,7 @@ Homepage = "https://github.com/shadi97kh/ICLR2026"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["cascade*"]
+include = ["cascade*", "identifiability*", "certification*"]
 
 [tool.setuptools.package-dir]
 "" = "src"
