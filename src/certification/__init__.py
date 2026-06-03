@@ -14,6 +14,18 @@ Pure numpy / scipy, so it runs in the lightweight CI image.
 """
 
 from .calibration import calibrate_base_std, empirical_coverage
+from .certificate import (
+    BernsteinCertificate,
+    MonteCarloCertificate,
+    bernstein_b,
+    bernstein_certificate,
+    bernstein_radius,
+    edge_variance_contributions,
+    monte_carlo_certificate,
+    p_alpha_eigenvalue_range,
+    uniform_edge_bound,
+    variance_proxy,
+)
 from .certify import CertResult, certify_l2_region
 from .noise_model import (
     EdgeBernoulliNoise,
@@ -31,6 +43,17 @@ __all__ = [
     "SmoothedPrediction",
     "smoothed_prediction",
     "apply_p_alpha",
+    # matrix-Bernstein certificate (C2)
+    "BernsteinCertificate",
+    "bernstein_certificate",
+    "bernstein_b",
+    "bernstein_radius",
+    "variance_proxy",
+    "uniform_edge_bound",
+    "edge_variance_contributions",
+    "p_alpha_eigenvalue_range",
+    "MonteCarloCertificate",
+    "monte_carlo_certificate",
     # legacy Gaussian perturbation model
     "RandomEdgeNoise",
     "confidence_from_weights",
