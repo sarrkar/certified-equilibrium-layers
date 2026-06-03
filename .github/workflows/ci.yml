@@ -24,17 +24,23 @@ jobs:
           cache: "pip"
 
       - name: Install dev tooling
-        # Install only ruff + pytest here. Full deps (torch, PyG, ViennaRNA)
-        # are heavy and pulled in a follow-up job when the codebase needs
-        # them at import time in tests.
+        # Heavy deps (torch, PyG, ViennaRNA) are deferred to a follow-up job
+        # so the lint+test loop stays fast. The lightweight data-layer deps
+        # are installed here because the data tests exercise them.
         run: |
           python -m pip install --upgrade pip
-          python -m pip install "ruff==0.5.5" "pytest==8.2.2"
+          python -m pip install \
+            "ruff==0.5.5" \
+            "pytest==8.2.2" \
+            "numpy>=1.26,<2.0" \
+            "scipy==1.13.1" \
+            "pandas==2.2.2" \
+            "scikit-learn==1.5.1" \
+            "pyarrow==16.1.0"
 
       - name: Install package (no extras)
-        # Install in editable mode without optional deps so 'import cascade'
-        # works in tests. Heavy deps are unpinned here intentionally; CI for
-        # the full stack will live in a separate workflow once needed.
+        # Editable install without resolving optional deps so 'import cascade'
+        # works in tests without pulling torch + PyG.
         run: |
           python -m pip install --no-deps -e .
 

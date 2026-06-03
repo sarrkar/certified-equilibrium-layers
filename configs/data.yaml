@@ -1,0 +1,37 @@
+# Data layer configuration (hydra).
+#
+# Paths default to the repository's data/ tree. Override the data root with the
+# CASCADE_DATA_DIR environment variable or by setting paths.* below. No path is
+# hard-coded to a user-specific location (CLAUDE.md workflow rule).
+
+paths:
+  # Leave null to resolve from CASCADE_DATA_DIR or <repo>/data at runtime.
+  data_dir: null
+  raw_dir: null
+  cache_dir: null
+
+huesken:
+  # Source table written by scripts/download_data.sh (HUESKEN_URL).
+  raw_path: null   # default: data/raw/Huesken/huesken_2005.tsv
+  train_size: 2182 # canonical 2182 train / 249 test split
+  rebuild: false
+
+gse184929:
+  raw_path: null   # default: data/raw/GSE184929/GSE184929_processed_log2fc.tsv
+  # Null lets the loader auto-detect contrast columns. Set explicitly to pin them.
+  contrasts: null  # e.g. [D1_10mg, D1_30mg, D4_10mg, D4_30mg]
+  id_column: null  # null => common id name or first column
+  rebuild: false
+
+string:
+  taxid: 10116     # Rattus norvegicus, matching GSE184929
+  raw_path: null   # default: data/raw/STRING/<taxid>.protein.links.v12.0.txt.gz
+  threshold: 700   # STRING high-confidence combined_score cutoff
+  rebuild: false
+
+# Downstream-ripple proxies. Stub loaders only for now (DATA_CARD section 4).
+perturbseq:
+  replogle2022:
+    raw_path: null
+  norman2019:
+    raw_path: null
