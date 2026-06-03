@@ -79,6 +79,22 @@ def propagate(S: sp.spmatrix, h: np.ndarray, alpha: float, num_steps: int) -> np
     return z
 
 
+def dense_propagation_operator(S: sp.spmatrix, alpha: float) -> np.ndarray:
+    """Materialize the exact dense P_alpha = alpha (I - (1-alpha) S)^{-1}.
+
+    This is the closed form whose power-iteration application is :func:`propagate`.
+    It is invertible for alpha in (0, 1) and ||S||_2 <= 1 (the eigenvalues of
+    I - (1-alpha) S lie in [alpha, 2-alpha] > 0), so it serves as the KNOWN
+    invertible mixing operator used by the identifiability project. Intended for
+    small graphs; for large graphs use :func:`propagate`.
+    """
+    if not 0.0 < alpha < 1.0:
+        raise ValueError(f"alpha must be in (0, 1), got {alpha}")
+    n = S.shape[0]
+    dense = S.toarray() if sp.issparse(S) else np.asarray(S, dtype=float)
+    return alpha * np.linalg.inv(np.eye(n) - (1.0 - alpha) * dense)
+
+
 def hop_distances(S: sp.spmatrix, seed_idx: np.ndarray) -> np.ndarray:
     """Unweighted shortest-path hop distance from the seed support to every node.
 

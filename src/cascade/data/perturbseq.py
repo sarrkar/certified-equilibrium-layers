@@ -1,13 +1,21 @@
-"""Stub loaders for the Perturb-seq downstream-ripple proxies.
+"""GEARS-based Perturb-seq loaders (TRACKED GAP, stubbed).
 
 These cover Replogle 2022 (genome-scale Perturb-seq, DOI
 10.1016/j.cell.2022.05.013) and Norman 2019 (combinatorial Perturb-seq, DOI
-10.1126/science.aax4438). They are intended for held-out downstream-ripple
-validation of CASCADE's containment claim (see docs/DATA_CARD.md section 4).
+10.1126/science.aax4438). They supply the interventional data for the
+identifiability project (single-gene hard and combinatorial soft interventions)
+and the downstream-ripple validation of CASCADE's containment claim (see
+docs/DATA_CARD.md section 4).
 
-Full parsing lands in a follow-up commit. For now the dataclass shape and the
-loader signatures are fixed so downstream code can be written against them; the
-loaders raise :class:`NotImplementedError` until the parser arrives.
+The target implementation loads each atlas through GEARS ``PertData`` (the
+GEARS data utility downloads and parses both datasets and exposes the
+perturbation labels and the cell-by-gene expression), then packs the result
+into :class:`PerturbSeqDataset`. The dataclass shape and loader signatures are
+fixed so downstream code can be written against them now.
+
+TODO: wire GEARS ``PertData`` (``pip install cell-gears``); until then the
+loaders raise :class:`NotImplementedError` and ``tests/test_shared_core.py``
+carries a visible xfail-strict gap test.
 """
 
 from __future__ import annotations
@@ -42,8 +50,9 @@ class PerturbSeqDataset:
 
 def _not_implemented(name: str) -> NotImplementedError:
     return NotImplementedError(
-        f"{name} Perturb-seq loader is a stub; full integration lands in a "
-        "follow-up commit. See docs/DATA_CARD.md section 4."
+        f"{name} GEARS-based Perturb-seq loader is a tracked gap; wire GEARS "
+        "PertData to populate PerturbSeqDataset. See cascade.data.perturbseq "
+        "and the gap test in tests/test_shared_core.py."
     )
 
 
@@ -52,7 +61,7 @@ def load_replogle2022(
     cache_root: str | Path | None = None,
     rebuild: bool = False,
 ) -> PerturbSeqDataset:
-    """Stub: load the Replogle 2022 genome-scale Perturb-seq atlas."""
+    """Stub: load the Replogle 2022 genome-scale Perturb-seq atlas via GEARS PertData."""
     raise _not_implemented("Replogle 2022")
 
 
@@ -61,5 +70,5 @@ def load_norman2019(
     cache_root: str | Path | None = None,
     rebuild: bool = False,
 ) -> PerturbSeqDataset:
-    """Stub: load the Norman 2019 combinatorial Perturb-seq atlas."""
+    """Stub: load the Norman 2019 combinatorial Perturb-seq atlas via GEARS PertData."""
     raise _not_implemented("Norman 2019")

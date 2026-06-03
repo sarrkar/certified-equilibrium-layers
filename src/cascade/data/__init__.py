@@ -22,6 +22,7 @@ from .perturbseq import (
     load_norman2019,
     load_replogle2022,
 )
+from .reactome import load_reactome_graph
 from .string_grn import (
     DEFAULT_THRESHOLD,
     StringGRN,
@@ -50,7 +51,9 @@ __all__ = [
     "StringGRN",
     "load_string_grn",
     "DEFAULT_THRESHOLD",
-    # Perturb-seq stubs
+    # Reactome GRN (tracked gap)
+    "load_reactome_graph",
+    # Perturb-seq stubs (tracked gap)
     "PerturbSeqDataset",
     "load_replogle2022",
     "load_norman2019",
