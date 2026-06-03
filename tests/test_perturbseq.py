@@ -15,10 +15,11 @@ def test_dataclass_shape() -> None:
 
 
 def test_replogle_stub_raises() -> None:
-    with pytest.raises(NotImplementedError, match="follow-up commit"):
+    # Tracked gap: the GEARS-based loader is not wired yet.
+    with pytest.raises(NotImplementedError, match="GEARS"):
         load_replogle2022()
 
 
 def test_norman_stub_raises() -> None:
-    with pytest.raises(NotImplementedError, match="follow-up commit"):
+    with pytest.raises(NotImplementedError, match="GEARS"):
         load_norman2019()
