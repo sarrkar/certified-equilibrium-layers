@@ -2,15 +2,25 @@
 """Project 2 (AAAI): aggregate the certification results into paper numbers.
 
 Reads the per-experiment JSONs under results/aaai/ (coverage, tightness,
-normalized, realdata, certified_region) and aggregates the headline quantities
-into results/aaai/paper_numbers.json. Copies all figures into
-results/aaai/figures/ with plain-string captions, and writes a plain markdown
-results/aaai/SUMMARY.md leading with the empirical coverage result and the
-certified-containment fraction on the GSE184929 / SeedMatchR pipeline.
+normalized, realdata, backbone_efficacy) and aggregates them into
+results/aaai/paper_numbers.json under three clearly separated sections:
 
-This is a deterministic aggregation step (it produces no LaTeX and no .tex). It
-accepts --seed and logs it for CLAUDE.md rule 3 consistency, though it draws no
-randomness.
+- certificate_soundness_synthetic: C3 coverage, C4 tightness, and the C5
+  minimum-degree breakdown on synthetic random graphs (soundness only);
+- application_real_offtarget: per-dataset certified containment on the real
+  off-target sets (GSE184929, Jackson 2003/2006, Birmingham 2006, SeedSeq) plus
+  the cross-assay comparison;
+- backbone_competitiveness_efficacy: the CCMP backbone on-target efficacy on the
+  OligoFormer suite with cross-dataset generalization.
+
+It copies all figures into results/aaai/figures/ with plain-string captions and
+writes a plain markdown results/aaai/SUMMARY.md whose headline leads with three
+lines: certificate empirical coverage vs nominal (synthetic), certified
+containment on real off-target data, and backbone competitiveness on the
+efficacy suite.
+
+Deterministic aggregation: no LaTeX, no .tex. Accepts --seed and logs it for
+CLAUDE.md rule 3 consistency, though it draws no randomness.
 """
 
 from __future__ import annotations
@@ -59,10 +69,16 @@ FIGURE_CAPTIONS = {
         "as the graph is thresholded sparser."
     ),
     "realdata.png": (
-        "Real-data pipeline (SeedMatchR seed repression propagated over a STRING GRN): "
-        "certified off-target containment fraction versus tolerance, certified radius "
-        "versus STRING threshold, graceful degradation with the C5 breakdown under edge "
-        "subsampling, and the Monte-Carlo sample cost for a 1 minus delta interval."
+        "Application across every off-target dataset (GSE184929 RNA-seq, Jackson 2003/2006, "
+        "Birmingham 2006, SeedSeq): the predicted off-target effect vs the measured calls "
+        "(AUC and containment separation), the contained fraction by class (measured "
+        "off-targets vs non-off-targets), certified radius vs STRING threshold per source, "
+        "and degradation with the C5 breakdown under edge subsampling."
+    ),
+    "backbone_efficacy.png": (
+        "CCMP backbone on-target efficacy (the x0 predictor) on the OligoFormer suite: "
+        "Pearson and Spearman on the Huesken test split and cross-dataset generalization to "
+        "Taka, Mix, and Shabalina, with the reported BIOPREDsi reference overlaid."
     ),
     "certified_region.png": (
         "Resolvent-perturbation certified L2 region under the Gaussian per-edge model: "
@@ -180,26 +196,48 @@ def breakdown_numbers(no: dict) -> dict:
 
 
 def realdata_numbers(rd: dict) -> dict:
-    cont = rd["containment"]
+    """Application results: per-dataset certified containment on real off-target sets."""
+    per = {}
+    for name, r in rd["per_dataset"].items():
+        c = r["containment"]
+        per[name] = {
+            "assay": r["assay"],
+            "n_nodes": r["n_nodes"],
+            "n_measured_offtargets": r["n_measured_offtargets"],
+            "certified_radius": r["certificate"]["radius"],
+            "overall_contained_fraction": c["overall_contained_fraction"],
+            "offtarget_contained_fraction": c["offtarget_contained_fraction"],
+            "background_contained_fraction": c["background_contained_fraction"],
+            "separation": c["separation"],
+            "auc_predicted_vs_measured": c["auc_predicted_vs_measured"],
+            "measured_offtargets_mostly_uncontained": c["measured_offtargets_mostly_uncontained"],
+            "radius_vs_threshold": r["radius_vs_threshold"],
+            "breakdown_subsample_fraction": r["degradation"]["breakdown_subsample_fraction"],
+            "meaningful": r["meaningful"],
+            "provenance": r["provenance"],
+        }
     return {
-        "provenance": rd["provenance"],
-        "certified_containment": {
-            "n_off_targets": cont["n_off_targets"],
-            "max_predicted_effect": cont["max_predicted_effect"],
-            "certified_radius": cont["radius_sym"],
-            "tau_for_90pct_certified": cont["tau_for_90pct_certified"],
-            "certified_fraction_at_2x_radius": cont["certified_fraction_at_2x_radius"],
-            "tau_grid": cont["tau_grid"],
-            "certified_contained_fraction": cont["certified_contained_fraction"],
-            "point_contained_fraction": cont["point_contained_fraction"],
-        },
-        "radius_vs_threshold": rd["radius_vs_threshold"]["per_threshold"],
-        "degradation": {
-            "subsample": rd["degradation"]["subsample"],
-            "false_edges": rd["degradation"]["false_edges"],
-            "breakdown_subsample_fraction": rd["degradation"]["breakdown_subsample_fraction"],
-        },
-        "monte_carlo_cost": rd["monte_carlo_cost"],
+        "note": "real off-target datasets; synthetic proxy by default (the real GSE184929 / STRING / "
+        "microarray-supplement join is a tracked gap). The off-target measurements are the "
+        "datasets the certificate is evaluated against.",
+        "theorem4_radius": rd.get("theorem4_radius"),
+        "per_dataset": per,
+        "cross_assay": rd["cross_assay"],
+        "acceptance": rd["acceptance"],
+    }
+
+
+def backbone_numbers(be: dict) -> dict:
+    """Backbone competitiveness: on-target efficacy on the OligoFormer suite."""
+    return {
+        "note": "on-target efficacy of the CCMP backbone (the x0 direct-repression predictor). "
+        "This measures on-target potency and does NOT validate the off-target certificate.",
+        "provenance": be["provenance"],
+        "protocol": be["protocol"],
+        "per_dataset": be["our_model"],
+        "reported_baselines": be["reported_baselines"],
+        "acceptance": be["acceptance"],
+        "cross_dataset_note": be["cross_dataset_note"],
     }
 
 
@@ -218,102 +256,139 @@ def copy_figures() -> dict:
     return copied
 
 
+def _fmt(x, nd: int = 3) -> str:
+    return "n/a" if x is None else f"{x:.{nd}f}"
+
+
 def write_summary(numbers: dict, captions: dict) -> None:
-    cov = numbers.get("coverage", {})
-    rd = numbers.get("real_data", {})
-    cont = rd.get("certified_containment", {})
-    cert = numbers.get("certificate", {})
+    sound = numbers.get("certificate_soundness_synthetic", {})
+    app = numbers.get("application_real_offtarget", {})
+    back = numbers.get("backbone_competitiveness_efficacy", {})
+    cov = sound.get("coverage", {})
+    cert = sound.get("certificate", {})
+    ti = sound.get("tightness", {})
+    bd = sound.get("min_degree_breakdown", {})
 
-    lines = ["# AAAI certified off-target containment: results summary", ""]
+    lines = ["# AAAI results summary", ""]
 
+    # The three headline lines: soundness (synthetic), application (real
+    # off-target), backbone competitiveness (efficacy).
     lines.append("## Headline")
     if cov:
         worst = min(
             (d["min_empirical_coverage"] for d in cov["nominal_vs_empirical"]), default=None
         )
         lines.append(
-            f"- Empirical coverage of the certified radius is {worst} (at or above the "
-            f"nominal 1 minus delta at every delta); verdict {cov['verdict']}, "
-            f"max excess violation {cov['max_excess_violation']} (the radius is never "
-            "violated more than a delta fraction)."
+            f"- Certificate soundness (synthetic): empirical coverage of the certified radius is "
+            f"{worst} (>= nominal 1 minus delta at every delta); verdict {cov['verdict']}, max "
+            f"excess violation {cov['max_excess_violation']} (never violated more than delta)."
         )
-    if cont:
-        tau90 = cont.get("tau_for_90pct_certified")
-        radius = cont.get("certified_radius")
+    if app:
+        g = app["per_dataset"].get("gse184929", {})
+        acc = app["acceptance"]
         lines.append(
-            f"- On the GSE184929 / SeedMatchR off-target pipeline (real seed logic, "
-            f"synthetic-proxy graph: the STRING sequence join is a tracked gap), the "
-            f"certified containment fraction reaches 0.9 at tolerance tau = "
-            f"{tau90:.3f} and is {cont.get('certified_fraction_at_2x_radius')} at twice "
-            f"the certified radius (radius {radius:.3f}, "
-            f"{cont.get('n_off_targets')} seed-matched off-targets)."
+            f"- Application (real off-target data): on GSE184929 RNA-seq the certified containment "
+            f"separates measured off-targets (AUC {_fmt(g.get('auc_predicted_vs_measured'))}, "
+            f"measured-off-target contained {_fmt(g.get('offtarget_contained_fraction'))} vs "
+            f"non-off-target {_fmt(g.get('background_contained_fraction'))}); acceptance "
+            f"{acc['flag']} across GSE184929 and {len(app['cross_assay']['microarray_datasets'])} "
+            "microarray sets."
+        )
+    if back:
+        ht = back["per_dataset"].get("huesken_test", {})
+        ba = back["acceptance"]
+        lines.append(
+            f"- Backbone competitiveness (efficacy): Huesken-test Pearson "
+            f"{_fmt(ht.get('pearson'))} / Spearman {_fmt(ht.get('spearman'))}; acceptance "
+            f"{ba['flag']} vs reported {ba.get('best_reported_name')} "
+            f"({ba.get('best_reported_pearson')})."
         )
     lines.append("")
 
-    lines.append("## Certificate")
+    # Section 1: certificate soundness (synthetic).
+    lines.append("## 1. Certificate soundness (synthetic graphs only, no biological claim)")
     if cert:
         ex = cert["bernstein_example"]
         eig = cert["p_alpha_eigenvalue_range"]
         lines += [
             f"- alpha = {cert['alpha']}; certified-radius constant (1-alpha)/alpha = "
-            f"{cert['radius_constant_one_minus_alpha_over_alpha']}.",
-            f"- P_alpha eigenvalues lie in [{eig[0]:.4f}, {eig[1]:.1f}], so the operator "
-            f"norm is {cert['p_alpha_operator_norm']}.",
+            f"{cert['radius_constant_one_minus_alpha_over_alpha']}; P_alpha eigenvalues in "
+            f"[{eig[0]:.4f}, {eig[1]:.1f}] (operator norm {cert['p_alpha_operator_norm']}).",
             f"- Bernstein quantities ({ex['config']}): v = {ex['v']}, L = {ex['L']}, "
             f"b(delta) = {ex['b_delta']:.4f}.",
         ]
-    lines.append("")
-
-    lines.append("## Tightness")
-    ti = numbers.get("tightness", {})
     if ti:
         s = ti["sqrt_c_one_minus_c"]
         p = ti["probabilistic_vs_deterministic"]
         lines += [
-            f"- The radius variance term peaks at c = {s['variance_term_argmax_c']} and "
-            f"follows sqrt(c(1-c)) (scaling coefficient of variation "
-            f"{s['variance_term_over_sqrt_c1mc_cv']:.2e}).",
-            f"- The probabilistic certificate is tighter than the deterministic Lipschitz "
-            f"envelope by approximately sqrt(E) (fitted ratio exponent "
-            f"{p['fitted_ratio_exponent']:.3f}).",
+            f"- Tightness (C4): the variance term peaks at c = {s['variance_term_argmax_c']} and "
+            f"follows sqrt(c(1-c)) (CV {s['variance_term_over_sqrt_c1mc_cv']:.2e}); probabilistic "
+            f"vs deterministic ratio exponent {p['fitted_ratio_exponent']:.3f} (approx sqrt(E)).",
         ]
-    lines.append("")
-
-    lines.append("## Symmetric-normalized breakdown (C5)")
-    bd = numbers.get("min_degree_breakdown", {})
-    if bd:
-        lines += [
-            f"- The degree-concentration assumption fails (rho >= 1) at STRING confidence "
-            f"cutoff {bd['breakdown_cutoff_rho_ge_1']}; the Le-Levina-Vershynin "
-            f"minimum-degree condition is lost at {bd['llv_breakdown_cutoff']}.",
-        ]
-    if rd.get("degradation"):
+    if cov:
         lines.append(
-            f"- On the pipeline, edge subsampling degrades gracefully until the C5 "
-            f"breakdown at {rd['degradation']['breakdown_subsample_fraction']} of edges "
-            "removed."
+            f"- Coverage (C3): empirical vs nominal across delta on random matchings, verdict "
+            f"{cov['verdict']}."
+        )
+    if bd:
+        lines.append(
+            f"- Symmetric-normalized breakdown (C5): degree concentration fails (rho >= 1) at "
+            f"STRING cutoff {bd['breakdown_cutoff_rho_ge_1']}; LLV min-degree condition lost at "
+            f"{bd['llv_breakdown_cutoff']}."
         )
     lines.append("")
 
-    lines.append("## Monte-Carlo cost")
-    mc = rd.get("monte_carlo_cost", {})
-    if mc:
-        pairs = ", ".join(f"delta={r['delta']}: N={r['n_samples']}" for r in mc["per_delta"])
-        lines.append(f"- Samples needed for a 1 minus delta interval: {pairs}.")
+    # Section 2: application results (real off-target data).
+    lines.append("## 2. Application results (real off-target data)")
+    if app:
+        lines.append(app["note"])
+        lines.append("")
+        lines.append(
+            "| dataset | assay | AUC | separation | off-target contained | non-off contained | meaningful |"
+        )
+        lines.append("| --- | --- | --- | --- | --- | --- | --- |")
+        for name, r in app["per_dataset"].items():
+            lines.append(
+                f"| {name} | {r['assay']} | {_fmt(r['auc_predicted_vs_measured'])} | "
+                f"{_fmt(r['separation'])} | {_fmt(r['offtarget_contained_fraction'])} | "
+                f"{_fmt(r['background_contained_fraction'])} | {r['meaningful']} |"
+            )
+        ca = app["cross_assay"]
+        lines.append("")
+        lines.append(
+            f"- Cross-assay: RNA-seq mean AUC {_fmt(ca['rna_seq_mean_auc'])} vs microarray mean "
+            f"AUC {_fmt(ca['microarray_mean_auc'])}. {ca['note']}"
+        )
+        acc = app["acceptance"]
+        lines.append(
+            f"- ACCEPTANCE {acc['flag']}: GSE184929 meaningful={acc['gse184929_meaningful']}, "
+            f"any microarray meaningful={acc['any_microarray_meaningful']}; inconsistencies="
+            f"{acc['inconsistencies']}."
+        )
+    lines.append("")
+
+    # Section 3: backbone competitiveness (efficacy data).
+    lines.append("## 3. Backbone competitiveness (efficacy data, on-target only)")
+    if back:
+        lines.append(back["note"])
+        lines.append("")
+        lines.append("| dataset | n | Pearson | Spearman |")
+        lines.append("| --- | --- | --- | --- |")
+        for name, r in back["per_dataset"].items():
+            lines.append(f"| {name} | {r['n']} | {_fmt(r['pearson'])} | {_fmt(r['spearman'])} |")
+        ba = back["acceptance"]
+        lines.append("")
+        lines.append(
+            f"- ACCEPTANCE {ba['flag']}: our Huesken-test Pearson "
+            f"{_fmt(ba['our_huesken_test_pearson'])} vs best reported {ba.get('best_reported_name')} "
+            f"({ba.get('best_reported_pearson')}). {ba['note']}"
+        )
+        lines.append(f"- {back['cross_dataset_note']}")
     lines.append("")
 
     lines.append("## Figures (results/aaai/figures/)")
     for name, caption in captions.items():
         lines.append(f"- `{name}`: {caption}")
-    lines.append("")
-
-    lines.append("## Provenance")
-    prov = rd.get("provenance", {})
-    if prov:
-        lines.append(
-            f"- Graph source: {prov.get('graph_source')}. x0 source: "
-            f"{prov.get('x0_source')}. {prov.get('note', '')}"
-        )
     lines.append("")
 
     (AAAI / "SUMMARY.md").write_text("\n".join(lines), encoding="utf-8")
@@ -332,22 +407,37 @@ def main() -> int:
     ti = _load("tightness")
     no = _load("normalized")
     rd = _load("realdata")
+    be = _load("backbone_efficacy")
     alpha = ti["alpha"] if ti else 0.5
     delta = ti["delta"] if ti else 0.05
 
-    numbers = {
-        "alpha": alpha,
-        "source_files": ["coverage.json", "tightness.json", "normalized.json", "realdata.json"],
+    # Three clearly separated sections.
+    soundness = {
+        "note": "synthetic random-graph ensembles: certificate soundness only, no biological claim.",
         "certificate": certificate_quantities(alpha, delta),
     }
     if cov:
-        numbers["coverage"] = coverage_numbers(cov)
+        soundness["coverage"] = coverage_numbers(cov)
     if ti:
-        numbers["tightness"] = tightness_numbers(ti)
+        soundness["tightness"] = tightness_numbers(ti)
     if no:
-        numbers["min_degree_breakdown"] = breakdown_numbers(no)
+        soundness["min_degree_breakdown"] = breakdown_numbers(no)
+
+    numbers = {
+        "alpha": alpha,
+        "source_files": [
+            "coverage.json",
+            "tightness.json",
+            "normalized.json",
+            "realdata.json",
+            "backbone_efficacy.json",
+        ],
+        "certificate_soundness_synthetic": soundness,
+    }
     if rd:
-        numbers["real_data"] = realdata_numbers(rd)
+        numbers["application_real_offtarget"] = realdata_numbers(rd)
+    if be:
+        numbers["backbone_competitiveness_efficacy"] = backbone_numbers(be)
 
     out_path = args.out_dir / "paper_numbers.json"
     out_path.write_text(json.dumps(numbers, indent=2), encoding="utf-8")

@@ -4,453 +4,435 @@
     "coverage.json",
     "tightness.json",
     "normalized.json",
-    "realdata.json"
+    "realdata.json",
+    "backbone_efficacy.json"
   ],
-  "certificate": {
-    "alpha": 0.5,
-    "radius_constant_one_minus_alpha_over_alpha": 1.0,
-    "p_alpha_eigenvalue_range": [
-      0.3333333333333333,
-      1.0
-    ],
-    "p_alpha_operator_norm": 1.0,
-    "bernstein_example": {
-      "config": "star graph, 32 uncertain edges, c = 0.5, delta = 0.05",
-      "v": 8.0,
-      "L": 0.5,
-      "b_delta": 13.11735788958531,
-      "radius_unit_x0": 13.11735788958531
-    }
-  },
-  "coverage": {
-    "verdict": "PASS",
-    "any_violation": false,
-    "max_excess_violation": -0.01,
-    "regime": "spectrally-bounded random matchings (||A||_op <= 1), the regime where the un-normalized P_alpha certificate assumption ||P_alpha||=1 holds",
-    "nominal_vs_empirical": [
-      {
-        "delta": 0.3,
-        "nominal_coverage": 0.7,
-        "min_empirical_coverage": 1.0
-      },
-      {
-        "delta": 0.2,
-        "nominal_coverage": 0.8,
-        "min_empirical_coverage": 1.0
-      },
-      {
-        "delta": 0.1,
-        "nominal_coverage": 0.9,
-        "min_empirical_coverage": 1.0
-      },
-      {
-        "delta": 0.05,
-        "nominal_coverage": 0.95,
-        "min_empirical_coverage": 1.0
-      },
-      {
-        "delta": 0.02,
-        "nominal_coverage": 0.98,
-        "min_empirical_coverage": 1.0
-      },
-      {
-        "delta": 0.01,
-        "nominal_coverage": 0.99,
-        "min_empirical_coverage": 1.0
-      }
-    ]
-  },
-  "tightness": {
-    "sqrt_c_one_minus_c": {
-      "variance_term_argmax_c": 0.5,
-      "variance_term_over_sqrt_c1mc_cv": 4.685968054479842e-16,
-      "full_radius_argmax_vs_edges": {
-        "16": 0.36,
-        "64": 0.42,
-        "256": 0.46,
-        "1024": 0.48,
-        "4096": 0.49
-      }
-    },
-    "matching_lower_bound": {
-      "v": 8.0,
-      "sqrt_v": 2.8284271247461903,
-      "bernstein_b": 13.11735788958531,
-      "b_over_empirical_quantile": 4.637686357488316
-    },
-    "probabilistic_vs_deterministic": {
-      "fitted_ratio_exponent": 0.5326220640552931,
-      "approx_sqrt_e": true
-    }
-  },
-  "min_degree_breakdown": {
-    "criterion": "rho = max_i t_i/dbar_i < 1 (degrees concentrate); breakdown at first cutoff with rho >= 1",
-    "breakdown_cutoff_rho_ge_1": 0.925,
-    "llv_breakdown_cutoff": 0.95,
-    "min_degree_vs_threshold": [
-      {
-        "cutoff": 0.7,
-        "min_expected_degree": 43.18503153578777,
-        "degree_rel_fluctuation": 0.39055942624017753,
-        "assumption_holds": true
-      },
-      {
-        "cutoff": 0.725,
-        "min_expected_degree": 40.35389593628495,
-        "degree_rel_fluctuation": 0.39973421631161576,
-        "assumption_holds": true
-      },
-      {
-        "cutoff": 0.75,
-        "min_expected_degree": 37.38524225789728,
-        "degree_rel_fluctuation": 0.41188644940424707,
-        "assumption_holds": true
-      },
-      {
-        "cutoff": 0.775,
-        "min_expected_degree": 34.35348978377394,
-        "degree_rel_fluctuation": 0.42608188546572046,
-        "assumption_holds": true
-      },
-      {
-        "cutoff": 0.8,
-        "min_expected_degree": 29.609363274216555,
-        "degree_rel_fluctuation": 0.4553568306298412,
-        "assumption_holds": true
-      },
-      {
-        "cutoff": 0.825,
-        "min_expected_degree": 25.56380943866865,
-        "degree_rel_fluctuation": 0.4866399018121875,
-        "assumption_holds": true
-      },
-      {
-        "cutoff": 0.85,
-        "min_expected_degree": 20.242237427431753,
-        "degree_rel_fluctuation": 0.5703990938517416,
-        "assumption_holds": true
-      },
-      {
-        "cutoff": 0.875,
-        "min_expected_degree": 16.777700732406014,
-        "degree_rel_fluctuation": 0.6370404083530942,
-        "assumption_holds": true
-      },
-      {
-        "cutoff": 0.9,
-        "min_expected_degree": 13.131254461744108,
-        "degree_rel_fluctuation": 0.7618932913577882,
-        "assumption_holds": true
-      },
-      {
-        "cutoff": 0.925,
-        "min_expected_degree": 7.786519213530186,
-        "degree_rel_fluctuation": 1.0382931191303826,
-        "assumption_holds": false
-      },
-      {
-        "cutoff": 0.95,
-        "min_expected_degree": 2.8891558580539076,
-        "degree_rel_fluctuation": 2.6103826758833364,
-        "assumption_holds": false
-      }
-    ],
-    "coverage_when_valid": {
-      "structure_coverage": 1.0,
-      "prediction_coverage": 1.0
-    }
-  },
-  "real_data": {
-    "provenance": {
-      "graph_source": "synthetic STRING-like confidence matrix",
-      "x0_source": "SeedMatchR seed-match scores on synthetic 3'UTR sequences",
-      "note": "the real GSE184929 / STRING sequence join is a tracked data gap; x0 uses the real SeedMatchR seed logic",
-      "guide": "UGAGGUAGUAGGUUGUAUAGU"
-    },
-    "certified_containment": {
-      "n_off_targets": 70,
-      "max_predicted_effect": 0.632516748253383,
-      "certified_radius": 9.583836795200893,
-      "tau_for_90pct_certified": 10.478311326619771,
-      "certified_fraction_at_2x_radius": 1.0,
-      "tau_grid": [
-        0.0,
-        0.32744722895686784,
-        0.6548944579137357,
-        0.9823416868706035,
-        1.3097889158274714,
-        1.6372361447843393,
-        1.964683373741207,
-        2.292130602698075,
-        2.6195778316549427,
-        2.9470250606118107,
-        3.2744722895686786,
-        3.601919518525546,
-        3.929366747482414,
-        4.256813976439282,
-        4.58426120539615,
-        4.9117084343530175,
-        5.2391556633098855,
-        5.566602892266753,
-        5.894050121223621,
-        6.221497350180489,
-        6.548944579137357,
-        6.876391808094224,
-        7.203839037051092,
-        7.53128626600796,
-        7.858733494964828,
-        8.186180723921696,
-        8.513627952878563,
-        8.841075181835432,
-        9.1685224107923,
-        9.495969639749168,
-        9.823416868706035,
-        10.150864097662904,
-        10.478311326619771,
-        10.805758555576638,
-        11.133205784533507,
-        11.460653013490374,
-        11.788100242447243,
-        12.11554747140411,
-        12.442994700360979,
-        12.770441929317846
-      ],
-      "certified_contained_fraction": [
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.72,
-        0.868,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
+  "certificate_soundness_synthetic": {
+    "note": "synthetic random-graph ensembles: certificate soundness only, no biological claim.",
+    "certificate": {
+      "alpha": 0.5,
+      "radius_constant_one_minus_alpha_over_alpha": 1.0,
+      "p_alpha_eigenvalue_range": [
+        0.3333333333333333,
         1.0
       ],
-      "point_contained_fraction": [
-        0.0,
-        0.78,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0
-      ]
-    },
-    "radius_vs_threshold": [
-      {
-        "threshold": 0.4,
-        "n_active": 250,
-        "min_expected_degree": 87.55445760705324,
-        "mean_expected_degree": 104.5721347366827,
-        "degree_rel_fluctuation": 0.31183360110935116,
-        "assumption_holds": true,
-        "radius_sym": 6.206004578233921
-      },
-      {
-        "threshold": 0.7,
-        "n_active": 250,
-        "min_expected_degree": 42.82670512436072,
-        "mean_expected_degree": 63.32927946788033,
-        "degree_rel_fluctuation": 0.3967364005934621,
-        "assumption_holds": true,
-        "radius_sym": 9.583836795200893
-      },
-      {
-        "threshold": 0.9,
-        "n_active": 250,
-        "min_expected_degree": 11.470516201460635,
-        "mean_expected_degree": 23.49717473550845,
-        "degree_rel_fluctuation": 0.7989227702055417,
-        "assumption_holds": true,
-        "radius_sym": 59.66793039092008
+      "p_alpha_operator_norm": 1.0,
+      "bernstein_example": {
+        "config": "star graph, 32 uncertain edges, c = 0.5, delta = 0.05",
+        "v": 8.0,
+        "L": 0.5,
+        "b_delta": 13.11735788958531,
+        "radius_unit_x0": 13.11735788958531
       }
-    ],
-    "degradation": {
-      "subsample": [
-        {
-          "level": 0.0,
-          "kind": "subsample",
-          "min_expected_degree": 42.82670512436072,
-          "degree_rel_fluctuation": 0.3967364005934621,
-          "assumption_holds": true,
-          "radius_sym": 9.583836795200893
-        },
-        {
-          "level": 0.2,
-          "kind": "subsample",
-          "min_expected_degree": 33.729782643756664,
-          "degree_rel_fluctuation": 0.4639402418010918,
-          "assumption_holds": true,
-          "radius_sym": 12.850193069385849
-        },
-        {
-          "level": 0.4,
-          "kind": "subsample",
-          "min_expected_degree": 24.67064139130295,
-          "degree_rel_fluctuation": 0.5707295965737224,
-          "assumption_holds": true,
-          "radius_sym": 20.18568616123256
-        },
-        {
-          "level": 0.6,
-          "kind": "subsample",
-          "min_expected_degree": 13.216166991489558,
-          "degree_rel_fluctuation": 0.9425424775193846,
-          "assumption_holds": true,
-          "radius_sym": 244.80013188057083
-        },
-        {
-          "level": 0.8,
-          "kind": "subsample",
-          "min_expected_degree": 5.000325825981044,
-          "degree_rel_fluctuation": 1.987492065221088,
-          "assumption_holds": false,
-          "radius_sym": null
-        },
-        {
-          "level": 0.9,
-          "kind": "subsample",
-          "min_expected_degree": 0.757232301146908,
-          "degree_rel_fluctuation": 10.538929334385962,
-          "assumption_holds": false,
-          "radius_sym": null
-        }
-      ],
-      "false_edges": [
-        {
-          "level": 0.0,
-          "kind": "false_edges",
-          "min_expected_degree": 42.82670512436072,
-          "degree_rel_fluctuation": 0.3967364005934621,
-          "assumption_holds": true,
-          "radius_sym": 9.583836795200893
-        },
-        {
-          "level": 0.25,
-          "kind": "false_edges",
-          "min_expected_degree": 56.31942302932165,
-          "degree_rel_fluctuation": 0.35246184858043494,
-          "assumption_holds": true,
-          "radius_sym": 7.634215725077785
-        },
-        {
-          "level": 0.5,
-          "kind": "false_edges",
-          "min_expected_degree": 66.49899413269618,
-          "degree_rel_fluctuation": 0.321329511114437,
-          "assumption_holds": true,
-          "radius_sym": 6.6872154530004675
-        },
-        {
-          "level": 1.0,
-          "kind": "false_edges",
-          "min_expected_degree": 91.00186827005774,
-          "degree_rel_fluctuation": 0.2687132230596409,
-          "assumption_holds": true,
-          "radius_sym": 5.1450344663821586
-        },
-        {
-          "level": 2.0,
-          "kind": "false_edges",
-          "min_expected_degree": 155.76961111198713,
-          "degree_rel_fluctuation": 0.20547442364721966,
-          "assumption_holds": true,
-          "radius_sym": 3.4329034295139627
-        }
-      ],
-      "breakdown_subsample_fraction": 0.8
     },
-    "monte_carlo_cost": {
-      "value_radius": 6.518435395092905,
-      "target_half_width_relative": 0.1,
-      "target_half_width": 0.6518435395092905,
-      "n_coordinates": 250,
-      "per_delta": [
+    "coverage": {
+      "verdict": "PASS",
+      "any_violation": false,
+      "max_excess_violation": -0.01,
+      "regime": "spectrally-bounded random matchings (||A||_op <= 1), the regime where the un-normalized P_alpha certificate assumption ||P_alpha||=1 holds",
+      "nominal_vs_empirical": [
+        {
+          "delta": 0.3,
+          "nominal_coverage": 0.7,
+          "min_empirical_coverage": 1.0
+        },
         {
           "delta": 0.2,
-          "n_samples": 1565
+          "nominal_coverage": 0.8,
+          "min_empirical_coverage": 1.0
         },
         {
           "delta": 0.1,
-          "n_samples": 1704
+          "nominal_coverage": 0.9,
+          "min_empirical_coverage": 1.0
         },
         {
           "delta": 0.05,
-          "n_samples": 1843
+          "nominal_coverage": 0.95,
+          "min_empirical_coverage": 1.0
+        },
+        {
+          "delta": 0.02,
+          "nominal_coverage": 0.98,
+          "min_empirical_coverage": 1.0
         },
         {
           "delta": 0.01,
-          "n_samples": 2164
-        },
-        {
-          "delta": 0.001,
-          "n_samples": 2625
+          "nominal_coverage": 0.99,
+          "min_empirical_coverage": 1.0
         }
       ]
+    },
+    "tightness": {
+      "sqrt_c_one_minus_c": {
+        "variance_term_argmax_c": 0.5,
+        "variance_term_over_sqrt_c1mc_cv": 4.685968054479842e-16,
+        "full_radius_argmax_vs_edges": {
+          "16": 0.36,
+          "64": 0.42,
+          "256": 0.46,
+          "1024": 0.48,
+          "4096": 0.49
+        }
+      },
+      "matching_lower_bound": {
+        "v": 8.0,
+        "sqrt_v": 2.8284271247461903,
+        "bernstein_b": 13.11735788958531,
+        "b_over_empirical_quantile": 4.637686357488316
+      },
+      "probabilistic_vs_deterministic": {
+        "fitted_ratio_exponent": 0.5326220640552931,
+        "approx_sqrt_e": true
+      }
+    },
+    "min_degree_breakdown": {
+      "criterion": "rho = max_i t_i/dbar_i < 1 (degrees concentrate); breakdown at first cutoff with rho >= 1",
+      "breakdown_cutoff_rho_ge_1": 0.925,
+      "llv_breakdown_cutoff": 0.95,
+      "min_degree_vs_threshold": [
+        {
+          "cutoff": 0.7,
+          "min_expected_degree": 43.18503153578777,
+          "degree_rel_fluctuation": 0.39055942624017753,
+          "assumption_holds": true
+        },
+        {
+          "cutoff": 0.725,
+          "min_expected_degree": 40.35389593628495,
+          "degree_rel_fluctuation": 0.39973421631161576,
+          "assumption_holds": true
+        },
+        {
+          "cutoff": 0.75,
+          "min_expected_degree": 37.38524225789728,
+          "degree_rel_fluctuation": 0.41188644940424707,
+          "assumption_holds": true
+        },
+        {
+          "cutoff": 0.775,
+          "min_expected_degree": 34.35348978377394,
+          "degree_rel_fluctuation": 0.42608188546572046,
+          "assumption_holds": true
+        },
+        {
+          "cutoff": 0.8,
+          "min_expected_degree": 29.609363274216555,
+          "degree_rel_fluctuation": 0.4553568306298412,
+          "assumption_holds": true
+        },
+        {
+          "cutoff": 0.825,
+          "min_expected_degree": 25.56380943866865,
+          "degree_rel_fluctuation": 0.4866399018121875,
+          "assumption_holds": true
+        },
+        {
+          "cutoff": 0.85,
+          "min_expected_degree": 20.242237427431753,
+          "degree_rel_fluctuation": 0.5703990938517416,
+          "assumption_holds": true
+        },
+        {
+          "cutoff": 0.875,
+          "min_expected_degree": 16.777700732406014,
+          "degree_rel_fluctuation": 0.6370404083530942,
+          "assumption_holds": true
+        },
+        {
+          "cutoff": 0.9,
+          "min_expected_degree": 13.131254461744108,
+          "degree_rel_fluctuation": 0.7618932913577882,
+          "assumption_holds": true
+        },
+        {
+          "cutoff": 0.925,
+          "min_expected_degree": 7.786519213530186,
+          "degree_rel_fluctuation": 1.0382931191303826,
+          "assumption_holds": false
+        },
+        {
+          "cutoff": 0.95,
+          "min_expected_degree": 2.8891558580539076,
+          "degree_rel_fluctuation": 2.6103826758833364,
+          "assumption_holds": false
+        }
+      ],
+      "coverage_when_valid": {
+        "structure_coverage": 1.0,
+        "prediction_coverage": 1.0
+      }
     }
+  },
+  "application_real_offtarget": {
+    "note": "real off-target datasets; synthetic proxy by default (the real GSE184929 / STRING / microarray-supplement join is a tracked gap). The off-target measurements are the datasets the certificate is evaluated against.",
+    "theorem4_radius": "((1-alpha)/alpha) * b(delta) * ||x0||",
+    "per_dataset": {
+      "gse184929": {
+        "assay": "rna_seq",
+        "n_nodes": 200,
+        "n_measured_offtargets": 30,
+        "certified_radius": 114.50245540857915,
+        "overall_contained_fraction": 0.77,
+        "offtarget_contained_fraction": 0.03333333333333333,
+        "background_contained_fraction": 0.9,
+        "separation": 0.8666666666666667,
+        "auc_predicted_vs_measured": 0.9613725490196078,
+        "measured_offtargets_mostly_uncontained": true,
+        "radius_vs_threshold": [
+          {
+            "threshold": 0.4,
+            "v": 25.79487993350571,
+            "b": 26.214732532816665,
+            "radius": 164.33940345957106
+          },
+          {
+            "threshold": 0.7,
+            "v": 9.77793647095941,
+            "b": 18.264951555730224,
+            "radius": 114.50245540857915
+          },
+          {
+            "threshold": 0.9,
+            "v": 1.7175118893958268,
+            "b": 10.866904600729992,
+            "radius": 68.12431205622343
+          }
+        ],
+        "breakdown_subsample_fraction": 0.6,
+        "meaningful": true,
+        "provenance": "synthetic-proxy; graph=synthetic STRING-like; measured off-target calls + x0 are a synthetic proxy using the role-tagged loader schema and the real SeedMatchR seed logic (real sequence join is a tracked gap)"
+      },
+      "jackson2003": {
+        "assay": "microarray",
+        "n_nodes": 200,
+        "n_measured_offtargets": 20,
+        "certified_radius": 108.89582080953315,
+        "overall_contained_fraction": 0.84,
+        "offtarget_contained_fraction": 0.3,
+        "background_contained_fraction": 0.9,
+        "separation": 0.6000000000000001,
+        "auc_predicted_vs_measured": 0.7630555555555556,
+        "measured_offtargets_mostly_uncontained": true,
+        "radius_vs_threshold": [
+          {
+            "threshold": 0.4,
+            "v": 25.23851186497442,
+            "b": 25.990103421077,
+            "radius": 153.38565488156718
+          },
+          {
+            "threshold": 0.7,
+            "v": 10.067184746738324,
+            "b": 18.451618876277006,
+            "radius": 108.89582080953315
+          },
+          {
+            "threshold": 0.9,
+            "v": 1.4479616266025142,
+            "b": 10.429857813886702,
+            "radius": 61.55383628859562
+          }
+        ],
+        "breakdown_subsample_fraction": 0.6,
+        "meaningful": true,
+        "provenance": "synthetic-proxy; graph=synthetic STRING-like; measured off-target calls + x0 are a synthetic proxy using the role-tagged loader schema and the real SeedMatchR seed logic (real sequence join is a tracked gap)"
+      },
+      "jackson2006": {
+        "assay": "microarray",
+        "n_nodes": 200,
+        "n_measured_offtargets": 18,
+        "certified_radius": 94.8283983580291,
+        "overall_contained_fraction": 0.835,
+        "offtarget_contained_fraction": 0.2222222222222222,
+        "background_contained_fraction": 0.8956043956043956,
+        "separation": 0.6733821733821734,
+        "auc_predicted_vs_measured": 0.851037851037851,
+        "measured_offtargets_mostly_uncontained": true,
+        "radius_vs_threshold": [
+          {
+            "threshold": 0.4,
+            "v": 25.842654733742084,
+            "b": 26.23373170695435,
+            "radius": 135.6819154144662
+          },
+          {
+            "threshold": 0.7,
+            "v": 9.885734881069434,
+            "b": 18.334814578092924,
+            "radius": 94.8283983580291
+          },
+          {
+            "threshold": 0.9,
+            "v": 1.4327172375043151,
+            "b": 10.40417441033374,
+            "radius": 53.81080846862656
+          }
+        ],
+        "breakdown_subsample_fraction": 0.6,
+        "meaningful": true,
+        "provenance": "synthetic-proxy; graph=synthetic STRING-like; measured off-target calls + x0 are a synthetic proxy using the role-tagged loader schema and the real SeedMatchR seed logic (real sequence join is a tracked gap)"
+      },
+      "birmingham2006": {
+        "assay": "microarray",
+        "n_nodes": 200,
+        "n_measured_offtargets": 22,
+        "certified_radius": 119.11692519641652,
+        "overall_contained_fraction": 0.81,
+        "offtarget_contained_fraction": 0.09090909090909091,
+        "background_contained_fraction": 0.898876404494382,
+        "separation": 0.8079673135852911,
+        "auc_predicted_vs_measured": 0.9157303370786518,
+        "measured_offtargets_mostly_uncontained": true,
+        "radius_vs_threshold": [
+          {
+            "threshold": 0.4,
+            "v": 25.47714502678375,
+            "b": 26.08680459109711,
+            "radius": 166.36347036351475
+          },
+          {
+            "threshold": 0.7,
+            "v": 10.423088139125651,
+            "b": 18.678258780617085,
+            "radius": 119.11692519641652
+          },
+          {
+            "threshold": 0.9,
+            "v": 1.4746698338449398,
+            "b": 10.475048275630563,
+            "radius": 66.8025620874236
+          }
+        ],
+        "breakdown_subsample_fraction": 0.6,
+        "meaningful": true,
+        "provenance": "synthetic-proxy; graph=synthetic STRING-like; measured off-target calls + x0 are a synthetic proxy using the role-tagged loader schema and the real SeedMatchR seed logic (real sequence join is a tracked gap)"
+      },
+      "seedseq": {
+        "assay": "microarray_aggregated",
+        "n_nodes": 200,
+        "n_measured_offtargets": 45,
+        "certified_radius": 135.4362636106529,
+        "overall_contained_fraction": 0.74,
+        "offtarget_contained_fraction": 0.2,
+        "background_contained_fraction": 0.896774193548387,
+        "separation": 0.6967741935483871,
+        "auc_predicted_vs_measured": 0.8425806451612903,
+        "measured_offtargets_mostly_uncontained": true,
+        "radius_vs_threshold": [
+          {
+            "threshold": 0.4,
+            "v": 25.21654829973844,
+            "b": 25.981614656408734,
+            "radius": 192.45695817365552
+          },
+          {
+            "threshold": 0.7,
+            "v": 9.806835817033766,
+            "b": 18.283843021465017,
+            "radius": 135.4362636106529
+          },
+          {
+            "threshold": 0.9,
+            "v": 1.6452295789923486,
+            "b": 10.753463815074696,
+            "radius": 79.65551652769425
+          }
+        ],
+        "breakdown_subsample_fraction": 0.6,
+        "meaningful": true,
+        "provenance": "synthetic-proxy; graph=synthetic STRING-like; measured off-target calls + x0 are a synthetic proxy using the role-tagged loader schema and the real SeedMatchR seed logic (real sequence join is a tracked gap)"
+      }
+    },
+    "cross_assay": {
+      "rna_seq_datasets": [
+        "gse184929"
+      ],
+      "microarray_datasets": [
+        "jackson2003",
+        "jackson2006",
+        "birmingham2006",
+        "seedseq"
+      ],
+      "rna_seq_mean_auc": 0.9613725490196078,
+      "microarray_mean_auc": 0.8431010972083373,
+      "note": "RNA-seq is expected to separate measured off-targets more cleanly than microarray (lower resolution, older annotation); the gap is reported, not hidden."
+    },
+    "acceptance": {
+      "gse184929_meaningful": true,
+      "any_microarray_meaningful": true,
+      "consistent": true,
+      "flag": "PASS",
+      "inconsistencies": [],
+      "note": "ACCEPTANCE requires meaningful containment on GSE184929 (RNA-seq) and at least one microarray set; on the synthetic proxy this checks the certificate's behavior and cross-source consistency, not absolute biological truth."
+    }
+  },
+  "backbone_competitiveness_efficacy": {
+    "note": "on-target efficacy of the CCMP backbone (the x0 direct-repression predictor). This measures on-target potency and does NOT validate the off-target certificate.",
+    "provenance": "synthetic_proxy",
+    "protocol": "train on Huesken train; Pearson/Spearman on Huesken test and cross-dataset Taka/Mix/Shabalina (independent test sets)",
+    "per_dataset": {
+      "huesken_test": {
+        "n": 150,
+        "pearson": 0.5303548000314993,
+        "spearman": 0.5528392842699943
+      },
+      "taka": {
+        "n": 200,
+        "pearson": 0.46168704561861545,
+        "spearman": 0.4376686059766605
+      },
+      "mix": {
+        "n": 200,
+        "pearson": 0.186500136656569,
+        "spearman": 0.1714683241207731
+      },
+      "shabalina": {
+        "n": 150,
+        "pearson": 0.23140043931728266,
+        "spearman": 0.2195401264189803
+      }
+    },
+    "reported_baselines": [
+      {
+        "name": "BIOPREDsi (Huesken ANN)",
+        "source": "Huesken et al., Nat Biotechnol 23:995-1001 (2005), 10.1038/nbt1118",
+        "dataset": "Huesken test (249)",
+        "metric": "pearson",
+        "reported_value": 0.66,
+        "note": "Pearson R commonly cited for the BIOPREDsi predictor on the 249-siRNA Huesken test split; verify against the source table before use.",
+        "verify": true
+      },
+      {
+        "name": "OligoFormer",
+        "source": "OligoFormer (public release)",
+        "dataset": "Huesken test",
+        "metric": "pearson",
+        "reported_value": null,
+        "note": "transcribe from the OligoFormer paper/repo table; not asserted here.",
+        "verify": true
+      },
+      {
+        "name": "siRNADiscovery",
+        "source": "siRNADiscovery (public release)",
+        "dataset": "Huesken test",
+        "metric": "pearson",
+        "reported_value": null,
+        "note": "transcribe from the siRNADiscovery table; not asserted here.",
+        "verify": true
+      }
+    ],
+    "acceptance": {
+      "our_huesken_test_pearson": 0.5303548000314993,
+      "best_reported_pearson": 0.66,
+      "best_reported_name": "BIOPREDsi (Huesken ANN)",
+      "tolerance": 0.05,
+      "margin": -0.12964519996850077,
+      "competitive": false,
+      "valid_comparison": false,
+      "flag": "PENDING",
+      "note": "SYNTHETIC PROXY: our numbers are illustrative and are NOT comparable to the reported SOTA; rerun with --raw-dir pointing at the OligoFormer CSVs for the real acceptance check."
+    },
+    "cross_dataset_note": "the drop from Huesken-test to Taka/Mix/Shabalina is the expected distribution shift; it is reported here, not hidden."
   }
 }
