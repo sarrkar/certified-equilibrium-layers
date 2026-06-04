@@ -1,0 +1,4 @@
+sirna_id,antisense,off_target_transcript,effect_size,source
+si1,UGAGGUAGUAGGUUGUAUAGU,NM_000001,-1.2,jackson2003
+siA,UGAGGUAGUAGGUUGUAUAGU,NM_000010,-2.1,jackson2006
+b1,,NM_000020,-0.9,birmingham2006

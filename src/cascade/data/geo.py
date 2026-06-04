@@ -22,8 +22,12 @@ import pandas as pd
 from .cache import CacheKey, cache_dir_for, sha256_file
 from .paths import cache_dir as default_cache_dir
 from .paths import raw_dir as default_raw_dir
+from .roles import OFFTARGET_CERTIFICATION
 
 PARSER_VERSION = "gse184929-v1"
+
+# GSE184929 is the RNA-seq off-target ground truth (role: offtarget_certification).
+ROLE = OFFTARGET_CERTIFICATION
 
 # The four primary dose / guide contrasts documented in the data card.
 DEFAULT_CONTRASTS = ("D1_10mg", "D1_30mg", "D4_10mg", "D4_30mg")
@@ -56,6 +60,7 @@ class GEOOffTargetDataset:
     transcript_ids: np.ndarray
     log2fc: pd.DataFrame
     contrasts: list[str]
+    role: str = OFFTARGET_CERTIFICATION
 
     def __len__(self) -> int:
         return len(self.transcript_ids)

@@ -50,3 +50,22 @@ def sha256_file(p: Path, chunk_size: int = 1 << 20) -> str:
         for chunk in iter(lambda: f.read(chunk_size), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def cached_frame(key: CacheKey, cache_root: Path, build, rebuild: bool = False):
+    """Read a cached parquet for ``key`` or build, write, and return it.
+
+    ``build`` is a zero-argument callable returning a pandas DataFrame. The
+    parquet lives at ``<cache_root>/<name>/<hash>/frame.parquet`` and is rebuilt
+    when missing or when ``rebuild`` is set. pandas is imported lazily so the
+    cache primitives stay light.
+    """
+    import pandas as pd
+
+    cdir = cache_dir_for(cache_root, key)
+    parquet = cdir / "frame.parquet"
+    if not rebuild and parquet.exists():
+        return pd.read_parquet(parquet)
+    frame = build()
+    frame.to_parquet(parquet, index=False)
+    return frame

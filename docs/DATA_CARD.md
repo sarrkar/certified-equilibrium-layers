@@ -1,94 +1,138 @@
 # DATA CARD
 
-This card documents the datasets used by CASCADE. Per the project contract
-(see [CLAUDE.md](../CLAUDE.md)), raw data is fetched by
-[scripts/download_data.sh](../scripts/download_data.sh) into `data/raw/`,
-and parsed objects are cached under `data/cache/`. Neither directory is
-tracked in git.
+This card documents every dataset used by CASCADE and the two theory projects.
+Per the project contract (see [CLAUDE.md](../CLAUDE.md)), raw data is fetched
+into `data/raw/` and parsed objects are cached under `data/cache/`; neither is
+tracked in git. Tiny committed fixtures under `tests/fixtures/` exercise each
+loader.
 
-## 1. GSE184929 (primary off-target ground truth)
+## Role tags
 
-- **Source.** NCBI GEO accession GSE184929.
-- **URL.** https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE184929
-- **FTP.** https://ftp.ncbi.nlm.nih.gov/geo/series/GSE184nnn/GSE184929/
-- **Modality.** Bulk liver RNA-seq following in-vivo administration of
-  GalNAc-conjugated siRNAs.
-- **Organism.** Rattus norvegicus (rat, NCBI taxonomy ID 10116).
-- **Tissue.** Liver (hepatocytes; GalNAc targets ASGPR-expressing cells).
-- **Target gene.** Ttr (transthyretin).
-- **Guides.** D1 and D4 (two seed-destabilization designs against Ttr).
-- **Doses.** 10 mg/kg and 30 mg/kg. Four primary contrast columns:
-  `D1_10mg`, `D1_30mg`, `D4_10mg`, `D4_30mg`.
-- **Label exposed by loader.** Per-transcript log2 fold-change versus
-  vehicle control.
-- **Loader input.** `load_gse184929` reads a processed table (one transcript
-  per row, one column per contrast). Default path
-  `data/raw/GSE184929/GSE184929_processed_log2fc.tsv`. Contrast columns are
-  auto-detected (names carrying a log2FC marker or matching `D<g>_<dose>mg`)
-  or can be pinned via the `contrasts` argument.
-- **Splits.** Held-out splits are constructed downstream of the loader.
+Every dataset carries one explicit role (`cascade.data.roles`):
 
-### Rat-liver specificity caveat (READ THIS)
+- `efficacy_backbone`: on-target siRNA potency datasets. They measure how well a
+  guide knocks down its INTENDED target. They do NOT validate the off-target
+  containment certificate (Project 2); they are the on-target backbone only.
+- `offtarget_certification`: measured off-target signatures. These are the
+  datasets the off-target certificate is evaluated against.
+- `synthetic_coverage`: synthetic random-graph ensembles for certificate
+  coverage / tightness. No biological claim.
 
-GSE184929 measures off-target effects in a single tissue (rat liver) of a
-single species (rat) under a single delivery modality (GalNAc conjugation).
-Effects observed here do not directly extrapolate to:
+## Master table
 
-- other tissues (CNS, kidney, tumor) where uptake and turnover differ,
-- other species (mouse, NHP, human) with different 3'UTR landscapes,
-- non-GalNAc delivery (LNP, naked, conjugates to other receptors),
-- chemical modifications outside the modification pattern used in this study.
+| Dataset | Citation | Size | Organism / cell line | Assay | Target | Role |
+| --- | --- | --- | --- | --- | --- | --- |
+| Huesken | Huesken 2005, 10.1038/nbt1118 | 2431 siRNA / 34 mRNA | human H1299 | branched-DNA residual mRNA | on-target | efficacy_backbone |
+| Katoh (Taka) | Katoh, via OligoFormer | 702 siRNA | human HeLa | luciferase reporter | on-target | efficacy_backbone |
+| Mix | Amarzguioui 2003, Harborth 2003 (44), Hsieh 2004, Khvorova 2003, Reynolds 2004 (240), Vickers 2003 (76), Ui-Tei 2004 (62) | pooled | various | various | on-target | efficacy_backbone |
+| Shabalina | Shabalina 2006 (13-publication compilation) | 653 siRNA | various | various (thermo-filtered) | on-target | efficacy_backbone |
+| GSE184929 | NCBI GEO GSE184929 | per-transcript | rat liver (Rattus norvegicus) | RNA-seq (DESeq2 log2FC) | off-target | offtarget_certification |
+| Jackson 2003 | Jackson 2003 (Nat Biotechnol) | signature | human HeLa | microarray | off-target | offtarget_certification |
+| Jackson 2006 | Jackson 2006 (RNA) | signature | human HeLa | microarray | off-target | offtarget_certification |
+| Birmingham 2006 | Birmingham 2006 (Nat Methods) | seed-match calls | various | microarray | off-target | offtarget_certification |
+| SeedSeq | Das 2013 (SeedSeq) | aggregated union | various | microarray (aggregated) | off-target | offtarget_certification |
+| Synthetic matching/star/Erdos-Renyi | none (synthetic) | configurable | none | none | none | synthetic_coverage |
 
-CASCADE's containment theorem (Contribution 2) bounds off-target propagation
-in the modeled GRN; it does not lift the species/tissue scope of this
-ground truth. Headline numbers are reported with this caveat made explicit.
+The OligoFormer suite totals 3714 siRNAs across 75 mRNAs. The whole suite is
+loaded by `cascade.data.load_oligoformer_efficacy` into one tidy table with the
+antisense and sense sequences, target mRNA id, measured efficacy in [0, 1],
+source study, cell line, and assay.
 
-## 2. Huesken et al. 2005 (siRNA efficacy benchmark)
+## Role: efficacy_backbone (on-target potency)
 
-- **Source.** Huesken D et al., Nature Biotechnology 23, 995-1001 (2005).
-- **DOI.** 10.1038/nbt1118
-- **Size.** 2431 siRNAs across 34 mRNA targets.
-- **Standard split.** 2182 train / 249 test (the conventional split used
-  by downstream efficacy benchmarks).
-- **Label exposed by loader.** Normalized knockdown efficacy in [0, 1].
-- **Distribution.** Originally distributed as a journal supplementary
-  table. No long-lived canonical mirror; set `HUESKEN_URL` for the
-  download script or place the file at
-  `data/raw/Huesken/huesken_2005.tsv` manually.
+HONEST SCOPE: these datasets measure on-target knockdown potency. They are the
+backbone for the CASCADE on-target / CCMP work and the efficacy benchmarks; they
+do NOT provide off-target measurements and therefore do NOT validate the
+off-target containment certificate of Project 2. Do not report them as
+off-target evidence.
 
-## 3. STRING v12 (gene regulatory / interaction backbone)
+- **Huesken 2005.** 2431 siRNAs across 34 mRNA targets, human H1299, branched-DNA
+  residual-mRNA readout. Normalized knockdown efficacy in [0, 1]. Standard split
+  2182 train / 249 test (`cascade.data.load_huesken`). Originally a journal
+  supplementary table; place at `data/raw/Huesken/huesken_2005.tsv` or pull the
+  parsed CSV from the OligoFormer / siRNADiscovery release.
+- **Katoh (Taka).** 702 siRNAs, luciferase reporter in HeLa.
+- **Mix.** Amarzguioui 2003, Harborth 2003 (44), Hsieh 2004, Khvorova 2003,
+  Reynolds 2004 (240), Vickers 2003 (76), Ui-Tei 2004 (62). The OligoFormer
+  `mix` file carries a per-row `source_study`.
+- **Shabalina 2006.** 653 siRNAs, a thermodynamic-filtered compilation over 13
+  publications.
+- **Loader input.** `data/raw/oligoformer/<source>.csv` for source in
+  {huesken, katoh, mix, shabalina}. Prefer the parsed CSVs from the OligoFormer
+  or siRNADiscovery public releases (siRNADiscovery uses a 2816-pair HUVK set
+  from Huesken, Harborth, Ui-Tei, Vickers, Khvorova plus a 322-siRNA Simone
+  validation set) rather than re-parsing the raw journal supplements. The loader
+  is column-name tolerant and percent efficacies are rescaled to [0, 1].
 
-- **Source.** STRING v12.0, https://string-db.org
-- **File.** `protein.links.v12.0.txt.gz` for the relevant organism.
-  Default: rat (taxonomy ID 10116), matching GSE184929.
-- **Format.** Space-separated triples `protein1 protein2 combined_score`
-  with `combined_score` in 0 to 1000.
-- **Filter.** Edges with `combined_score >= threshold`. Default threshold
-  is 700 (STRING's "high confidence" cutoff). Configurable.
-- **Adjacency.** Symmetric (the loader canonicalizes both edge directions
-  and takes the max combined score), weighted by `combined_score / 1000`,
-  then symmetric-normalized as S = D^(-1/2) A D^(-1/2).
-- **Loader output.** scipy.sparse CSR `S`, ordered node id list, and a
-  `to_edge_index()` helper that returns a torch_geometric edge_index
-  (torch is imported lazily).
+## Role: offtarget_certification (measured off-target)
 
-## 4. Replogle 2022 + Norman 2019 (Perturb-seq, downstream proxy)
+- **GSE184929 (RNA-seq, primary off-target ground truth).** GalNAc-siRNA
+  seed-destabilization RNA-seq in rat liver, Ttr-targeting guides D1 and D4 at
+  10 and 30 mg/kg; per-transcript DESeq2 log2 fold-change versus vehicle across
+  the four contrasts `D1_10mg`, `D1_30mg`, `D4_10mg`, `D4_30mg`
+  (`cascade.data.load_gse184929`). URL
+  https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE184929 . This is the
+  highest-resolution off-target set used here.
 
-- **Status.** Stub loaders only. Full integration lands in a follow-up
-  commit.
-- **Replogle 2022.** DOI 10.1016/j.cell.2022.05.013. Genome-scale
-  Perturb-seq in K562 / RPE1.
-- **Norman 2019.** DOI 10.1126/science.aax4438. Combinatorial Perturb-seq
-  in K562.
-- **Intended use.** Downstream-ripple validation: check whether
-  CASCADE's containment claim holds against an out-of-distribution
-  perturbation atlas.
+  Rat-liver specificity caveat (READ THIS): GSE184929 measures off-target
+  effects in a single tissue (rat liver), a single species, and a single
+  delivery modality (GalNAc). Effects here do not directly extrapolate to other
+  tissues, species, non-GalNAc delivery, or other chemical modification
+  patterns. The containment theorem bounds off-target propagation in the modeled
+  GRN; it does not lift the species/tissue scope of this ground truth.
+
+- **Jackson 2003 and Jackson 2006 (microarray).** Microarray off-target
+  signatures: down-regulated transcripts with 3'UTR seed complementarity. Some
+  tables live in the paper supplements rather than a clean GEO matrix, so
+  `cascade.data.load_jackson2003` / `load_jackson2006` parse the supplement
+  tables and record the provenance string; where a GEO accession exists, point
+  the loader at it instead.
+- **Birmingham 2006 (microarray).** Seed-match off-target associations
+  (`cascade.data.load_birmingham2006`).
+- **SeedSeq (Das 2013).** The aggregated off-target transcriptome table, loaded
+  by `cascade.data.load_seedseq` as a convenience union over the above with a
+  `source` flag on every off-target call. If no aggregated table is present, the
+  loader builds the union from whichever member sources are available.
+- **Loader output.** Each off-target loader returns the siRNA id, antisense,
+  seed (guide positions 2-8, derived from the antisense when no seed column is
+  given), the off-target transcript, the effect size, the cell line or tissue,
+  the assay (microarray vs RNA-seq), and the source.
+
+HONEST RESOLUTION NOTE: Jackson and Birmingham are MICROARRAY sets and are
+partly extracted from paper supplements. They are lower resolution and use older
+transcript annotation than the GSE184929 RNA-seq ground truth. Treat them as
+corroborating older evidence, not as a like-for-like substitute for the RNA-seq
+measurements.
+
+## Role: synthetic_coverage (no biological claim)
+
+`cascade.data.make_synthetic_coverage` builds three random-graph confidence
+ensembles for the certification experiments: `synthetic_matching` (disjoint
+edges, the coverage regime), `synthetic_star` (all edges on one center, the
+tightness regime), and `synthetic_erdos_renyi` (the symmetric-normalized
+breakdown regime). These are not biological data and must never be reported as
+measured efficacy or off-target evidence.
+
+## Graph backbones
+
+- **STRING v12.0** (https://string-db.org). `protein.links.v12.0.txt.gz` for the
+  relevant organism (default rat, taxonomy 10116, matching GSE184929).
+  Space-separated `protein1 protein2 combined_score` (0 to 1000). Edges with
+  `combined_score >= threshold` (default 700) are kept; the adjacency is
+  symmetric (max over both directions), weighted by `combined_score / 1000`, and
+  symmetric-normalized as S = D^(-1/2) A D^(-1/2) (`cascade.data.load_string_grn`).
+  `cascade.data.load_string_confidence` returns the raw confidence adjacency
+  A_bar used by the random-subgraph noise model.
+- **Reactome** and the **GEARS Perturb-seq atlases** (Replogle 2022,
+  DOI 10.1016/j.cell.2022.05.013; Norman 2019, DOI 10.1126/science.aax4438) are
+  tracked gaps (stub loaders with visible xfail tests); see CLAUDE.md.
 
 ## Licensing and reuse
 
-- GEO and STRING are open-access. Cite the original deposits when
+- GEO and STRING are open-access; cite the original deposits when
   redistributing parsed forms.
-- The Huesken table is reused under the journal's terms; we do not
-  redistribute the raw file, only loader code.
-- Cached parquet / npz artifacts under `data/cache/` are derived works
-  and are not committed.
+- The efficacy tables and the microarray off-target supplements are reused under
+  the respective journals' terms; we redistribute loader code and tiny synthetic
+  fixtures only, not the raw tables.
+- Cached parquet / npz artifacts under `data/cache/` are derived works and are
+  not committed.

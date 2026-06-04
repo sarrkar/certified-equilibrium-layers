@@ -21,9 +21,13 @@ import pandas as pd
 from .cache import CacheKey, cache_dir_for, sha256_file
 from .paths import cache_dir as default_cache_dir
 from .paths import raw_dir as default_raw_dir
+from .roles import EFFICACY_BACKBONE
 
 # Bump when the parser output layout changes so stale caches are bypassed.
 PARSER_VERSION = "huesken-v1"
+
+# Huesken is one source of the on-target efficacy backbone (see efficacy.py).
+ROLE = EFFICACY_BACKBONE
 
 # Canonical benchmark sizes (used when the source file carries no split column).
 N_TOTAL = 2431

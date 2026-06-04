@@ -1,0 +1,4 @@
+sirna_id,antisense,off_target_transcript,effect_size,cell_line
+si1,UGAGGUAGUAGGUUGUAUAGU,NM_000001,-1.2,HeLa
+si1,UGAGGUAGUAGGUUGUAUAGU,NM_000002,-0.8,HeLa
+si2,ACGUACGUACGUACGUACGUA,NM_000003,-1.5,HeLa
