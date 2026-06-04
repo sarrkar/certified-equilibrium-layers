@@ -34,6 +34,12 @@ from .noise_model import (
     normalize_adjacency,
     upper_edges,
 )
+from .normalized import (
+    NormalizedCertificate,
+    expected_degrees,
+    min_degree_diagnostic,
+    normalized_certificate,
+)
 from .smoothed import SmoothedPrediction, apply_p_alpha, smoothed_prediction
 
 __all__ = [
@@ -54,6 +60,11 @@ __all__ = [
     "p_alpha_eigenvalue_range",
     "MonteCarloCertificate",
     "monte_carlo_certificate",
+    # symmetric-normalized certificate (C5)
+    "NormalizedCertificate",
+    "normalized_certificate",
+    "min_degree_diagnostic",
+    "expected_degrees",
     # legacy Gaussian perturbation model
     "RandomEdgeNoise",
     "confidence_from_weights",
