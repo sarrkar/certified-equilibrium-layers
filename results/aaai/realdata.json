@@ -1,0 +1,307 @@
+{
+  "seed": 0,
+  "alpha": 0.5,
+  "delta": 0.1,
+  "provenance": {
+    "graph_source": "synthetic STRING-like confidence matrix",
+    "x0_source": "SeedMatchR seed-match scores on synthetic 3'UTR sequences",
+    "note": "the real GSE184929 / STRING sequence join is a tracked data gap; x0 uses the real SeedMatchR seed logic",
+    "guide": "UGAGGUAGUAGGUUGUAUAGU"
+  },
+  "base_threshold": 0.7,
+  "containment": {
+    "radius_sym": 9.583836795200893,
+    "assumption_holds": true,
+    "degree_rel_fluctuation": 0.3967364005934621,
+    "n_off_targets": 70,
+    "max_predicted_effect": 0.632516748253383,
+    "tau_grid": [
+      0.0,
+      0.32744722895686784,
+      0.6548944579137357,
+      0.9823416868706035,
+      1.3097889158274714,
+      1.6372361447843393,
+      1.964683373741207,
+      2.292130602698075,
+      2.6195778316549427,
+      2.9470250606118107,
+      3.2744722895686786,
+      3.601919518525546,
+      3.929366747482414,
+      4.256813976439282,
+      4.58426120539615,
+      4.9117084343530175,
+      5.2391556633098855,
+      5.566602892266753,
+      5.894050121223621,
+      6.221497350180489,
+      6.548944579137357,
+      6.876391808094224,
+      7.203839037051092,
+      7.53128626600796,
+      7.858733494964828,
+      8.186180723921696,
+      8.513627952878563,
+      8.841075181835432,
+      9.1685224107923,
+      9.495969639749168,
+      9.823416868706035,
+      10.150864097662904,
+      10.478311326619771,
+      10.805758555576638,
+      11.133205784533507,
+      11.460653013490374,
+      11.788100242447243,
+      12.11554747140411,
+      12.442994700360979,
+      12.770441929317846
+    ],
+    "certified_contained_fraction": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.72,
+      0.868,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "point_contained_fraction": [
+      0.0,
+      0.78,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "tau_for_90pct_certified": 10.478311326619771,
+    "certified_fraction_at_2x_radius": 1.0
+  },
+  "radius_vs_threshold": {
+    "thresholds": [
+      0.4,
+      0.7,
+      0.9
+    ],
+    "per_threshold": [
+      {
+        "threshold": 0.4,
+        "n_active": 250,
+        "min_expected_degree": 87.55445760705324,
+        "mean_expected_degree": 104.5721347366827,
+        "degree_rel_fluctuation": 0.31183360110935116,
+        "assumption_holds": true,
+        "radius_sym": 6.206004578233921
+      },
+      {
+        "threshold": 0.7,
+        "n_active": 250,
+        "min_expected_degree": 42.82670512436072,
+        "mean_expected_degree": 63.32927946788033,
+        "degree_rel_fluctuation": 0.3967364005934621,
+        "assumption_holds": true,
+        "radius_sym": 9.583836795200893
+      },
+      {
+        "threshold": 0.9,
+        "n_active": 250,
+        "min_expected_degree": 11.470516201460635,
+        "mean_expected_degree": 23.49717473550845,
+        "degree_rel_fluctuation": 0.7989227702055417,
+        "assumption_holds": true,
+        "radius_sym": 59.66793039092008
+      }
+    ]
+  },
+  "degradation": {
+    "subsample": [
+      {
+        "level": 0.0,
+        "kind": "subsample",
+        "min_expected_degree": 42.82670512436072,
+        "degree_rel_fluctuation": 0.3967364005934621,
+        "assumption_holds": true,
+        "radius_sym": 9.583836795200893
+      },
+      {
+        "level": 0.2,
+        "kind": "subsample",
+        "min_expected_degree": 33.729782643756664,
+        "degree_rel_fluctuation": 0.4639402418010918,
+        "assumption_holds": true,
+        "radius_sym": 12.850193069385849
+      },
+      {
+        "level": 0.4,
+        "kind": "subsample",
+        "min_expected_degree": 24.67064139130295,
+        "degree_rel_fluctuation": 0.5707295965737224,
+        "assumption_holds": true,
+        "radius_sym": 20.18568616123256
+      },
+      {
+        "level": 0.6,
+        "kind": "subsample",
+        "min_expected_degree": 13.216166991489558,
+        "degree_rel_fluctuation": 0.9425424775193846,
+        "assumption_holds": true,
+        "radius_sym": 244.80013188057083
+      },
+      {
+        "level": 0.8,
+        "kind": "subsample",
+        "min_expected_degree": 5.000325825981044,
+        "degree_rel_fluctuation": 1.987492065221088,
+        "assumption_holds": false,
+        "radius_sym": null
+      },
+      {
+        "level": 0.9,
+        "kind": "subsample",
+        "min_expected_degree": 0.757232301146908,
+        "degree_rel_fluctuation": 10.538929334385962,
+        "assumption_holds": false,
+        "radius_sym": null
+      }
+    ],
+    "false_edges": [
+      {
+        "level": 0.0,
+        "kind": "false_edges",
+        "min_expected_degree": 42.82670512436072,
+        "degree_rel_fluctuation": 0.3967364005934621,
+        "assumption_holds": true,
+        "radius_sym": 9.583836795200893
+      },
+      {
+        "level": 0.25,
+        "kind": "false_edges",
+        "min_expected_degree": 56.31942302932165,
+        "degree_rel_fluctuation": 0.35246184858043494,
+        "assumption_holds": true,
+        "radius_sym": 7.634215725077785
+      },
+      {
+        "level": 0.5,
+        "kind": "false_edges",
+        "min_expected_degree": 66.49899413269618,
+        "degree_rel_fluctuation": 0.321329511114437,
+        "assumption_holds": true,
+        "radius_sym": 6.6872154530004675
+      },
+      {
+        "level": 1.0,
+        "kind": "false_edges",
+        "min_expected_degree": 91.00186827005774,
+        "degree_rel_fluctuation": 0.2687132230596409,
+        "assumption_holds": true,
+        "radius_sym": 5.1450344663821586
+      },
+      {
+        "level": 2.0,
+        "kind": "false_edges",
+        "min_expected_degree": 155.76961111198713,
+        "degree_rel_fluctuation": 0.20547442364721966,
+        "assumption_holds": true,
+        "radius_sym": 3.4329034295139627
+      }
+    ],
+    "breakdown_subsample_fraction": 0.8,
+    "note": "subsampling sparsifies the GRN: degrees drop, rho rises, the C5 certificate breaks down; injecting false edges raises degrees so the certificate stays valid but the prediction is corrupted"
+  },
+  "monte_carlo_cost": {
+    "value_radius": 6.518435395092905,
+    "target_half_width_relative": 0.1,
+    "target_half_width": 0.6518435395092905,
+    "n_coordinates": 250,
+    "per_delta": [
+      {
+        "delta": 0.2,
+        "n_samples": 1565
+      },
+      {
+        "delta": 0.1,
+        "n_samples": 1704
+      },
+      {
+        "delta": 0.05,
+        "n_samples": 1843
+      },
+      {
+        "delta": 0.01,
+        "n_samples": 2164
+      },
+      {
+        "delta": 0.001,
+        "n_samples": 2625
+      }
+    ]
+  }
+}
