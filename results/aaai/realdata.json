@@ -2,306 +2,547 @@
   "seed": 0,
   "alpha": 0.5,
   "delta": 0.1,
-  "provenance": {
-    "graph_source": "synthetic STRING-like confidence matrix",
-    "x0_source": "SeedMatchR seed-match scores on synthetic 3'UTR sequences",
-    "note": "the real GSE184929 / STRING sequence join is a tracked data gap; x0 uses the real SeedMatchR seed logic",
-    "guide": "UGAGGUAGUAGGUUGUAUAGU"
-  },
-  "base_threshold": 0.7,
-  "containment": {
-    "radius_sym": 9.583836795200893,
-    "assumption_holds": true,
-    "degree_rel_fluctuation": 0.3967364005934621,
-    "n_off_targets": 70,
-    "max_predicted_effect": 0.632516748253383,
-    "tau_grid": [
-      0.0,
-      0.32744722895686784,
-      0.6548944579137357,
-      0.9823416868706035,
-      1.3097889158274714,
-      1.6372361447843393,
-      1.964683373741207,
-      2.292130602698075,
-      2.6195778316549427,
-      2.9470250606118107,
-      3.2744722895686786,
-      3.601919518525546,
-      3.929366747482414,
-      4.256813976439282,
-      4.58426120539615,
-      4.9117084343530175,
-      5.2391556633098855,
-      5.566602892266753,
-      5.894050121223621,
-      6.221497350180489,
-      6.548944579137357,
-      6.876391808094224,
-      7.203839037051092,
-      7.53128626600796,
-      7.858733494964828,
-      8.186180723921696,
-      8.513627952878563,
-      8.841075181835432,
-      9.1685224107923,
-      9.495969639749168,
-      9.823416868706035,
-      10.150864097662904,
-      10.478311326619771,
-      10.805758555576638,
-      11.133205784533507,
-      11.460653013490374,
-      11.788100242447243,
-      12.11554747140411,
-      12.442994700360979,
-      12.770441929317846
-    ],
-    "certified_contained_fraction": [
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      0.72,
-      0.868,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0
-    ],
-    "point_contained_fraction": [
-      0.0,
-      0.78,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0,
-      1.0
-    ],
-    "tau_for_90pct_certified": 10.478311326619771,
-    "certified_fraction_at_2x_radius": 1.0
-  },
-  "radius_vs_threshold": {
-    "thresholds": [
-      0.4,
-      0.7,
-      0.9
-    ],
-    "per_threshold": [
-      {
-        "threshold": 0.4,
-        "n_active": 250,
-        "min_expected_degree": 87.55445760705324,
-        "mean_expected_degree": 104.5721347366827,
-        "degree_rel_fluctuation": 0.31183360110935116,
-        "assumption_holds": true,
-        "radius_sym": 6.206004578233921
-      },
-      {
-        "threshold": 0.7,
-        "n_active": 250,
-        "min_expected_degree": 42.82670512436072,
-        "mean_expected_degree": 63.32927946788033,
-        "degree_rel_fluctuation": 0.3967364005934621,
-        "assumption_holds": true,
-        "radius_sym": 9.583836795200893
-      },
-      {
-        "threshold": 0.9,
-        "n_active": 250,
-        "min_expected_degree": 11.470516201460635,
-        "mean_expected_degree": 23.49717473550845,
-        "degree_rel_fluctuation": 0.7989227702055417,
-        "assumption_holds": true,
-        "radius_sym": 59.66793039092008
-      }
-    ]
-  },
-  "degradation": {
-    "subsample": [
-      {
-        "level": 0.0,
-        "kind": "subsample",
-        "min_expected_degree": 42.82670512436072,
-        "degree_rel_fluctuation": 0.3967364005934621,
-        "assumption_holds": true,
-        "radius_sym": 9.583836795200893
-      },
-      {
-        "level": 0.2,
-        "kind": "subsample",
-        "min_expected_degree": 33.729782643756664,
-        "degree_rel_fluctuation": 0.4639402418010918,
-        "assumption_holds": true,
-        "radius_sym": 12.850193069385849
-      },
-      {
-        "level": 0.4,
-        "kind": "subsample",
-        "min_expected_degree": 24.67064139130295,
-        "degree_rel_fluctuation": 0.5707295965737224,
-        "assumption_holds": true,
-        "radius_sym": 20.18568616123256
-      },
-      {
-        "level": 0.6,
-        "kind": "subsample",
-        "min_expected_degree": 13.216166991489558,
-        "degree_rel_fluctuation": 0.9425424775193846,
-        "assumption_holds": true,
-        "radius_sym": 244.80013188057083
-      },
-      {
-        "level": 0.8,
-        "kind": "subsample",
-        "min_expected_degree": 5.000325825981044,
-        "degree_rel_fluctuation": 1.987492065221088,
-        "assumption_holds": false,
-        "radius_sym": null
-      },
-      {
-        "level": 0.9,
-        "kind": "subsample",
-        "min_expected_degree": 0.757232301146908,
-        "degree_rel_fluctuation": 10.538929334385962,
-        "assumption_holds": false,
-        "radius_sym": null
-      }
-    ],
-    "false_edges": [
-      {
-        "level": 0.0,
-        "kind": "false_edges",
-        "min_expected_degree": 42.82670512436072,
-        "degree_rel_fluctuation": 0.3967364005934621,
-        "assumption_holds": true,
-        "radius_sym": 9.583836795200893
-      },
-      {
-        "level": 0.25,
-        "kind": "false_edges",
-        "min_expected_degree": 56.31942302932165,
-        "degree_rel_fluctuation": 0.35246184858043494,
-        "assumption_holds": true,
-        "radius_sym": 7.634215725077785
-      },
-      {
-        "level": 0.5,
-        "kind": "false_edges",
-        "min_expected_degree": 66.49899413269618,
-        "degree_rel_fluctuation": 0.321329511114437,
-        "assumption_holds": true,
-        "radius_sym": 6.6872154530004675
-      },
-      {
-        "level": 1.0,
-        "kind": "false_edges",
-        "min_expected_degree": 91.00186827005774,
-        "degree_rel_fluctuation": 0.2687132230596409,
-        "assumption_holds": true,
-        "radius_sym": 5.1450344663821586
-      },
-      {
-        "level": 2.0,
-        "kind": "false_edges",
-        "min_expected_degree": 155.76961111198713,
-        "degree_rel_fluctuation": 0.20547442364721966,
-        "assumption_holds": true,
-        "radius_sym": 3.4329034295139627
-      }
-    ],
-    "breakdown_subsample_fraction": 0.8,
-    "note": "subsampling sparsifies the GRN: degrees drop, rho rises, the C5 certificate breaks down; injecting false edges raises degrees so the certificate stays valid but the prediction is corrupted"
-  },
-  "monte_carlo_cost": {
-    "value_radius": 6.518435395092905,
-    "target_half_width_relative": 0.1,
-    "target_half_width": 0.6518435395092905,
-    "n_coordinates": 250,
-    "per_delta": [
-      {
-        "delta": 0.2,
-        "n_samples": 1565
-      },
-      {
+  "datasets": [
+    "gse184929",
+    "jackson2003",
+    "jackson2006",
+    "birmingham2006",
+    "seedseq"
+  ],
+  "theorem4_radius": "((1-alpha)/alpha) * b(delta) * ||x0||",
+  "per_dataset": {
+    "gse184929": {
+      "name": "gse184929",
+      "assay": "rna_seq",
+      "provenance": "synthetic-proxy; graph=synthetic STRING-like; measured off-target calls + x0 are a synthetic proxy using the role-tagged loader schema and the real SeedMatchR seed logic (real sequence join is a tracked gap)",
+      "n_nodes": 200,
+      "n_measured_offtargets": 30,
+      "certificate": {
+        "alpha": 0.5,
         "delta": 0.1,
-        "n_samples": 1704
+        "radius": 114.50245540857915,
+        "v": 9.77793647095941,
+        "b": 18.264951555730224,
+        "x0_norm": 6.268971207462991
       },
-      {
-        "delta": 0.05,
-        "n_samples": 1843
+      "containment": {
+        "tolerance": 114.81793234796416,
+        "overall_contained_fraction": 0.77,
+        "offtarget_contained_fraction": 0.03333333333333333,
+        "background_contained_fraction": 0.9,
+        "separation": 0.8666666666666667,
+        "auc_predicted_vs_measured": 0.9613725490196078,
+        "measured_offtargets_mostly_uncontained": true
       },
-      {
-        "delta": 0.01,
-        "n_samples": 2164
+      "radius_vs_threshold": [
+        {
+          "threshold": 0.4,
+          "v": 25.79487993350571,
+          "b": 26.214732532816665,
+          "radius": 164.33940345957106
+        },
+        {
+          "threshold": 0.7,
+          "v": 9.77793647095941,
+          "b": 18.264951555730224,
+          "radius": 114.50245540857915
+        },
+        {
+          "threshold": 0.9,
+          "v": 1.7175118893958268,
+          "b": 10.866904600729992,
+          "radius": 68.12431205622343
+        }
+      ],
+      "degradation": {
+        "subsample": [
+          {
+            "drop": 0.0,
+            "rho": 0.41487219884240717,
+            "assumption_holds": true,
+            "radius": 114.50245540857915
+          },
+          {
+            "drop": 0.2,
+            "rho": 0.5154050960477435,
+            "assumption_holds": true,
+            "radius": 107.01587776484426
+          },
+          {
+            "drop": 0.4,
+            "rho": 0.7596565290611766,
+            "assumption_holds": true,
+            "radius": 102.12324229487872
+          },
+          {
+            "drop": 0.6,
+            "rho": 1.127978768341883,
+            "assumption_holds": false,
+            "radius": 92.46291844410158
+          },
+          {
+            "drop": 0.8,
+            "rho": 2.7189999787482746,
+            "assumption_holds": false,
+            "radius": 76.6933187028121
+          }
+        ],
+        "false_edges": [
+          {
+            "false_frac": 0.0,
+            "rho": 0.41487219884240717,
+            "radius": 114.50245540857915
+          },
+          {
+            "false_frac": 0.5,
+            "rho": 0.3519475069542203,
+            "radius": 135.69822419358667
+          },
+          {
+            "false_frac": 1.0,
+            "rho": 0.2979003766758794,
+            "radius": 156.12022209220171
+          },
+          {
+            "false_frac": 2.0,
+            "rho": 0.2387848249017683,
+            "radius": 179.93524647564655
+          }
+        ],
+        "breakdown_subsample_fraction": 0.6
       },
-      {
-        "delta": 0.001,
-        "n_samples": 2625
-      }
-    ]
-  }
+      "meaningful": true
+    },
+    "jackson2003": {
+      "name": "jackson2003",
+      "assay": "microarray",
+      "provenance": "synthetic-proxy; graph=synthetic STRING-like; measured off-target calls + x0 are a synthetic proxy using the role-tagged loader schema and the real SeedMatchR seed logic (real sequence join is a tracked gap)",
+      "n_nodes": 200,
+      "n_measured_offtargets": 20,
+      "certificate": {
+        "alpha": 0.5,
+        "delta": 0.1,
+        "radius": 108.89582080953315,
+        "v": 10.067184746738324,
+        "b": 18.451618876277006,
+        "x0_norm": 5.901694671871801
+      },
+      "containment": {
+        "tolerance": 109.340713546302,
+        "overall_contained_fraction": 0.84,
+        "offtarget_contained_fraction": 0.3,
+        "background_contained_fraction": 0.9,
+        "separation": 0.6000000000000001,
+        "auc_predicted_vs_measured": 0.7630555555555556,
+        "measured_offtargets_mostly_uncontained": true
+      },
+      "radius_vs_threshold": [
+        {
+          "threshold": 0.4,
+          "v": 25.23851186497442,
+          "b": 25.990103421077,
+          "radius": 153.38565488156718
+        },
+        {
+          "threshold": 0.7,
+          "v": 10.067184746738324,
+          "b": 18.451618876277006,
+          "radius": 108.89582080953315
+        },
+        {
+          "threshold": 0.9,
+          "v": 1.4479616266025142,
+          "b": 10.429857813886702,
+          "radius": 61.55383628859562
+        }
+      ],
+      "degradation": {
+        "subsample": [
+          {
+            "drop": 0.0,
+            "rho": 0.45737509571919316,
+            "assumption_holds": true,
+            "radius": 108.89582080953315
+          },
+          {
+            "drop": 0.2,
+            "rho": 0.49869298902856896,
+            "assumption_holds": true,
+            "radius": 101.96656850842902
+          },
+          {
+            "drop": 0.4,
+            "rho": 0.6880743157487685,
+            "assumption_holds": true,
+            "radius": 96.05915094044742
+          },
+          {
+            "drop": 0.6,
+            "rho": 1.4341921394312305,
+            "assumption_holds": false,
+            "radius": 83.35531704975261
+          },
+          {
+            "drop": 0.8,
+            "rho": 2.540756505988005,
+            "assumption_holds": false,
+            "radius": 71.97540006017066
+          }
+        ],
+        "false_edges": [
+          {
+            "false_frac": 0.0,
+            "rho": 0.45737509571919316,
+            "radius": 108.89582080953315
+          },
+          {
+            "false_frac": 0.5,
+            "rho": 0.3389565945261684,
+            "radius": 130.0793279123646
+          },
+          {
+            "false_frac": 1.0,
+            "rho": 0.2903752424295901,
+            "radius": 144.8534708613069
+          },
+          {
+            "false_frac": 2.0,
+            "rho": 0.2330879145412805,
+            "radius": 168.18233005127811
+          }
+        ],
+        "breakdown_subsample_fraction": 0.6
+      },
+      "meaningful": true
+    },
+    "jackson2006": {
+      "name": "jackson2006",
+      "assay": "microarray",
+      "provenance": "synthetic-proxy; graph=synthetic STRING-like; measured off-target calls + x0 are a synthetic proxy using the role-tagged loader schema and the real SeedMatchR seed logic (real sequence join is a tracked gap)",
+      "n_nodes": 200,
+      "n_measured_offtargets": 18,
+      "certificate": {
+        "alpha": 0.5,
+        "delta": 0.1,
+        "radius": 94.8283983580291,
+        "v": 9.885734881069434,
+        "b": 18.334814578092924,
+        "x0_norm": 5.172040216394301
+      },
+      "containment": {
+        "tolerance": 95.11790051147445,
+        "overall_contained_fraction": 0.835,
+        "offtarget_contained_fraction": 0.2222222222222222,
+        "background_contained_fraction": 0.8956043956043956,
+        "separation": 0.6733821733821734,
+        "auc_predicted_vs_measured": 0.851037851037851,
+        "measured_offtargets_mostly_uncontained": true
+      },
+      "radius_vs_threshold": [
+        {
+          "threshold": 0.4,
+          "v": 25.842654733742084,
+          "b": 26.23373170695435,
+          "radius": 135.6819154144662
+        },
+        {
+          "threshold": 0.7,
+          "v": 9.885734881069434,
+          "b": 18.334814578092924,
+          "radius": 94.8283983580291
+        },
+        {
+          "threshold": 0.9,
+          "v": 1.4327172375043151,
+          "b": 10.40417441033374,
+          "radius": 53.81080846862656
+        }
+      ],
+      "degradation": {
+        "subsample": [
+          {
+            "drop": 0.0,
+            "rho": 0.45053217163426995,
+            "assumption_holds": true,
+            "radius": 94.8283983580291
+          },
+          {
+            "drop": 0.2,
+            "rho": 0.548440060700921,
+            "assumption_holds": true,
+            "radius": 87.03523148439736
+          },
+          {
+            "drop": 0.4,
+            "rho": 0.6898792806247398,
+            "assumption_holds": true,
+            "radius": 83.12556810051814
+          },
+          {
+            "drop": 0.6,
+            "rho": 1.1577848347283557,
+            "assumption_holds": false,
+            "radius": 73.25700410844723
+          },
+          {
+            "drop": 0.8,
+            "rho": 2.7374349823979367,
+            "assumption_holds": false,
+            "radius": 63.96543218617016
+          }
+        ],
+        "false_edges": [
+          {
+            "false_frac": 0.0,
+            "rho": 0.45053217163426995,
+            "radius": 94.8283983580291
+          },
+          {
+            "false_frac": 0.5,
+            "rho": 0.367916362171279,
+            "radius": 111.42937196974063
+          },
+          {
+            "false_frac": 1.0,
+            "rho": 0.2983987313787994,
+            "radius": 126.59106656012861
+          },
+          {
+            "false_frac": 2.0,
+            "rho": 0.23773150124348624,
+            "radius": 146.99428055261734
+          }
+        ],
+        "breakdown_subsample_fraction": 0.6
+      },
+      "meaningful": true
+    },
+    "birmingham2006": {
+      "name": "birmingham2006",
+      "assay": "microarray",
+      "provenance": "synthetic-proxy; graph=synthetic STRING-like; measured off-target calls + x0 are a synthetic proxy using the role-tagged loader schema and the real SeedMatchR seed logic (real sequence join is a tracked gap)",
+      "n_nodes": 200,
+      "n_measured_offtargets": 22,
+      "certificate": {
+        "alpha": 0.5,
+        "delta": 0.1,
+        "radius": 119.11692519641652,
+        "v": 10.423088139125651,
+        "b": 18.678258780617085,
+        "x0_norm": 6.377303505401009
+      },
+      "containment": {
+        "tolerance": 119.58709025733285,
+        "overall_contained_fraction": 0.81,
+        "offtarget_contained_fraction": 0.09090909090909091,
+        "background_contained_fraction": 0.898876404494382,
+        "separation": 0.8079673135852911,
+        "auc_predicted_vs_measured": 0.9157303370786518,
+        "measured_offtargets_mostly_uncontained": true
+      },
+      "radius_vs_threshold": [
+        {
+          "threshold": 0.4,
+          "v": 25.47714502678375,
+          "b": 26.08680459109711,
+          "radius": 166.36347036351475
+        },
+        {
+          "threshold": 0.7,
+          "v": 10.423088139125651,
+          "b": 18.678258780617085,
+          "radius": 119.11692519641652
+        },
+        {
+          "threshold": 0.9,
+          "v": 1.4746698338449398,
+          "b": 10.475048275630563,
+          "radius": 66.8025620874236
+        }
+      ],
+      "degradation": {
+        "subsample": [
+          {
+            "drop": 0.0,
+            "rho": 0.4314895293652818,
+            "assumption_holds": true,
+            "radius": 119.11692519641652
+          },
+          {
+            "drop": 0.2,
+            "rho": 0.5146361748345045,
+            "assumption_holds": true,
+            "radius": 112.05996524991218
+          },
+          {
+            "drop": 0.4,
+            "rho": 0.6850719832157812,
+            "assumption_holds": true,
+            "radius": 101.54672784062016
+          },
+          {
+            "drop": 0.6,
+            "rho": 1.0252444875831952,
+            "assumption_holds": false,
+            "radius": 93.24217188552467
+          },
+          {
+            "drop": 0.8,
+            "rho": 2.6231687062992757,
+            "assumption_holds": false,
+            "radius": 82.20886152863778
+          }
+        ],
+        "false_edges": [
+          {
+            "false_frac": 0.0,
+            "rho": 0.4314895293652818,
+            "radius": 119.11692519641652
+          },
+          {
+            "false_frac": 0.5,
+            "rho": 0.335894891054617,
+            "radius": 139.4385193599172
+          },
+          {
+            "false_frac": 1.0,
+            "rho": 0.30126983908006305,
+            "radius": 157.7748233097928
+          },
+          {
+            "false_frac": 2.0,
+            "rho": 0.23453288785188275,
+            "radius": 181.37333777117854
+          }
+        ],
+        "breakdown_subsample_fraction": 0.6
+      },
+      "meaningful": true
+    },
+    "seedseq": {
+      "name": "seedseq",
+      "assay": "microarray_aggregated",
+      "provenance": "synthetic-proxy; graph=synthetic STRING-like; measured off-target calls + x0 are a synthetic proxy using the role-tagged loader schema and the real SeedMatchR seed logic (real sequence join is a tracked gap)",
+      "n_nodes": 200,
+      "n_measured_offtargets": 45,
+      "certificate": {
+        "alpha": 0.5,
+        "delta": 0.1,
+        "radius": 135.4362636106529,
+        "v": 9.806835817033766,
+        "b": 18.283843021465017,
+        "x0_norm": 7.407428703673091
+      },
+      "containment": {
+        "tolerance": 135.92819307428,
+        "overall_contained_fraction": 0.74,
+        "offtarget_contained_fraction": 0.2,
+        "background_contained_fraction": 0.896774193548387,
+        "separation": 0.6967741935483871,
+        "auc_predicted_vs_measured": 0.8425806451612903,
+        "measured_offtargets_mostly_uncontained": true
+      },
+      "radius_vs_threshold": [
+        {
+          "threshold": 0.4,
+          "v": 25.21654829973844,
+          "b": 25.981614656408734,
+          "radius": 192.45695817365552
+        },
+        {
+          "threshold": 0.7,
+          "v": 9.806835817033766,
+          "b": 18.283843021465017,
+          "radius": 135.4362636106529
+        },
+        {
+          "threshold": 0.9,
+          "v": 1.6452295789923486,
+          "b": 10.753463815074696,
+          "radius": 79.65551652769425
+        }
+      ],
+      "degradation": {
+        "subsample": [
+          {
+            "drop": 0.0,
+            "rho": 0.46334606598724437,
+            "assumption_holds": true,
+            "radius": 135.4362636106529
+          },
+          {
+            "drop": 0.2,
+            "rho": 0.5508522803463434,
+            "assumption_holds": true,
+            "radius": 126.85332040051857
+          },
+          {
+            "drop": 0.4,
+            "rho": 0.7052333749768661,
+            "assumption_holds": true,
+            "radius": 122.43512666648896
+          },
+          {
+            "drop": 0.6,
+            "rho": 1.3206771475548358,
+            "assumption_holds": false,
+            "radius": 104.13333485363515
+          },
+          {
+            "drop": 0.8,
+            "rho": 9.12798065806206,
+            "assumption_holds": false,
+            "radius": 90.96301697473496
+          }
+        ],
+        "false_edges": [
+          {
+            "false_frac": 0.0,
+            "rho": 0.46334606598724437,
+            "radius": 135.4362636106529
+          },
+          {
+            "false_frac": 0.5,
+            "rho": 0.35142724821789634,
+            "radius": 164.20323917715345
+          },
+          {
+            "false_frac": 1.0,
+            "rho": 0.3159132131334421,
+            "radius": 182.08150014824534
+          },
+          {
+            "false_frac": 2.0,
+            "rho": 0.24374220163056542,
+            "radius": 211.12153180669006
+          }
+        ],
+        "breakdown_subsample_fraction": 0.6
+      },
+      "meaningful": true
+    }
+  },
+  "cross_assay": {
+    "rna_seq_datasets": [
+      "gse184929"
+    ],
+    "microarray_datasets": [
+      "jackson2003",
+      "jackson2006",
+      "birmingham2006",
+      "seedseq"
+    ],
+    "rna_seq_mean_auc": 0.9613725490196078,
+    "microarray_mean_auc": 0.8431010972083373,
+    "note": "RNA-seq is expected to separate measured off-targets more cleanly than microarray (lower resolution, older annotation); the gap is reported, not hidden."
+  },
+  "acceptance": {
+    "gse184929_meaningful": true,
+    "any_microarray_meaningful": true,
+    "consistent": true,
+    "flag": "PASS",
+    "inconsistencies": [],
+    "note": "ACCEPTANCE requires meaningful containment on GSE184929 (RNA-seq) and at least one microarray set; on the synthetic proxy this checks the certificate's behavior and cross-source consistency, not absolute biological truth."
+  },
+  "provenance_note": "synthetic proxy unless --string-links and real loaders are present; see per-dataset provenance."
 }

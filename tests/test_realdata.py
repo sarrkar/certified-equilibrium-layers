@@ -1,7 +1,7 @@
-"""Regression tests for the AAAI real-data certification experiment.
+"""Regression tests for the AAAI off-target certification experiment.
 
-Pure numpy, runs in CI. Imports the experiment module (no torch, matplotlib is
-lazy) and checks the committed JSON.
+Pure numpy/sklearn; imports the experiment module (no torch) and checks the
+committed per-dataset JSON.
 """
 
 from __future__ import annotations
@@ -20,68 +20,59 @@ import exp_realdata as ex  # noqa: E402
 REALDATA_JSON = REPO / "results" / "aaai" / "realdata.json"
 
 
-def test_seedmatch_x0_in_unit_interval_with_off_targets() -> None:
+def test_runs_over_all_offtarget_datasets() -> None:
+    from cascade.data import OFFTARGET_CERTIFICATION, datasets_with_role
+
+    assert set(ex.DATASET_CONFIG) == set(datasets_with_role(OFFTARGET_CERTIFICATION))
+
+
+def test_seed_repression_tracks_measured_labels() -> None:
     rng = np.random.default_rng(0)
-    x0 = ex.seedmatch_x0(120, ex.GUIDE, rng, utr_len=300, plant_frac=0.2)
+    measured = np.zeros(120, dtype=bool)
+    measured[:30] = True
+    x0 = ex.seed_repression_x0(measured, plant_p=0.95, bg_q=0.02, rng=rng, utr_len=200)
     assert x0.shape == (120,)
-    assert x0.min() >= 0.0 and x0.max() <= 1.0  # SeedMatchR site grades
-    assert np.count_nonzero(x0) > 0  # planted seeds give an off-target set
+    assert x0.min() >= 0.0 and x0.max() <= 1.0
+    # Planted off-targets carry much more seed signal than the background.
+    assert x0[measured].mean() > x0[~measured].mean()
 
 
-def test_subsample_and_inject_change_edge_count() -> None:
+def test_subsample_and_inject_change_edges() -> None:
     rng = np.random.default_rng(1)
     c = ex.synthetic_confidence(40, 0.6, 0.4, 1.0, rng)
-    n_edges = c.nnz // 2
-    fewer = ex.subsample_edges(c, 0.5, np.random.default_rng(2)).nnz // 2
-    more = ex.inject_false_edges(c, 1.0, 0.4, 1.0, np.random.default_rng(3)).nnz // 2
-    assert fewer < n_edges
-    assert more > n_edges
+    n = c.nnz // 2
+    assert ex.subsample_edges(c, 0.5, np.random.default_rng(2)).nnz // 2 < n
+    assert ex.inject_false_edges(c, 1.0, 0.4, 1.0, np.random.default_rng(3)).nnz // 2 > n
 
 
-def test_containment_fraction_helper() -> None:
-    y = np.array([0.0, 0.5, 2.0])
-    assert ex.containment_fraction(y, radius=1.0, tau=0.5) == 0.0  # radius alone exceeds tau
-    assert ex.containment_fraction(y, radius=1.0, tau=10.0) == 1.0  # all contained
-    assert ex.containment_fraction(y, radius=float("inf"), tau=10.0) == 0.0  # invalid cert
-
-
-def test_containment_fraction_monotone_in_tolerance() -> None:
+def test_evaluate_dataset_meaningful_on_rna_seq() -> None:
     rng = np.random.default_rng(0)
-    c = ex.synthetic_confidence(40, 0.85, 0.7, 0.97, rng)
-    x0 = ex.seedmatch_x0(40, ex.GUIDE, rng, utr_len=300, plant_frac=0.3)
-    res = ex.part_containment(c, x0, alpha=0.5, delta=0.1)
-    frac = np.array(res["certified_contained_fraction"])
-    assert np.all(np.diff(frac) >= -1e-12)  # non-decreasing in tau
-    assert frac[0] == 0.0 and frac[-1] == 1.0
-
-
-def test_mc_cost_grows_as_delta_shrinks() -> None:
-    rng = np.random.default_rng(0)
-    x0 = ex.seedmatch_x0(60, ex.GUIDE, rng, plant_frac=0.3)
-    mc = ex.part_mc_cost(x0, 60, eps_rel=0.1)
-    ns = [r["n_samples"] for r in mc["per_delta"]]  # deltas listed descending
-    assert all(np.diff(ns) >= 0)  # N increases as delta decreases
+    res = ex.evaluate_dataset(
+        "gse184929", n_nodes=150, alpha=0.5, delta=0.1, base_thr=0.7, rng=rng, string_links=None
+    )
+    c = res["containment"]
+    # Measured off-targets are mostly NOT contained; non-off-targets are.
+    assert c["offtarget_contained_fraction"] < c["background_contained_fraction"]
+    assert c["auc_predicted_vs_measured"] > 0.55
+    assert res["meaningful"] is True
+    # Radius curve has the three STRING thresholds.
+    assert [d["threshold"] for d in res["radius_vs_threshold"]] == [0.4, 0.7, 0.9]
 
 
 def test_committed_realdata_json() -> None:
-    result = json.loads(REALDATA_JSON.read_text())
-    assert "provenance" in result and "x0_source" in result["provenance"]
-
-    thr = result["radius_vs_threshold"]["per_threshold"]
-    assert [d["threshold"] for d in thr] == [0.4, 0.7, 0.9]
-    rhos = [d["degree_rel_fluctuation"] for d in thr]
-    assert all(np.diff(rhos) >= -1e-9)  # sparser graph => larger rho
-
-    deg = result["degradation"]
-    assert deg["breakdown_subsample_fraction"] is not None
-    sub_rho = [d["degree_rel_fluctuation"] for d in deg["subsample"]]
-    assert all(np.diff(sub_rho) >= -1e-9)  # more edges dropped => larger rho
-    assert deg["subsample"][0]["assumption_holds"] is True
-    assert deg["subsample"][-1]["assumption_holds"] is False
-
-    ns = [r["n_samples"] for r in result["monte_carlo_cost"]["per_delta"]]
-    assert all(np.diff(ns) >= 0)
-
-    cont = result["containment"]
-    assert cont["tau_for_90pct_certified"] is not None
-    assert 0.0 <= min(cont["certified_contained_fraction"]) <= 1.0
+    d = json.loads(REALDATA_JSON.read_text())
+    assert d["theorem4_radius"] == "((1-alpha)/alpha) * b(delta) * ||x0||"
+    assert set(d["per_dataset"]) == set(ex.DATASET_CONFIG)
+    # Each dataset reports containment, radius-vs-threshold, and degradation.
+    for name, r in d["per_dataset"].items():
+        assert "containment" in r and "radius_vs_threshold" in r and "degradation" in r
+        assert r["assay"] in {"rna_seq", "microarray", "microarray_aggregated"}
+    # Cross-assay: RNA-seq separates measured off-targets at least as cleanly as microarray.
+    ca = d["cross_assay"]
+    assert ca["rna_seq_mean_auc"] >= ca["microarray_mean_auc"]
+    # Acceptance: GSE184929 RNA-seq and at least one microarray are meaningful.
+    acc = d["acceptance"]
+    assert acc["flag"] in {"PASS", "FAIL"}
+    assert acc["gse184929_meaningful"] is True
+    assert acc["any_microarray_meaningful"] is True
+    assert acc["flag"] == "PASS"
