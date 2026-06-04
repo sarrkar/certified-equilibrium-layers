@@ -1,0 +1,74 @@
+{
+  "seed": 0,
+  "provenance": "synthetic_proxy",
+  "model": "CCMP backbone (x0 direct-repression predictor), trained as efficacy regressor",
+  "n_features": 37,
+  "protocol": "train on Huesken train; Pearson/Spearman on Huesken test and cross-dataset Taka/Mix/Shabalina (independent test sets)",
+  "train": {
+    "huesken_train_final_mse": 0.01303564477711916,
+    "n_train": 600
+  },
+  "our_model": {
+    "huesken_test": {
+      "n": 150,
+      "pearson": 0.5303548000314993,
+      "spearman": 0.5528392842699943
+    },
+    "taka": {
+      "n": 200,
+      "pearson": 0.46168704561861545,
+      "spearman": 0.4376686059766605
+    },
+    "mix": {
+      "n": 200,
+      "pearson": 0.186500136656569,
+      "spearman": 0.1714683241207731
+    },
+    "shabalina": {
+      "n": 150,
+      "pearson": 0.23140043931728266,
+      "spearman": 0.2195401264189803
+    }
+  },
+  "reported_baselines": [
+    {
+      "name": "BIOPREDsi (Huesken ANN)",
+      "source": "Huesken et al., Nat Biotechnol 23:995-1001 (2005), 10.1038/nbt1118",
+      "dataset": "Huesken test (249)",
+      "metric": "pearson",
+      "reported_value": 0.66,
+      "note": "Pearson R commonly cited for the BIOPREDsi predictor on the 249-siRNA Huesken test split; verify against the source table before use.",
+      "verify": true
+    },
+    {
+      "name": "OligoFormer",
+      "source": "OligoFormer (public release)",
+      "dataset": "Huesken test",
+      "metric": "pearson",
+      "reported_value": null,
+      "note": "transcribe from the OligoFormer paper/repo table; not asserted here.",
+      "verify": true
+    },
+    {
+      "name": "siRNADiscovery",
+      "source": "siRNADiscovery (public release)",
+      "dataset": "Huesken test",
+      "metric": "pearson",
+      "reported_value": null,
+      "note": "transcribe from the siRNADiscovery table; not asserted here.",
+      "verify": true
+    }
+  ],
+  "acceptance": {
+    "our_huesken_test_pearson": 0.5303548000314993,
+    "best_reported_pearson": 0.66,
+    "best_reported_name": "BIOPREDsi (Huesken ANN)",
+    "tolerance": 0.05,
+    "margin": -0.12964519996850077,
+    "competitive": false,
+    "valid_comparison": false,
+    "flag": "PENDING",
+    "note": "SYNTHETIC PROXY: our numbers are illustrative and are NOT comparable to the reported SOTA; rerun with --raw-dir pointing at the OligoFormer CSVs for the real acceptance check."
+  },
+  "cross_dataset_note": "the drop from Huesken-test to Taka/Mix/Shabalina is the expected distribution shift; it is reported here, not hidden."
+}
