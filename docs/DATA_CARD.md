@@ -163,17 +163,49 @@ the data layer and outside `experiments/aaai/`, so the hard data policy
 
 ## Graph backbones
 
-- **STRING v12.0** (https://string-db.org). `protein.links.v12.0.txt.gz` for the
-  relevant organism (default rat, taxonomy 10116, matching GSE184929).
-  Space-separated `protein1 protein2 combined_score` (0 to 1000). Edges with
-  `combined_score >= threshold` (default 700) are kept; the adjacency is
-  symmetric (max over both directions), weighted by `combined_score / 1000`, and
-  symmetric-normalized as S = D^(-1/2) A D^(-1/2) (`cascade.data.load_string_grn`).
-  `cascade.data.load_string_confidence` returns the raw confidence adjacency
-  A_bar used by the random-subgraph noise model.
+Two flavors feed the P_alpha propagation operator (`cascade.data.grn`,
+propagation reused from `cascade.verify.containment`). Fetch the signed/directed
+files with `scripts/download_grn.sh`; loaders RAISE with the exact URL if absent.
+
+| Network | Loader | Source / URL | Signed? | Directed? | Real? |
+| --- | --- | --- | --- | --- | --- |
+| TRRUST v2 (human/mouse) | `load_trrust` | https://www.grnpedia.org/trrust/ | yes (Activation/Repression) | yes (TF to target) | REAL |
+| DoRothEA regulons (A-C) | `load_dorothea` | https://saezlab.github.io/dorothea/ | yes (mor +1/-1) | yes | REAL |
+| STRING v12.0 | `load_string_undirected` / `load_string_grn` | https://string-db.org | NO (unsigned) | NO (undirected) | REAL |
+
+- **Signed / directed (Theorem 2).** TRRUST v2 and DoRothEA give curated, signed,
+  directed TF-target edges. `cascade.data.load_trrust` / `load_dorothea` build a
+  signed, directed, row-normalized transition `S` whose absolute value is row
+  sub-stochastic, so the spectral radius rho(S) <= 1; they expose the sparse `S`,
+  the +1 / -1 sign pattern (`.signs`), rho(S) (`.spectral_radius()`), and the
+  spectral norm ||S||_2 (`.spectral_norm()`, which for a directed S can exceed 1
+  even when rho(S) <= 1). TRRUST `Unknown`-mode edges have no sign and are dropped
+  by default.
+- **Undirected / unsigned (STRING v12.0)** (https://string-db.org).
+  `protein.links.v12.0.txt.gz` for the relevant organism (default rat, taxonomy
+  10116, matching GSE184929). Space-separated `protein1 protein2 combined_score`
+  (0 to 1000). Edges with `combined_score >= threshold` (default 700) are kept;
+  the adjacency is symmetric (max over both directions), weighted by
+  `combined_score / 1000`, and symmetric-normalized as S = D^(-1/2) A D^(-1/2)
+  (`cascade.data.load_string_grn`). STRING edges are UNDIRECTED and UNSIGNED, so
+  this is the undirected variant (`load_string_undirected`), NOT the
+  signed/directed T2 network. `cascade.data.load_string_confidence` returns the
+  raw confidence adjacency A_bar used by the random-subgraph noise model.
 - **Reactome** and the **GEARS Perturb-seq atlases** (Replogle 2022,
   DOI 10.1016/j.cell.2022.05.013; Norman 2019, DOI 10.1126/science.aax4438) are
   tracked gaps (stub loaders with visible xfail tests); see CLAUDE.md.
+
+## Biophysical inputs (Theorems 3 and 4)
+
+The real seed-duplex thermodynamics and target-site accessibility are computed
+from sequence with ViennaRNA (Turner parameters), not downloaded:
+`cascade.features.thermo.seed_duplex_dg` (seed dG via `RNA.duplexfold`),
+`site_opening_energy` (partition-function unpaired probabilities), and
+`thermo_input_vector` (the input vector e for T4). These REQUIRE ViennaRNA and
+RAISE with the install command when it is absent (REAL DATA ONLY; the K=9 feature
+blocks keep a nearest-neighbor fallback for the ViennaRNA-free CI image).
+`crosscheck_targetscan` optionally correlates the seed dG against a real
+TargetScan context++ / scanMiR affinity table and raises if the table is absent.
 
 ## Licensing and reuse
 

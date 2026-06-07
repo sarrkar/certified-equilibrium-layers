@@ -27,6 +27,15 @@ from .geo import (
     GEOOffTargetDataset,
     load_gse184929,
 )
+from .grn import (
+    TRRUST_URLS,
+    SignedDirectedGRN,
+    load_dorothea,
+    load_string_undirected,
+    load_trrust,
+    signed_spectral_norm,
+    signed_spectral_radius,
+)
 from .huesken import (
     HueskenDataset,
     canonical_split,
@@ -127,6 +136,14 @@ __all__ = [
     "load_string_grn",
     "load_string_confidence",
     "DEFAULT_THRESHOLD",
+    # Signed/directed GRN (T2) + undirected STRING variant
+    "SignedDirectedGRN",
+    "load_trrust",
+    "load_dorothea",
+    "load_string_undirected",
+    "TRRUST_URLS",
+    "signed_spectral_radius",
+    "signed_spectral_norm",
     # Reactome GRN (tracked gap)
     "load_reactome_graph",
     # Perturb-seq stubs (tracked gap)

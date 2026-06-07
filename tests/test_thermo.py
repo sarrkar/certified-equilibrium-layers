@@ -61,3 +61,61 @@ def test_fallback_path_without_vienna(monkeypatch) -> None:
     assert 0.0 <= up <= 1.0
     assert 0.0 <= flank <= 1.0
     assert opening >= 0.0
+
+
+# --- REAL ViennaRNA biophysical inputs for T3 / T4 ---------------------------
+GUIDE_T = "UGAGGUAGUAGGUUGUAUAGU"  # let-7 guide (seed positions 2-8 = GAGGUAG)
+UTR_WITH_SITE = "GGGCAUUAACCGGUUAAUGCCC" + "CUACCUCA" + "GGGUUUAAACCC"  # CUACCUC = seed site
+
+
+def test_seed_duplex_dg_real_is_negative_and_gc_stronger() -> None:
+    import pytest
+
+    pytest.importorskip("RNA")
+    from cascade.features.thermo import seed_duplex_dg
+
+    dg = seed_duplex_dg(GUIDE_T, UTR_WITH_SITE)
+    assert dg < 0.0  # a real seed:site duplex is favorable
+    # A GC-rich guide seed against its complement binds more tightly than AU-rich.
+    gc = seed_duplex_dg("AGGGCCGGGCCAAAAAAAAAA", "UUUUGGCCCGGCCCUUUUUUU")
+    au = seed_duplex_dg("AAAUUUAAAUUUAAAUUUAAA", "UUUAAAUUUAAAUUUAAAUUU")
+    assert gc < au
+
+
+def test_thermo_input_vector_real() -> None:
+    import numpy as np
+    import pytest
+
+    pytest.importorskip("RNA")
+    from cascade.features.thermo import thermo_input_vector
+
+    e = thermo_input_vector(GUIDE_T, UTR_WITH_SITE)
+    assert e.shape == (5,)
+    assert np.isfinite(e).all()
+    assert e[0] < 0.0  # seed duplex dG
+    assert e[2] >= 0.0  # opening energy is a non-negative cost
+    assert 0.0 <= e[3] <= 1.0 and 0.0 <= e[4] <= 1.0  # unpaired probabilities
+
+
+def test_require_vienna_raises_with_install_command(monkeypatch) -> None:
+    import pytest
+
+    from cascade.features import thermo
+
+    # Force the ViennaRNA-absent branch and confirm the real functions raise.
+    monkeypatch.setattr(thermo, "_RNA", None)
+    with pytest.raises(ImportError, match="ViennaRNA"):
+        thermo.require_vienna()
+    with pytest.raises(ImportError) as exc:
+        thermo.seed_duplex_dg(GUIDE_T, UTR_WITH_SITE)
+    assert "pip install ViennaRNA" in str(exc.value)
+
+
+def test_crosscheck_targetscan_missing_table_raises(tmp_path) -> None:
+    import pytest
+
+    pytest.importorskip("RNA")
+    from cascade.features.thermo import crosscheck_targetscan
+
+    with pytest.raises(FileNotFoundError, match="REAL DATA ONLY"):
+        crosscheck_targetscan([(GUIDE_T, UTR_WITH_SITE)], tmp_path / "absent_targetscan.csv")
