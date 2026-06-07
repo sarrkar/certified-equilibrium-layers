@@ -66,3 +66,38 @@ def test_full_audit_on_fixtures(tmp_path) -> None:
     acc = ex.acceptance(m)
     assert acc["flag"] == "PASS" and acc["disjoint_machine_zero"] is True
     assert len(audit["concepts"]) == 9  # the K = 9 concept channels
+
+
+def test_multiseed_aggregation_is_conservative() -> None:
+    def mk(cross):
+        return {
+            "max_cross_channel_change": cross,
+            "leakage_mi": {"mean_leakage_auc_gap": None},
+            "completeness": {"completeness": None},
+            "intervention_per_concept": {},
+        }
+
+    def audit(dj, sh, ce):
+        return {
+            "n_samples": 5,
+            "concepts": ["a"],
+            "models": {
+                "disjoint_ccmp": mk(dj),
+                "shared_encoder_cbm": mk(sh),
+                "concept_embedding_model": mk(ce),
+            },
+        }
+
+    agg = ex.aggregate_audits([audit(0.0, 0.5, 0.3), audit(0.0, 0.2, 0.4)], [0, 1])
+    sh = agg["models"]["shared_encoder_cbm"]
+    assert sh["min_cross_channel_change"] == 0.2 and sh["max_cross_channel_change"] == 0.5
+    acc = ex.aggregate_acceptance(agg)
+    assert acc["flag"] == "PASS" and acc["n_seeds"] == 2
+
+    # If the shared encoder fails to leak on even one seed, the conservative verdict is FAIL.
+    agg_fail = ex.aggregate_audits([audit(0.0, 0.5, 0.3), audit(0.0, 0.0, 0.4)], [0, 1])
+    assert ex.aggregate_acceptance(agg_fail)["flag"] == "FAIL"
+
+    # If the disjoint backbone leaks on any seed, FAIL.
+    agg_dj = ex.aggregate_audits([audit(0.0, 0.5, 0.3), audit(0.1, 0.5, 0.4)], [0, 1])
+    assert ex.aggregate_acceptance(agg_dj)["disjoint_machine_zero"] is False
