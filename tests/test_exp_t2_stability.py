@@ -74,3 +74,22 @@ def test_acceptance_pass_on_symmetric_as_directed() -> None:
 def test_json_safe_replaces_non_finite() -> None:
     out = ex._json_safe({"a": float("inf"), "b": [1.0, float("nan")], "c": 0.5})
     assert out == {"a": None, "b": [1.0, None], "c": 0.5}
+
+
+def test_aggregate_analyses_is_conservative() -> None:
+    S = _broadcast(6)
+    runs = [
+        ex.analyze_graph(S, "d", ALPHAS, samples=40, power_iters=100, probes=4, seed=s)
+        for s in (0, 1, 2)
+    ]
+    agg = ex._aggregate_analyses(runs, [0, 1, 2])
+    assert agg["seeds"] == [0, 1, 2]
+    assert len(agg["per_alpha"]) == len(ALPHAS)
+    # Each aggregated quantity is the worst-case (max) across seeds.
+    for i, r in enumerate(agg["per_alpha"]):
+        across = [run["per_alpha"][i]["operator_2norm"] for run in runs]
+        assert r["operator_2norm"] == max(across)
+        meas = [run["per_alpha"][i]["measured_l2_max_ratio"] for run in runs]
+        assert r["measured_l2_max_ratio"] == max(meas)
+    # Graph invariants are seed-independent and preserved.
+    assert agg["rho"] == runs[0]["rho"] and agg["operator_2norm"] == runs[0]["operator_2norm"]

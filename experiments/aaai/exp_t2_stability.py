@@ -27,7 +27,8 @@ HARD DATA POLICY (CLAUDE.md): REAL DATA ONLY. The GRN comes from a real loader
 that RAISES if absent (run scripts/download_grn.sh). No graph is generated.
 
 Output results/aaai/t2_stability.json and results/aaai/t2_stability.png. Accepts
---seed and logs it. No LaTeX.
+--seed or --seeds (multi-seed, aggregated conservatively: the certified bound must
+hold on every seed) and logs them. No LaTeX.
 """
 
 from __future__ import annotations
@@ -148,6 +149,47 @@ def acceptance(directed: dict, symmetric: dict) -> dict:
     }
 
 
+def _mean(xs: list[float]) -> float:
+    return sum(xs) / len(xs) if xs else 0.0
+
+
+def _mean_or_none(xs: list) -> float | None:
+    vals = [x for x in xs if x is not None]
+    return (sum(vals) / len(vals)) if vals else None
+
+
+def _aggregate_analyses(analyses: list[dict], seeds: list[int]) -> dict:
+    """Merge per-seed analyses conservatively: worst-case (max) norms / ratios per alpha.
+
+    The certified constants and graph invariants are seed-independent; the true
+    operator norm and the sampled ratios are taken at their MAX across seeds so the
+    acceptance check is "never exceeded on any seed".
+    """
+    first = analyses[0]
+    per_alpha = []
+    for i in range(len(first["per_alpha"])):
+        rows = [a["per_alpha"][i] for a in analyses]
+        per_alpha.append(
+            {
+                "alpha": rows[0]["alpha"],
+                "neumann_converges": rows[0]["neumann_converges"],
+                "certified_l2_rho": rows[0]["certified_l2_rho"],
+                "certified_l2_norm": rows[0]["certified_l2_norm"],
+                "certified_inf": rows[0]["certified_inf"],
+                "operator_2norm": max(r["operator_2norm"] for r in rows),
+                "measured_l2_max_ratio": max(r["measured_l2_max_ratio"] for r in rows),
+                "measured_inf_max_ratio": max(r["measured_inf_max_ratio"] for r in rows),
+                "dirichlet_in": _mean([r["dirichlet_in"] for r in rows]),
+                "dirichlet_out": _mean([r["dirichlet_out"] for r in rows]),
+                "dirichlet_ratio": _mean_or_none([r["dirichlet_ratio"] for r in rows]),
+            }
+        )
+    agg = dict(first)
+    agg["per_alpha"] = per_alpha
+    agg["seeds"] = list(seeds)
+    return agg
+
+
 def _plot(directed: dict, symmetric: dict, path: Path) -> None:
     try:
         import matplotlib
@@ -229,7 +271,14 @@ def _load_signed_grn(which: str, species: str):
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--seed", type=int, default=0, help="RNG seed for the probe vectors (logged)"
+        "--seed", type=int, default=0, help="single RNG seed for the probe vectors (logged)"
+    )
+    parser.add_argument(
+        "--seeds",
+        type=int,
+        nargs="+",
+        default=None,
+        help="multiple seeds; aggregated conservatively (bound must hold on every seed)",
     )
     parser.add_argument("--grn", choices=("trrust", "dorothea"), default="trrust")
     parser.add_argument("--species", default="human")
@@ -245,30 +294,26 @@ def main() -> int:
     parser.add_argument("--alphas", type=float, nargs="+", default=list(DEFAULT_ALPHAS))
     parser.add_argument("--out-dir", type=Path, default=OUT)
     args = parser.parse_args()
-    print(f"[t2] seed={args.seed} grn={args.grn} species={args.species} alphas={args.alphas}")
+    seeds = args.seeds if args.seeds else [args.seed]
+    print(f"[t2] seeds={seeds} grn={args.grn} species={args.species} alphas={args.alphas}")
 
     grn = _load_signed_grn(args.grn, args.species)  # RAISES if the real file is absent
     print(f"[t2] real signed/directed GRN: {grn.n_nodes} nodes, {grn.n_edges} signed edges")
-    directed = analyze_graph(
-        grn.S,
-        f"{args.grn}_signed_directed",
-        args.alphas,
-        args.samples,
-        args.power_iters,
-        args.probes,
-        args.seed,
-    )
-
     sym_S = st.symmetric_normalized_variant(grn.S)
-    symmetric = analyze_graph(
-        sym_S,
-        f"{args.grn}_symmetric_normalized",
-        args.alphas,
-        args.samples,
-        args.power_iters,
-        args.probes,
-        args.seed,
-    )
+
+    def _runs(S, label):
+        return [
+            analyze_graph(S, label, args.alphas, args.samples, args.power_iters, args.probes, s)
+            for s in seeds
+        ]
+
+    directed_runs = _runs(grn.S, f"{args.grn}_signed_directed")
+    symmetric_runs = _runs(sym_S, f"{args.grn}_symmetric_normalized")
+    directed = _aggregate_analyses(directed_runs, seeds)
+    symmetric = _aggregate_analyses(symmetric_runs, seeds)
+    per_seed_flags = [
+        acceptance(directed_runs[i], symmetric_runs[i])["flag"] for i in range(len(seeds))
+    ]
 
     string_block = {"status": "not_requested"}
     if args.string_links:
@@ -276,23 +321,19 @@ def main() -> int:
 
         try:
             sgrn = load_string_undirected(args.string_links)
-            string_block = analyze_graph(
-                sgrn.S,
-                "string_undirected",
-                args.alphas,
-                args.samples,
-                args.power_iters,
-                args.probes,
-                args.seed,
-            )
+            string_block = _aggregate_analyses(_runs(sgrn.S, "string_undirected"), seeds)
             string_block["status"] = "ok"
         except FileNotFoundError as exc:
             string_block = {"status": "pending_real_data", "source": str(exc)}
 
+    # Conservative verdict: acceptance on the worst-case (max-across-seeds) analyses.
     acc = acceptance(directed, symmetric)
+    acc["seeds"] = list(seeds)
+    acc["n_seeds"] = len(seeds)
+    acc["per_seed_flags"] = per_seed_flags
     numbers = {
         "acceptance": acc,
-        "seed": args.seed,
+        "seeds": seeds,
         "grn": grn.source,
         "neumann_condition": "(1-alpha) rho(S) < 1",
         "certified_constant_formula": "alpha / (1 - (1-alpha) spec); spec = rho(S) (symmetric, tight) "
@@ -313,8 +354,10 @@ def main() -> int:
         f"[t2] rho={directed['rho']:.4f} ||S||_2={directed['operator_2norm']:.4f} ||S||_inf={directed['inf_norm']:.4f}"
     )
     print(
-        f"[t2] ACCEPTANCE {acc['flag']}: L2-rho holds={acc['l2_rho_constant_holds_directed']}, "
-        f"inf-norm non-expansive={acc['inf_norm_nonexpansive_directed']}, symmetric L2-rho holds={acc['symmetric_l2_rho_constant_holds']}"
+        f"[t2] ACCEPTANCE {acc['flag']} (seeds {seeds}, per-seed {acc['per_seed_flags']}): "
+        f"L2-rho holds={acc['l2_rho_constant_holds_directed']}, "
+        f"inf-norm non-expansive={acc['inf_norm_nonexpansive_directed']}, "
+        f"symmetric L2-rho holds={acc['symmetric_l2_rho_constant_holds']}"
     )
     print(f"[t2] wrote {out_path}")
     return 0
