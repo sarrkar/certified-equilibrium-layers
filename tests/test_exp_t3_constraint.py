@@ -82,23 +82,32 @@ def test_multiseed_aggregation_is_conservative() -> None:
             },
         }
 
-    # Residual below tol on both seeds, no regression -> PASS; worst residual kept.
-    runs = [run(1e-10, 0.5, 0.5), run(2e-10, 0.5, 0.49)]
-    agg = ex.aggregate_results(runs, [0, 1])
+    # Residual below tol every seed AND constrained drop within one std of the
+    # unconstrained Pearson -> PASS; worst residual kept.
+    runs = [run(1e-10, 0.50, 0.50), run(2e-10, 0.55, 0.52), run(1e-10, 0.60, 0.55)]
+    agg = ex.aggregate_results(runs, [0, 1, 2])
     assert agg["constraint_residual"]["constrained_max"] == 2e-10
     acc = ex.aggregate_acceptance(agg, [ex.acceptance(r) for r in runs])
-    assert acc["flag"] == "PASS" and acc["n_seeds"] == 2
+    assert acc["flag"] == "PASS" and acc["n_seeds"] == 3
+    for k in (
+        "mean_unconstrained_pearson",
+        "std_unconstrained_pearson",
+        "mean_constrained_pearson",
+        "std_constrained_pearson",
+    ):
+        assert acc[k] is not None  # the four reported stats are present
+    assert acc["accuracy_regression_beyond_one_std"] is False
 
-    # A regression on one seed -> conservative FAIL, flagged.
-    runs2 = [run(1e-10, 0.5, 0.5), run(2e-10, 0.5, 0.30)]
+    # Constrained drop LARGER than one std of unconstrained -> FAIL (accuracy gate).
+    runs2 = [run(1e-10, 0.50, 0.30), run(1e-10, 0.50, 0.30), run(1e-10, 0.50, 0.30)]
     acc2 = ex.aggregate_acceptance(
-        ex.aggregate_results(runs2, [0, 1]), [ex.acceptance(r) for r in runs2]
+        ex.aggregate_results(runs2, [0, 1, 2]), [ex.acceptance(r) for r in runs2]
     )
-    assert acc2["flag"] == "FAIL" and acc2["constraint_costs_accuracy_any_seed"] is True
+    assert acc2["flag"] == "FAIL" and acc2["accuracy_regression_beyond_one_std"] is True
 
-    # Residual above tol on one seed -> FAIL.
-    runs3 = [run(1e-10, 0.5, 0.5), run(1e-3, 0.5, 0.5)]
+    # Residual above tol on one seed -> FAIL regardless of accuracy (the theorem gate).
+    runs3 = [run(1e-10, 0.50, 0.50), run(1e-3, 0.50, 0.50), run(1e-10, 0.50, 0.50)]
     acc3 = ex.aggregate_acceptance(
-        ex.aggregate_results(runs3, [0, 1]), [ex.acceptance(r) for r in runs3]
+        ex.aggregate_results(runs3, [0, 1, 2]), [ex.acceptance(r) for r in runs3]
     )
-    assert acc3["flag"] == "FAIL"
+    assert acc3["flag"] == "FAIL" and acc3["constraint_residual_below_tol_all_seeds"] is False

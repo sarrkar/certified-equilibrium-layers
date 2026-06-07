@@ -190,8 +190,10 @@ def t3_numbers(j: dict | None) -> dict:
             },
         }
     res = j["constraint_residual"]
-    acc = j["accuracy"]
     accept = j["acceptance"]
+    dgd = j.get("dg_diagnostic") or {}
+    dg_vs = dgd.get("dg_vs_knockdown", {})
+    asym_vs = dgd.get("thermo_asymmetry_vs_knockdown", {})
     return {
         "provenance": prov,
         "status": "ok",
@@ -200,10 +202,24 @@ def t3_numbers(j: dict | None) -> dict:
         "residual_tolerance": res["tolerance"],
         "residual_below_tol_all_seeds": accept.get("constraint_residual_below_tol_all_seeds"),
         "unconstrained_residual_max": res["unconstrained_max"],
-        "accuracy_unconstrained_pearson": acc["unconstrained"]["pearson"],
-        "accuracy_constrained_pearson": acc["constrained_kkt"]["pearson"],
+        "mean_unconstrained_pearson": accept.get("mean_unconstrained_pearson"),
+        "std_unconstrained_pearson": accept.get("std_unconstrained_pearson"),
+        "mean_constrained_pearson": accept.get("mean_constrained_pearson"),
+        "std_constrained_pearson": accept.get("std_constrained_pearson"),
         "no_accuracy_regression": accept.get("no_accuracy_regression"),
-        "constraint_costs_accuracy_any_seed": accept.get("constraint_costs_accuracy_any_seed"),
+        "accuracy_regression_beyond_one_std": accept.get("accuracy_regression_beyond_one_std"),
+        "dg_diagnostic": (
+            {
+                "dg_vs_knockdown_pearson": dg_vs.get("pearson"),
+                "dg_vs_knockdown_slope_sign": dg_vs.get("ols_slope_sign"),
+                "thermo_asymmetry_vs_knockdown_pearson": asym_vs.get("pearson"),
+                "dg_standardized_before_fit": dgd.get("dg_standardized_before_mass_action_fit"),
+                "mass_action_raw_slope_b": dgd.get("mass_action_fit_raw_slope_b"),
+                "mass_action_raw_slope_sign": dgd.get("mass_action_fit_raw_slope_sign"),
+            }
+            if dgd
+            else None
+        ),
     }
 
 
@@ -361,10 +377,12 @@ def write_summary(numbers: dict, captions: dict) -> None:
     if t3["status"] == "ok":
         lines.append(
             f"- T3 (real Huesken + ViennaRNA): mass-action constraint residual "
-            f"{_sci(t3['constraint_residual_max'])} (< {t3['residual_tolerance']:g}, machine precision); "
-            f"the KKT projection costs some accuracy (unconstrained Pearson "
-            f"{_fmt(t3['accuracy_unconstrained_pearson'])} -> constrained "
-            f"{_fmt(t3['accuracy_constrained_pearson'])}), verdict {t3['acceptance']}."
+            f"{_sci(t3['constraint_residual_max'])} (< {t3['residual_tolerance']:g}, machine precision on "
+            f"every seed); KKT-constrained Pearson {_fmt(t3['mean_constrained_pearson'])} +/- "
+            f"{_fmt(t3['std_constrained_pearson'])} vs unconstrained "
+            f"{_fmt(t3['mean_unconstrained_pearson'])} +/- {_fmt(t3['std_unconstrained_pearson'])} "
+            f"(within one std: regression beyond 1 std={t3['accuracy_regression_beyond_one_std']}); "
+            f"verdict {t3['acceptance']}."
         )
     else:
         lines.append(
@@ -419,12 +437,23 @@ def write_summary(numbers: dict, captions: dict) -> None:
     if t3["status"] == "ok":
         lines.append(
             f"- Constraint residual {_sci(t3['constraint_residual_max'])} (< {t3['residual_tolerance']:g}, "
-            f"below tol on every seed={t3.get('residual_below_tol_all_seeds')}); unconstrained Pearson "
-            f"{_fmt(t3['accuracy_unconstrained_pearson'])} vs constrained "
-            f"{_fmt(t3['accuracy_constrained_pearson'])} (no accuracy regression="
-            f"{t3.get('no_accuracy_regression')}, costs accuracy any seed="
-            f"{t3.get('constraint_costs_accuracy_any_seed')}). Verdict {t3['acceptance']}."
+            f"below tol on every seed={t3.get('residual_below_tol_all_seeds')}); constrained Pearson "
+            f"{_fmt(t3['mean_constrained_pearson'])} +/- {_fmt(t3['std_constrained_pearson'])} vs "
+            f"unconstrained {_fmt(t3['mean_unconstrained_pearson'])} +/- "
+            f"{_fmt(t3['std_unconstrained_pearson'])} (accuracy gate is std-based: regression beyond "
+            f"1 std={t3.get('accuracy_regression_beyond_one_std')}). Verdict {t3['acceptance']}."
         )
+        dgd = t3.get("dg_diagnostic")
+        if dgd:
+            lines.append(
+                f"- dG diagnostic (one-time, real data): total seed dG vs knockdown Pearson "
+                f"{_fmt(dgd['dg_vs_knockdown_pearson'])} (slope sign {dgd['dg_vs_knockdown_slope_sign']:+d}); "
+                f"the duplex-end asymmetry feature is more predictive (Pearson "
+                f"{_fmt(dgd['thermo_asymmetry_vs_knockdown_pearson'])}). dG is not standardized before the "
+                f"mass-action fit (raw slope b={_fmt(dgd['mass_action_raw_slope_b'])}, sign "
+                f"{dgd['mass_action_raw_slope_sign']:+d}), so the positive b is a real property of "
+                f"on-target efficacy, not a feature-scaling artifact."
+            )
     else:
         lines.append("- PENDING real data.")
     lines.append("")

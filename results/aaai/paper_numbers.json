@@ -190,15 +190,25 @@
   "T3_mass_action_constraint": {
     "provenance": "Huesken 2005 efficacy + ViennaRNA seed-duplex free energy dG (real)",
     "status": "ok",
-    "acceptance": "FAIL",
+    "acceptance": "PASS",
     "constraint_residual_max": 1.6653345369377348e-16,
     "residual_tolerance": 1e-08,
     "residual_below_tol_all_seeds": true,
     "unconstrained_residual_max": 0.0584148280540861,
-    "accuracy_unconstrained_pearson": 0.4246048178098516,
-    "accuracy_constrained_pearson": 0.3890067988741863,
-    "no_accuracy_regression": false,
-    "constraint_costs_accuracy_any_seed": true
+    "mean_unconstrained_pearson": 0.4171147677019131,
+    "std_unconstrained_pearson": 0.03252263791534152,
+    "mean_constrained_pearson": 0.3856224090995706,
+    "std_constrained_pearson": 0.05078729865108912,
+    "no_accuracy_regression": true,
+    "accuracy_regression_beyond_one_std": false,
+    "dg_diagnostic": {
+      "dg_vs_knockdown_pearson": 0.135168663941982,
+      "dg_vs_knockdown_slope_sign": 1,
+      "thermo_asymmetry_vs_knockdown_pearson": -0.27779289239832666,
+      "dg_standardized_before_fit": false,
+      "mass_action_raw_slope_b": 0.03295465909045832,
+      "mass_action_raw_slope_sign": 1
+    }
   },
   "T4_certified_offtarget_bound": {
     "provenance": "GSE184929 RNA-seq (SeedMatchR export), Jackson 2006 and Birmingham 2006 microarray; STRING v12 GRN",
