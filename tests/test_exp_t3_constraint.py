@@ -58,3 +58,47 @@ def test_full_path_on_fixtures(tmp_path) -> None:
     acc = ex.acceptance(res)
     assert acc["flag"] in {"PASS", "FAIL"}
     assert acc["constraint_residual_below_tol"] is True
+
+
+def test_multiseed_aggregation_is_conservative() -> None:
+    def run(res, unc_p, con_p):
+        def metric(p):
+            return {"pearson": p, "spearman": None, "mse": 0.1, "mae": 0.1}
+
+        return {
+            "n_train": 3,
+            "n_test": 2,
+            "mass_action_line": {"a": -10.0, "b": -1.0},
+            "constraint_residual": {
+                "constrained_max": res,
+                "unconstrained_max": 1e5,
+                "exact_occupancy_newton_max": 0.1,
+                "tolerance": 1e-8,
+            },
+            "accuracy": {
+                "unconstrained": metric(unc_p),
+                "constrained_kkt": metric(con_p),
+                "exact_occupancy_newton": metric(0.2),
+            },
+        }
+
+    # Residual below tol on both seeds, no regression -> PASS; worst residual kept.
+    runs = [run(1e-10, 0.5, 0.5), run(2e-10, 0.5, 0.49)]
+    agg = ex.aggregate_results(runs, [0, 1])
+    assert agg["constraint_residual"]["constrained_max"] == 2e-10
+    acc = ex.aggregate_acceptance(agg, [ex.acceptance(r) for r in runs])
+    assert acc["flag"] == "PASS" and acc["n_seeds"] == 2
+
+    # A regression on one seed -> conservative FAIL, flagged.
+    runs2 = [run(1e-10, 0.5, 0.5), run(2e-10, 0.5, 0.30)]
+    acc2 = ex.aggregate_acceptance(
+        ex.aggregate_results(runs2, [0, 1]), [ex.acceptance(r) for r in runs2]
+    )
+    assert acc2["flag"] == "FAIL" and acc2["constraint_costs_accuracy_any_seed"] is True
+
+    # Residual above tol on one seed -> FAIL.
+    runs3 = [run(1e-10, 0.5, 0.5), run(1e-3, 0.5, 0.5)]
+    acc3 = ex.aggregate_acceptance(
+        ex.aggregate_results(runs3, [0, 1]), [ex.acceptance(r) for r in runs3]
+    )
+    assert acc3["flag"] == "FAIL"

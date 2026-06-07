@@ -1,9 +1,18 @@
 {
   "acceptance": {
     "flag": "PENDING",
+    "seeds": [
+      0,
+      1,
+      2
+    ],
     "reason": "real efficacy data unavailable"
   },
-  "seed": 0,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
   "status": "pending_real_data",
   "detail": {
     "status": "pending_real_data",
