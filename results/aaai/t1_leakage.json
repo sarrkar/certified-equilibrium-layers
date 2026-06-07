@@ -1,0 +1,12 @@
+{
+  "acceptance": {
+    "flag": "PENDING",
+    "reason": "real efficacy data unavailable; no audit to judge"
+  },
+  "seed": 0,
+  "status": "pending_real_data",
+  "detail": {
+    "status": "pending_real_data",
+    "source": "Huesken 2005 efficacy table not found under /home/shadi/ICLR2026/data/raw/efficacy (looked for ['huesken.csv', 'huesken.tsv', 'huesken.txt'] or a master ['siRNAEfficacyDB.csv', 'siRNAEfficacyDB.tsv', 'efficacy_master.csv']). Fetch the real file: https://raw.githubusercontent.com/lulab/OligoFormer/main/data/Huesken.csv  (source: https://github.com/lulab/OligoFormer (data/ directory)). Run scripts/download_efficacy.sh, or place it at /home/shadi/ICLR2026/data/raw/efficacy/huesken.csv. REAL DATA ONLY: no rows are generated when the file is absent."
+  }
+}
