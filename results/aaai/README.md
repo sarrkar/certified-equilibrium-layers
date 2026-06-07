@@ -2,13 +2,27 @@
 
 Generated artifacts (JSON + figures only, no prose paper; see CLAUDE.md rule 7).
 
+Per the hard data policy (CLAUDE.md), the real-data experiments under
+`experiments/aaai/` (`exp_realdata.py`, `exp_backbone_efficacy.py`) use ONLY real
+measured data and raise until that data is wired, so the application and backbone
+sections are reported as PENDING. The certificate-soundness experiments are
+random-graph math verification (no biological claim) and live under
+`experiments/soundness/`.
+
 ## How to reproduce
 
 ```bash
-python experiments/aaai/run_certification.py --seed 0
+# Hard data policy gate, then aggregate the AAAI paper numbers (real-data only):
+make repro-aaai
+
+# Certificate soundness (random-graph verification, no biological claim):
+python experiments/soundness/run_certification.py --seed 0
+python experiments/soundness/exp_verify.py --seed 0
+python experiments/soundness/exp_tightness.py --seed 0
+python experiments/soundness/exp_normalized.py --seed 0
 ```
 
-Writes `certified_region.json` and `certified_region.png`.
+`run_certification.py` writes `certified_region.json` and `certified_region.png`.
 
 ## What it measures
 

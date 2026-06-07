@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
-"""Backbone on-target efficacy benchmark (the x0 / direct-repression predictor).
+"""Backbone on-target efficacy benchmark on the REAL OligoFormer suite.
 
 Trains the CCMP backbone (cascade.models.CCMPBackbone, the per-concept direct
 seed-repression predictor, no propagation) as an on-target siRNA efficacy
-regressor on the OligoFormer efficacy suite, under the standard protocol:
+regressor on the real OligoFormer efficacy suite, under the standard protocol:
 
   train on the Huesken training split; report Pearson and Spearman on the
   Huesken test split; and report cross-dataset generalization on Taka (Katoh),
   Mix, and Shabalina as independent test sets.
 
 The cross-dataset drop from Huesken-test to the independent sets is the expected
-distribution shift reviewers check; it is reported, not hidden.
+distribution shift; it is reported, not hidden.
+
+HARD DATA POLICY (CLAUDE.md): this experiment uses ONLY the real OligoFormer
+CSVs. There is no fallback to generated data. The loader RAISES FileNotFoundError
+when the real CSVs are absent (place them under --raw-dir, default
+data/raw/oligoformer).
 
 Baselines. Published numbers (BIOPREDsi-style, siRNADiscovery, OligoFormer) are
 cited as "reported" with their source; this script does NOT fabricate baseline
@@ -18,12 +23,8 @@ numbers and only computes our own model's Pearson / Spearman. Values that are
 not transcribed here are left null with a note to fill them from the source
 table.
 
-Provenance. The real OligoFormer CSVs are a tracked data gap. If they are present
-under --raw-dir the loader uses them; otherwise the script runs on a synthetic
-proxy that builds features with the real feature layer on random sequences and a
-controlled label, so the protocol runs end to end. On the synthetic proxy the
-acceptance comparison against the real reported SOTA is NOT valid and is flagged
-as pending in the JSON.
+ACCEPTANCE: the backbone must be at least competitive with the reported state of
+the art on the Huesken test split; the JSON flags PASS / FAIL.
 
 Writes results/aaai/backbone_efficacy.json and a cross-dataset bar figure.
 Accepts --seed and logs it (CLAUDE.md rule 3). No LaTeX.
@@ -33,7 +34,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import sys
 from pathlib import Path
 
@@ -46,7 +46,6 @@ from cascade.features import concept_layout, featurize_pairs  # noqa: E402
 from cascade.features.seedmatch import revcomp  # noqa: E402
 
 OUT = REPO / "results" / "aaai"
-BASES = np.array(["A", "C", "G", "U"])
 DATASETS = ["huesken_test", "taka", "mix", "shabalina"]
 
 # Published baselines on the Huesken test split. Cite the source; do NOT
@@ -85,64 +84,9 @@ REPORTED_BASELINES = [
 ACCEPTANCE_TOLERANCE = 0.05  # competitive if our Pearson >= best reported - tolerance
 
 
-# ---------------------------------------------------------------------------
-# Data: real OligoFormer suite if present, else a synthetic proxy.
-# ---------------------------------------------------------------------------
-def _random_guides(n: int, gc_bias: float, rng: np.random.Generator, length: int = 21) -> list[str]:
-    # gc_bias in [-0.2, 0.2] shifts the G/C probability to create distribution shift.
-    p = np.array([0.25 - gc_bias, 0.25 + gc_bias, 0.25 + gc_bias, 0.25 - gc_bias])
-    p = p / p.sum()
-    return ["".join(rng.choice(BASES, length, p=p)) for _ in range(n)]
-
-
 def _featurize(antisense: list[str], targets: list[str]) -> np.ndarray:
     pairs = list(zip(antisense, targets, strict=True))
     return featurize_pairs(pairs).matrix
-
-
-def _synthetic_datasets(rng: np.random.Generator) -> tuple[dict, dict, str]:
-    """Synthetic proxy: features from the real feature layer, controlled labels."""
-    sizes = {"huesken_train": 600, "huesken_test": 150, "taka": 200, "mix": 200, "shabalina": 150}
-    gc = {"huesken_train": 0.0, "huesken_test": 0.0, "taka": 0.12, "mix": -0.1, "shabalina": 0.08}
-    # Shared on-target mechanism; cross datasets get a small mechanism shift + noise.
-    d = concept_layout().total_dim
-    w = rng.standard_normal(d)
-    mech_shift = {
-        "huesken_train": 0.0,
-        "huesken_test": 0.0,
-        "taka": 0.5,
-        "mix": 0.4,
-        "shabalina": 0.6,
-    }
-    noise = {
-        "huesken_train": 0.15,
-        "huesken_test": 0.15,
-        "taka": 0.3,
-        "mix": 0.3,
-        "shabalina": 0.35,
-    }
-
-    feats, labels = {}, {}
-    # Use Huesken-train feature statistics to standardize everything (so the
-    # model sees a fixed scale and cross-dataset shift is genuine).
-    guides_tr = _random_guides(sizes["huesken_train"], gc["huesken_train"], rng)
-    x_tr = _featurize(guides_tr, [revcomp(g) for g in guides_tr])
-    mu, sd = x_tr.mean(0), x_tr.std(0) + 1e-8
-
-    def label(x: np.ndarray, key: str) -> np.ndarray:
-        wd = w + mech_shift[key] * rng.standard_normal(d)
-        z = ((x - mu) / sd) @ wd / math.sqrt(d)
-        eff = 1.0 / (1.0 + np.exp(-z)) + noise[key] * rng.standard_normal(x.shape[0])
-        return np.clip(eff, 0.0, 1.0)
-
-    feats["huesken_train"] = x_tr
-    labels["huesken_train"] = label(x_tr, "huesken_train")
-    for key in DATASETS:
-        guides = _random_guides(sizes[key], gc[key], rng)
-        x = _featurize(guides, [revcomp(g) for g in guides])
-        feats[key] = x
-        labels[key] = label(x, key)
-    return feats, labels, "synthetic_proxy"
 
 
 def _target_for(antisense: str, sense: str) -> str:
@@ -150,7 +94,8 @@ def _target_for(antisense: str, sense: str) -> str:
     return sense if sense else revcomp(antisense)
 
 
-def _real_datasets(raw_dir: Path, cache_root: Path) -> tuple[dict, dict, str]:
+def real_datasets(raw_dir: Path, cache_root: Path) -> tuple[dict, dict]:
+    """Featurize the real OligoFormer suite (raises FileNotFoundError if absent)."""
     from cascade.data import canonical_split, load_oligoformer_efficacy
 
     ds = load_oligoformer_efficacy(raw_dir, cache_root=cache_root)
@@ -175,26 +120,21 @@ def _real_datasets(raw_dir: Path, cache_root: Path) -> tuple[dict, dict, str]:
         sub = frame[study_mask(substr)].reset_index(drop=True)
         feats[key] = featurize_frame(sub)
         labels[key] = sub["efficacy"].to_numpy()
-    # Mix = everything that is not Huesken / Katoh / Shabalina.
     mix = frame[
         ~(study_mask("Huesken") | study_mask("Katoh") | study_mask("Shabalina"))
     ].reset_index(drop=True)
     feats["mix"] = featurize_frame(mix)
     labels["mix"] = mix["efficacy"].to_numpy()
-    return feats, labels, "real_oligoformer"
+    return feats, labels
 
 
-# ---------------------------------------------------------------------------
-# Model: CCMP backbone trained as an efficacy regressor.
-# ---------------------------------------------------------------------------
-def _train_and_eval(feats: dict, labels: dict, seed: int, epochs: int, lr: float) -> dict:
+def train_and_eval(feats: dict, labels: dict, seed: int, epochs: int, lr: float) -> dict:
     import torch
 
     from cascade.models import CCMPBackbone
 
     torch.manual_seed(seed)
-    x_tr = feats["huesken_train"]
-    y_tr = labels["huesken_train"]
+    x_tr, y_tr = feats["huesken_train"], labels["huesken_train"]
     mu, sd = x_tr.mean(0), x_tr.std(0) + 1e-8
 
     def tens(x):
@@ -202,14 +142,12 @@ def _train_and_eval(feats: dict, labels: dict, seed: int, epochs: int, lr: float
 
     model = CCMPBackbone(hidden_dim=32, concept_emb_dim=32, n_layers=2)
     opt = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=1e-5)
-    xt = tens(x_tr)
-    yt = torch.tensor(y_tr, dtype=torch.float32)
+    xt, yt = tens(x_tr), torch.tensor(y_tr, dtype=torch.float32)
     final_mse = float("nan")
     for _ in range(epochs):
         model.train()
         opt.zero_grad()
-        pred = model(xt)
-        loss = ((pred - yt) ** 2).mean()
+        loss = ((model(xt) - yt) ** 2).mean()
         loss.backward()
         opt.step()
         final_mse = float(loss.detach())
@@ -217,7 +155,6 @@ def _train_and_eval(feats: dict, labels: dict, seed: int, epochs: int, lr: float
     model.eval()
     from scipy.stats import pearsonr, spearmanr
 
-    results = {"huesken_train_final_mse": final_mse, "n_train": int(len(y_tr))}
     per = {}
     with torch.no_grad():
         for key in DATASETS:
@@ -226,11 +163,10 @@ def _train_and_eval(feats: dict, labels: dict, seed: int, epochs: int, lr: float
                 per[key] = {"n": int(len(y)), "pearson": None, "spearman": None}
                 continue
             p = model(tens(x)).numpy()
-            pear = float(pearsonr(p, y)[0]) if np.std(p) > 0 else float("nan")
-            spear = float(spearmanr(p, y)[0]) if np.std(p) > 0 else float("nan")
+            pear = float(pearsonr(p, y)[0]) if np.std(p) > 0 else None
+            spear = float(spearmanr(p, y)[0]) if np.std(p) > 0 else None
             per[key] = {"n": int(len(y)), "pearson": pear, "spearman": spear}
-    results["per_dataset"] = per
-    return results
+    return {"huesken_train_final_mse": final_mse, "n_train": int(len(y_tr)), "per_dataset": per}
 
 
 def main() -> int:
@@ -238,65 +174,41 @@ def main() -> int:
     parser.add_argument("--seed", type=int, default=0, help="RNG seed (logged)")
     parser.add_argument("--epochs", type=int, default=300)
     parser.add_argument("--lr", type=float, default=0.01)
-    parser.add_argument("--raw-dir", type=str, default=None, help="real OligoFormer CSV dir")
+    parser.add_argument(
+        "--raw-dir",
+        type=str,
+        default=str(REPO / "data" / "raw" / "oligoformer"),
+        help="real OligoFormer CSV directory (FileNotFoundError if absent)",
+    )
     parser.add_argument("--cache", type=Path, default=OUT / "cache")
     parser.add_argument("--out-dir", type=Path, default=OUT)
     args = parser.parse_args()
-    print(f"[backbone] seed={args.seed} epochs={args.epochs}")
+    print(f"[backbone] seed={args.seed} epochs={args.epochs} raw_dir={args.raw_dir}")
 
-    rng = np.random.default_rng(args.seed)
-    raw_dir = Path(args.raw_dir) if args.raw_dir else None
-    if raw_dir is not None and raw_dir.exists():
-        feats, labels, provenance = _real_datasets(raw_dir, args.cache)
-    else:
-        feats, labels, provenance = _synthetic_datasets(rng)
-    print(f"[backbone] provenance={provenance}")
-
-    res = _train_and_eval(feats, labels, args.seed, args.epochs, args.lr)
+    feats, labels = real_datasets(Path(args.raw_dir), args.cache)
+    res = train_and_eval(feats, labels, args.seed, args.epochs, args.lr)
     per = res["per_dataset"]
     our_huesken = per["huesken_test"]["pearson"]
 
-    reported_vals = [
-        b["reported_value"] for b in REPORTED_BASELINES if b["reported_value"] is not None
-    ]
-    best_reported = max(reported_vals) if reported_vals else None
+    reported = [b["reported_value"] for b in REPORTED_BASELINES if b["reported_value"] is not None]
+    best_reported = max(reported) if reported else None
     best_name = (
         max(
             (b for b in REPORTED_BASELINES if b["reported_value"] is not None),
             key=lambda b: b["reported_value"],
         )["name"]
-        if reported_vals
+        if reported
         else None
     )
-    valid_comparison = provenance == "real_oligoformer"
     if best_reported is None or our_huesken is None:
-        competitive = None
-        flag = "PENDING"
+        competitive, flag = None, "PENDING"
     else:
         competitive = bool(our_huesken >= best_reported - ACCEPTANCE_TOLERANCE)
-        flag = ("PASS" if competitive else "FAIL") if valid_comparison else "PENDING"
-
-    acceptance = {
-        "our_huesken_test_pearson": our_huesken,
-        "best_reported_pearson": best_reported,
-        "best_reported_name": best_name,
-        "tolerance": ACCEPTANCE_TOLERANCE,
-        "margin": (our_huesken - best_reported) if (best_reported and our_huesken) else None,
-        "competitive": competitive,
-        "valid_comparison": valid_comparison,
-        "flag": flag,
-        "note": (
-            "real comparison against reported SOTA"
-            if valid_comparison
-            else "SYNTHETIC PROXY: our numbers are illustrative and are NOT comparable to the "
-            "reported SOTA; rerun with --raw-dir pointing at the OligoFormer CSVs for the real "
-            "acceptance check."
-        ),
-    }
+        flag = "PASS" if competitive else "FAIL"
 
     summary = {
         "seed": args.seed,
-        "provenance": provenance,
+        "provenance": "real_oligoformer",
         "model": "CCMP backbone (x0 direct-repression predictor), trained as efficacy regressor",
         "n_features": concept_layout().total_dim,
         "protocol": "train on Huesken train; Pearson/Spearman on Huesken test and cross-dataset "
@@ -307,24 +219,27 @@ def main() -> int:
         },
         "our_model": per,
         "reported_baselines": REPORTED_BASELINES,
-        "acceptance": acceptance,
+        "acceptance": {
+            "our_huesken_test_pearson": our_huesken,
+            "best_reported_pearson": best_reported,
+            "best_reported_name": best_name,
+            "tolerance": ACCEPTANCE_TOLERANCE,
+            "margin": (our_huesken - best_reported) if (best_reported and our_huesken) else None,
+            "competitive": competitive,
+            "flag": flag,
+        },
         "cross_dataset_note": "the drop from Huesken-test to Taka/Mix/Shabalina is the expected "
         "distribution shift; it is reported here, not hidden.",
     }
     args.out_dir.mkdir(parents=True, exist_ok=True)
     out_path = args.out_dir / "backbone_efficacy.json"
     out_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
-
     for key in DATASETS:
         d = per[key]
         print(f"[backbone] {key:14s} n={d['n']:4d} pearson={d['pearson']} spearman={d['spearman']}")
-    print(
-        f"[backbone] acceptance: {flag} (our={our_huesken} vs best reported={best_reported}, "
-        f"valid_comparison={valid_comparison})"
-    )
+    print(f"[backbone] acceptance {flag} (our={our_huesken} vs best reported={best_reported})")
     print(f"[backbone] wrote {out_path}")
-
-    _plot(summary, args.out_dir / "backbone_efficacy.png")
+    _plot(summary, args.out_dir / "figures" / "backbone_efficacy.png")
     return 0
 
 
@@ -359,11 +274,11 @@ def _plot(summary: dict, path: Path) -> None:
     ax.set_ylabel("correlation")
     ax.set_ylim(0, 1.0)
     ax.set_title(
-        f"CCMP backbone efficacy ({summary['provenance']}); "
-        f"acceptance {summary['acceptance']['flag']}"
+        f"CCMP backbone efficacy (real OligoFormer); acceptance {summary['acceptance']['flag']}"
     )
     ax.legend(fontsize=8)
     fig.tight_layout()
+    path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(path, dpi=120)
     plt.close(fig)
     print(f"[backbone] wrote {path}")

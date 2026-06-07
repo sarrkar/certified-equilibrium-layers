@@ -7,8 +7,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cascade.data.cascade_dataset import build_cascade_data
 from cascade.features import concept_layout
+from cascade.synthetic_dataset import build_cascade_data
 
 FIXTURE = Path(__file__).parent / "fixtures" / "string_tiny.txt"
 

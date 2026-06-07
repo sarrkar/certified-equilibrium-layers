@@ -54,5 +54,8 @@ jobs:
         run: |
           git ls-files -z | xargs -0 python scripts/check_no_em_dash.py
 
+      - name: Forbid synthetic data on AAAI reported-number paths
+        run: python scripts/assert_no_synthetic.py
+
       - name: Pytest
         run: pytest -q

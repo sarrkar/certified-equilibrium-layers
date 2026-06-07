@@ -41,7 +41,6 @@ from .roles import (
     DATASET_ROLES,
     EFFICACY_BACKBONE,
     OFFTARGET_CERTIFICATION,
-    SYNTHETIC_COVERAGE,
     dataset_role,
     datasets_with_role,
 )
@@ -51,13 +50,11 @@ from .string_grn import (
     load_string_confidence,
     load_string_grn,
 )
-from .synthetic import SyntheticCoverageDataset, make_synthetic_coverage
 
 __all__ = [
     # roles
     "EFFICACY_BACKBONE",
     "OFFTARGET_CERTIFICATION",
-    "SYNTHETIC_COVERAGE",
     "DATASET_ROLES",
     "dataset_role",
     "datasets_with_role",
@@ -87,9 +84,6 @@ __all__ = [
     "load_birmingham2006",
     "load_seedseq",
     "OFFTARGET_SOURCES",
-    # synthetic coverage ensembles
-    "SyntheticCoverageDataset",
-    "make_synthetic_coverage",
     # GSE184929 off-target
     "GEOOffTargetDataset",
     "load_gse184929",

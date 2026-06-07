@@ -1,4 +1,10 @@
-"""Regression test for the AAAI paper-numbers aggregation. Pure stdlib, runs in CI."""
+"""Regression test for the AAAI paper-numbers aggregation. Pure stdlib, runs in CI.
+
+Under the hard data policy, the certificate-soundness section (random-graph math
+verification) is always present, while the application (real off-target) and
+backbone (efficacy) sections appear ONLY when their real-data experiment has
+produced a JSON. Until the real data is wired they are pending, not fabricated.
+"""
 
 from __future__ import annotations
 
@@ -8,11 +14,14 @@ from pathlib import Path
 AAAI = Path(__file__).resolve().parents[1] / "results" / "aaai"
 
 
-def test_three_sections_present() -> None:
+def test_soundness_present_application_and_backbone_pending() -> None:
     pn = json.loads((AAAI / "paper_numbers.json").read_text())
+    # Certificate soundness is always present (math verification on random graphs).
     assert "certificate_soundness_synthetic" in pn
-    assert "application_real_offtarget" in pn
-    assert "backbone_competitiveness_efficacy" in pn
+    # No real-data results are reported until the real experiments run; the policy
+    # forbids a generated-data stand-in for these sections.
+    assert "application_real_offtarget" not in pn
+    assert "backbone_competitiveness_efficacy" not in pn
 
 
 def test_certificate_soundness_synthetic() -> None:
@@ -35,47 +44,19 @@ def test_certificate_soundness_synthetic() -> None:
     assert sound["min_degree_breakdown"]["breakdown_cutoff_rho_ge_1"] is not None
 
 
-def test_application_real_offtarget() -> None:
-    pn = json.loads((AAAI / "paper_numbers.json").read_text())
-    app = pn["application_real_offtarget"]
-    assert set(app["per_dataset"]) == {
-        "gse184929",
-        "jackson2003",
-        "jackson2006",
-        "birmingham2006",
-        "seedseq",
-    }
-    for r in app["per_dataset"].values():
-        # Per-dataset certified-containment fraction by class.
-        assert "offtarget_contained_fraction" in r
-        assert "background_contained_fraction" in r
-        assert "auc_predicted_vs_measured" in r
-    ca = app["cross_assay"]
-    assert ca["rna_seq_mean_auc"] >= ca["microarray_mean_auc"]  # reported gap
-    assert app["acceptance"]["flag"] in {"PASS", "FAIL"}
-
-
-def test_backbone_competitiveness_efficacy() -> None:
-    pn = json.loads((AAAI / "paper_numbers.json").read_text())
-    back = pn["backbone_competitiveness_efficacy"]
-    assert set(back["per_dataset"]) == {"huesken_test", "taka", "mix", "shabalina"}
-    for r in back["per_dataset"].values():
-        assert "pearson" in r and "spearman" in r
-    assert back["acceptance"]["flag"] in {"PASS", "FAIL", "PENDING"}
-    # Baselines are cited, not fabricated.
-    assert any(b["name"].startswith("BIOPREDsi") for b in back["reported_baselines"])
-
-
 def test_summary_leads_with_three_lines() -> None:
     captions = json.loads((AAAI / "figures" / "captions.json").read_text())
-    assert len(captions) >= 6
     assert all(isinstance(v, str) and v for v in captions.values())
-    assert "backbone_efficacy.png" in captions
+    # The certificate-soundness figures are present and captioned.
+    assert "coverage.png" in captions
 
     summary = (AAAI / "SUMMARY.md").read_text()
     assert summary.startswith("# AAAI")
     head = "\n".join(summary.splitlines()[:8])
     # The three required headline lines.
-    assert "Certificate soundness (synthetic)" in head
+    assert "Certificate soundness" in head
     assert "Application (real off-target data)" in head
     assert "Backbone competitiveness (efficacy)" in head
+    # Sections 2 and 3 are honestly marked pending real data.
+    assert "Application (real off-target data): PENDING real data" in summary
+    assert "Backbone competitiveness (efficacy): PENDING real data" in summary

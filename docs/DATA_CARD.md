@@ -8,15 +8,21 @@ loader.
 
 ## Role tags
 
-Every dataset carries one explicit role (`cascade.data.roles`):
+The data layer holds ONLY real measured data. Per the hard data policy
+([CLAUDE.md](../CLAUDE.md)), no generated data sits on any AAAI reported-number
+path; `scripts/assert_no_synthetic.py` enforces this in CI. Every dataset carries
+one of two real-data roles (`cascade.data.roles`):
 
 - `efficacy_backbone`: on-target siRNA potency datasets. They measure how well a
   guide knocks down its INTENDED target. They do NOT validate the off-target
   containment certificate (Project 2); they are the on-target backbone only.
 - `offtarget_certification`: measured off-target signatures. These are the
   datasets the off-target certificate is evaluated against.
-- `synthetic_coverage`: synthetic random-graph ensembles for certificate
-  coverage / tightness. No biological claim.
+
+Random-graph certificate-soundness verification (coverage / tightness / the C5
+breakdown) is NOT a dataset and carries no role: it verifies the math, not
+biology, and lives under `experiments/soundness/` with results labeled "no
+biological claim".
 
 ## Master table
 
@@ -31,7 +37,6 @@ Every dataset carries one explicit role (`cascade.data.roles`):
 | Jackson 2006 | Jackson 2006 (RNA) | signature | human HeLa | microarray | off-target | offtarget_certification |
 | Birmingham 2006 | Birmingham 2006 (Nat Methods) | seed-match calls | various | microarray | off-target | offtarget_certification |
 | SeedSeq | Das 2013 (SeedSeq) | aggregated union | various | microarray (aggregated) | off-target | offtarget_certification |
-| Synthetic matching/star/Erdos-Renyi | none (synthetic) | configurable | none | none | none | synthetic_coverage |
 
 The OligoFormer suite totals 3714 siRNAs across 75 mRNAs. The whole suite is
 loaded by `cascade.data.load_oligoformer_efficacy` into one tidy table with the
@@ -104,14 +109,16 @@ transcript annotation than the GSE184929 RNA-seq ground truth. Treat them as
 corroborating older evidence, not as a like-for-like substitute for the RNA-seq
 measurements.
 
-## Role: synthetic_coverage (no biological claim)
+## Certificate soundness (random graphs, no biological claim, no role)
 
-`cascade.data.make_synthetic_coverage` builds three random-graph confidence
-ensembles for the certification experiments: `synthetic_matching` (disjoint
-edges, the coverage regime), `synthetic_star` (all edges on one center, the
-tightness regime), and `synthetic_erdos_renyi` (the symmetric-normalized
-breakdown regime). These are not biological data and must never be reported as
-measured efficacy or off-target evidence.
+Certificate-soundness verification (coverage, tightness, the C5 breakdown) runs
+on random-graph confidence ensembles built inline by the soundness experiments
+under `experiments/soundness/` (matchings for the coverage regime, stars for the
+tightness regime, Erdos-Renyi for the symmetric-normalized breakdown). These
+verify the math, not biology; they are not datasets, carry no role, and are
+never reported as measured efficacy or off-target evidence. They live outside
+the data layer and outside `experiments/aaai/`, so the hard data policy
+(`scripts/assert_no_synthetic.py`) does not scan them.
 
 ## Graph backbones
 

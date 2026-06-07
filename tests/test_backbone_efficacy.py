@@ -1,17 +1,17 @@
-"""Regression test for the backbone efficacy benchmark.
+"""Hard-data-policy tests for the backbone efficacy benchmark.
 
-The experiment module is import-safe without torch (torch is imported only inside
-the train function), so the helpers and the committed JSON are checked in CI; the
-end-to-end run is torch-gated.
+The experiment trains ONLY on the real OligoFormer suite; with the CSVs absent
+it raises rather than falling back to generated data. The positive path is
+exercised on the committed real-schema fixtures under tests/fixtures/oligoformer.
+torch is imported only inside train_and_eval, so the loader path runs in the
+torch-free CI image and the end-to-end run is torch-gated.
 """
 
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 
-import numpy as np
 import pytest
 
 REPO = Path(__file__).resolve().parents[1]
@@ -19,7 +19,7 @@ sys.path.insert(0, str(REPO / "experiments" / "aaai"))
 
 import exp_backbone_efficacy as ex  # noqa: E402
 
-BACKBONE_JSON = REPO / "results" / "aaai" / "backbone_efficacy.json"
+FIXTURES = REPO / "tests" / "fixtures" / "oligoformer"
 
 
 def test_reported_baselines_are_cited_not_fabricated() -> None:
@@ -29,6 +29,8 @@ def test_reported_baselines_are_cited_not_fabricated() -> None:
         assert b["source"] and isinstance(b["source"], str)
         assert b["reported_value"] is None or isinstance(b["reported_value"], int | float)
         assert b["metric"] == "pearson"
+    names = {b["name"]: b["reported_value"] for b in ex.REPORTED_BASELINES}
+    assert names["BIOPREDsi (Huesken ANN)"] == 0.66  # transcribed reference point
 
 
 def test_target_defaults_to_perfect_complement() -> None:
@@ -39,45 +41,25 @@ def test_target_defaults_to_perfect_complement() -> None:
     assert ex._target_for(g, "ACGU") == "ACGU"  # provided sense used as-is
 
 
-def test_synthetic_datasets_have_expected_keys_and_finite_features() -> None:
-    feats, labels, provenance = ex._synthetic_datasets(np.random.default_rng(0))
-    assert provenance == "synthetic_proxy"
-    assert set(feats) == {"huesken_train", *ex.DATASETS}
+def test_real_datasets_raises_without_csvs(tmp_path) -> None:
+    # No OligoFormer CSVs present -> FileNotFoundError, never generated data.
+    with pytest.raises(FileNotFoundError):
+        ex.real_datasets(tmp_path / "absent", tmp_path / "cache")
+
+
+def test_real_datasets_on_fixtures(tmp_path) -> None:
+    feats, labels = ex.real_datasets(FIXTURES, tmp_path / "cache")
+    assert "huesken_train" in feats
+    assert len(feats["huesken_train"]) > 0
+    width = ex.concept_layout().total_dim
     for key, x in feats.items():
-        assert x.shape[1] == ex.concept_layout().total_dim
-        assert np.isfinite(x).all()
-        assert labels[key].min() >= 0.0 and labels[key].max() <= 1.0
+        if len(x):
+            assert x.shape[1] == width
+        assert len(x) == len(labels[key])
 
 
-def test_committed_backbone_json() -> None:
-    d = json.loads(BACKBONE_JSON.read_text())
-    assert d["provenance"] in {"synthetic_proxy", "real_oligoformer"}
-    assert set(d["our_model"]) == set(ex.DATASETS)
-    # Pearson reported for every dataset.
-    for key in ex.DATASETS:
-        assert "pearson" in d["our_model"][key]
-    acc = d["acceptance"]
-    assert acc["flag"] in {"PASS", "FAIL", "PENDING"}
-    # On the synthetic proxy the comparison to real SOTA is not valid -> PENDING.
-    if d["provenance"] == "synthetic_proxy":
-        assert acc["valid_comparison"] is False
-        assert acc["flag"] == "PENDING"
-    # BIOPREDsi is the transcribed reference point.
-    names = {b["name"]: b["reported_value"] for b in d["reported_baselines"]}
-    assert names["BIOPREDsi (Huesken ANN)"] == 0.66
-
-
-def test_end_to_end_smoke(tmp_path) -> None:
+def test_end_to_end_smoke_on_fixtures(tmp_path) -> None:
     pytest.importorskip("torch")
-    rng = np.random.default_rng(1)
-    # Tiny featurized datasets so the smoke run is fast.
-    feats, labels = {}, {}
-    from cascade.features.seedmatch import revcomp
-
-    for key in ["huesken_train", *ex.DATASETS]:
-        guides = ex._random_guides(20, 0.0, rng)
-        feats[key] = ex._featurize(guides, [revcomp(g) for g in guides])
-        labels[key] = rng.random(20)
-    res = ex._train_and_eval(feats, labels, seed=0, epochs=5, lr=0.01)
-    assert "per_dataset" in res
+    feats, labels = ex.real_datasets(FIXTURES, tmp_path / "cache")
+    res = ex.train_and_eval(feats, labels, seed=0, epochs=3, lr=0.01)
     assert set(res["per_dataset"]) == set(ex.DATASETS)

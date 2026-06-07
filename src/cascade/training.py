@@ -22,10 +22,10 @@ import numpy as np
 import torch
 from torch import Tensor
 
-from cascade.data.cascade_dataset import CascadeData, build_cascade_data
 from cascade.models.cascade import CASCADE
 from cascade.models.ccmp_backbone import CCMPBackbone, default_concept_dims
 from cascade.models.propagation_head import PropagationHead
+from cascade.synthetic_dataset import CascadeData, build_cascade_data
 from cascade.verify.containment import operator_norm, spectral_clip
 
 

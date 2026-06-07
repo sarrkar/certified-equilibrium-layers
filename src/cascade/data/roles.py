@@ -1,7 +1,7 @@
 """Dataset role tags for the CASCADE / AAAI data layer.
 
-Every dataset carries one explicit role so downstream code (and the paper) can
-never confuse what a dataset is for:
+Every real measured dataset carries one explicit role so downstream code (and
+the paper) can never confuse what a dataset is for:
 
 - ``efficacy_backbone``: on-target siRNA potency datasets (the OligoFormer
   nine-dataset suite). These measure on-target knockdown and DO NOT validate the
@@ -9,8 +9,10 @@ never confuse what a dataset is for:
 - ``offtarget_certification``: measured off-target signatures (GSE184929 RNA-seq,
   the Jackson / Birmingham microarray sets, the SeedSeq union). These are the
   datasets the certificate is evaluated against.
-- ``synthetic_coverage``: synthetic random-graph ensembles used to verify the
-  certificate's coverage and tightness (no biological claim).
+
+Per the hard data policy (CLAUDE.md), the data layer holds only real measured
+data. Random-graph certificate-soundness verification is not a dataset and lives
+outside the data layer, under ``experiments/soundness/``.
 
 The role lives both as a string constant and as a ``role`` attribute on each
 loader's returned dataclass; :data:`DATASET_ROLES` is the single-source-of-truth
@@ -21,9 +23,8 @@ from __future__ import annotations
 
 EFFICACY_BACKBONE = "efficacy_backbone"
 OFFTARGET_CERTIFICATION = "offtarget_certification"
-SYNTHETIC_COVERAGE = "synthetic_coverage"
 
-ROLES = frozenset({EFFICACY_BACKBONE, OFFTARGET_CERTIFICATION, SYNTHETIC_COVERAGE})
+ROLES = frozenset({EFFICACY_BACKBONE, OFFTARGET_CERTIFICATION})
 
 # Single source of truth: dataset name -> role. Tabulated in docs/DATA_CARD.md.
 DATASET_ROLES: dict[str, str] = {
@@ -38,10 +39,6 @@ DATASET_ROLES: dict[str, str] = {
     "jackson2006": OFFTARGET_CERTIFICATION,
     "birmingham2006": OFFTARGET_CERTIFICATION,
     "seedseq": OFFTARGET_CERTIFICATION,
-    # synthetic coverage / tightness ensembles
-    "synthetic_matching": SYNTHETIC_COVERAGE,
-    "synthetic_star": SYNTHETIC_COVERAGE,
-    "synthetic_erdos_renyi": SYNTHETIC_COVERAGE,
 }
 
 

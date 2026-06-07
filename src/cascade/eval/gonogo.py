@@ -25,7 +25,7 @@ from cascade.baselines.linear import (
     MeanBaseline,
     regression_metrics,
 )
-from cascade.data.cascade_dataset import build_cascade_data
+from cascade.synthetic_dataset import build_cascade_data
 
 # CASCADE counts as tying a baseline if its test MSE is within this relative band.
 TIE_BAND = 0.02

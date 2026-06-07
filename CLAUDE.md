@@ -25,10 +25,22 @@ it. The core is implemented once and reused; the projects never duplicate it.
   then observed through an unknown map G, and recovered from interventional
   data (Perturb-seq single-gene hard and combinatorial soft interventions).
 
-- **Project 2, AAAI** (`src/certification/`). A probabilistic certified L2
-  region for the continuous, diffusion-propagated off-target prediction
-  y = P_alpha(S) x0 under a confidence-calibrated random-edge noise model on
-  the inferred GRN.
+- **Project 2, AAAI** (`src/certification/`). Four theorems on REAL siRNA data
+  (no generated data on any reported-number path, see the hard data policy):
+  - **T1, leakage-free per-concept identifiability.** Under L_k = 0 each concept
+    channel is identifiable in isolation, so its contribution to x0 is recovered
+    without cross-channel confounding.
+  - **T2, P_alpha contraction / stability on signed, directed GRNs.** The
+    bounded-alpha propagation operator P_alpha = alpha (I - (1-alpha) S)^{-1} is
+    a contraction (||P_alpha||_2 <= 1, eigenvalues in [alpha/(2-alpha), 1]) and
+    is stable to GRN perturbation, including signed and directed edges.
+  - **T3, KKT-projected mass-action / thermodynamic constraint.** The
+    seed-binding / repression map is projected onto the mass-action and
+    thermodynamic feasible set via its KKT conditions, so x0 respects the
+    physical binding constraints.
+  - **T4, certified off-target effect bound.** A probabilistic certified L2
+    region for y = P_alpha(S) x0 under joint seed-error and GRN-edge uncertainty
+    (matrix-Bernstein, radius ((1-alpha)/alpha) b(delta) ||x0||).
 
 ## CASCADE contributions (priority order)
 
@@ -75,6 +87,40 @@ change.
    `src/cascade/`. They MUST reuse the P_alpha operator, the data loaders, and
    the graph builders, and MUST NOT fork or re-implement them.
 
+## Hard data policy (AAAI reported numbers)
+
+The AAAI paper reports its four theorems on REAL siRNA data. Generated data may
+NEVER sit on the path of a reported AAAI number. This policy is non-negotiable
+and is enforced mechanically.
+
+1. **No generated data on a reported-number path.** No generated data may live
+   in `src/cascade/data/` (the loaders) or `experiments/aaai/` (the experiments
+   and the aggregator). This means no random construction of features, labels,
+   or edges; no signal injection; no fabricated edge confidences; no fallback
+   that stands in for absent real data.
+2. **Loaders raise, never fabricate.** Every loader RAISES `FileNotFoundError`
+   with a clear message when its real file is absent. A real loader that is not
+   yet wired RAISES `NotImplementedError` (it does not return a stand-in). No
+   experiment produces a number without the real data behind it.
+3. **Mechanical enforcement.** `scripts/assert_no_synthetic.py` greps
+   `src/cascade/data/` and `experiments/aaai/` for generation patterns
+   (`np.random` / `default_rng` / `standard_normal` / `rng.*` construction, and
+   the words `synthetic`, `plant`, `proxy`, `toy`) and exits non-zero on any
+   hit. It runs in CI and is a precondition of `make repro-aaai`. The only
+   exemptions are committed unit-test fixtures under `tests/` and a line marked
+   `# real-data-policy: allow`.
+4. **Where generated data is allowed.** Certificate-soundness verification
+   (coverage, tightness, the C5 breakdown) legitimately runs on random-graph
+   ensembles: it verifies the math, not biology, and is never a reported
+   biological number. It lives under `experiments/soundness/` (NOT scanned) and
+   its results are labeled "random-graph verification, no biological claim". The
+   ICLR-side GO/NO-GO proxy lives in `src/cascade/synthetic_dataset.py` (outside
+   the data layer, NOT scanned), records its provenance in its JSON, and feeds
+   no AAAI number.
+5. **Tracked data gaps stay visible.** When real data (GSE184929 / STRING join,
+   OligoFormer CSVs, microarray supplements) is absent, the affected AAAI
+   sections are reported as PENDING real data, never backfilled with a stand-in.
+
 ## Stack
 
 Python 3.11. Pinned in `pyproject.toml`.
@@ -95,22 +141,25 @@ training loop require torch; tests that need it are gated with
 
 ```
 src/cascade/          shared core (REUSE, never duplicate)
-  data/               loaders + caching: STRING, GSE184929, Perturb-seq, Reactome
+  data/               REAL-data loaders + caching: STRING, GSE184929, OligoFormer, off-target
   features/           seed-match (SeedMatchR logic) + thermodynamics + per-concept features
   models/             ccmp_backbone, propagation_head (P_alpha), cascade
   baselines/          linear (additive, mean), seedmatch, appnp, sequence_only
   verify/             containment, pac_bayes, abstraction audits (library)
   eval/               metrics + figures
+  synthetic_dataset.py  ICLR GO/NO-GO synthetic proxy (OUTSIDE the data layer; feeds no AAAI number)
 src/identifiability/  Project 1 (ICLR): concept-latent identifiability
 src/certification/    Project 2 (AAAI): probabilistic certified L2 region
 experiments/iclr/     Project 1 runnable experiment scripts
-experiments/aaai/     Project 2 runnable experiment scripts
+experiments/aaai/     Project 2 REAL-data experiments (exp_realdata, exp_backbone_efficacy, export)
+experiments/soundness/  certificate-soundness on random graphs (math only; NOT scanned by the policy)
 results/              shared results (e.g. baseline_gonogo.json)
 results/iclr/         Project 1 JSON + figures
 results/aaai/         Project 2 JSON + figures
 configs/              hydra configs
 tests/                pytest
 verify/               runnable theorem-verification scripts (rule 1)
+scripts/              data download + assert_no_synthetic.py (hard data policy enforcer)
 paper/                human-authored LaTeX (agents never write here)
 scripts/              data download
 ```

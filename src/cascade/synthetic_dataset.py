@@ -17,6 +17,14 @@ the features through P_alpha, so the model has a real signal to fit.
 
 This module is pure numpy / scipy (no torch) so it can be exercised in the
 lightweight CI image.
+
+PROVENANCE / POLICY. This is the ICLR-side training-data builder and its
+``synthetic`` mode is the GO/NO-GO proxy used while the real GSE184929 / STRING
+join is a tracked gap; the gate records that provenance in its JSON. Per the
+hard data policy (CLAUDE.md) it is deliberately held OUTSIDE the AAAI data layer
+(``src/cascade/data/``) and the AAAI experiments (``experiments/aaai/``), because
+no synthetic data may sit on a reported AAAI number's path. It feeds no AAAI
+number; scripts/assert_no_synthetic.py does not scan it.
 """
 
 from __future__ import annotations
@@ -28,10 +36,9 @@ from typing import Any
 import numpy as np
 import scipy.sparse as sp
 
+from cascade.data.string_grn import load_string_grn
 from cascade.features import concept_layout
 from cascade.verify.containment import propagate
-
-from .string_grn import load_string_grn
 
 
 @dataclass(frozen=True)

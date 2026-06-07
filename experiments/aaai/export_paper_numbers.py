@@ -1,23 +1,28 @@
 #!/usr/bin/env python3
 """Project 2 (AAAI): aggregate the certification results into paper numbers.
 
-Reads the per-experiment JSONs under results/aaai/ (coverage, tightness,
-normalized, realdata, backbone_efficacy) and aggregates them into
+Reads the per-experiment JSONs under results/aaai/ and aggregates them into
 results/aaai/paper_numbers.json under three clearly separated sections:
 
 - certificate_soundness_synthetic: C3 coverage, C4 tightness, and the C5
-  minimum-degree breakdown on synthetic random graphs (soundness only);
+  minimum-degree breakdown verified on random-graph ensembles (math soundness
+  only, no biological claim; produced by experiments/soundness/);
 - application_real_offtarget: per-dataset certified containment on the real
   off-target sets (GSE184929, Jackson 2003/2006, Birmingham 2006, SeedSeq) plus
-  the cross-assay comparison;
+  the cross-assay comparison (produced by experiments/aaai/exp_realdata.py);
 - backbone_competitiveness_efficacy: the CCMP backbone on-target efficacy on the
-  OligoFormer suite with cross-dataset generalization.
+  OligoFormer suite (produced by experiments/aaai/exp_backbone_efficacy.py).
+
+Per the hard data policy (CLAUDE.md), sections 2 and 3 only appear when their
+real-data experiment has produced a JSON; until the real data is wired those
+experiments raise and the export records the application / backbone sections as
+pending real data rather than reporting any non-real number.
 
 It copies all figures into results/aaai/figures/ with plain-string captions and
 writes a plain markdown results/aaai/SUMMARY.md whose headline leads with three
-lines: certificate empirical coverage vs nominal (synthetic), certified
-containment on real off-target data, and backbone competitiveness on the
-efficacy suite.
+lines: certified-radius empirical coverage vs nominal (random-graph soundness),
+certified containment on real off-target data, and backbone competitiveness on
+the efficacy suite.
 
 Deterministic aggregation: no LaTeX, no .tex. Accepts --seed and logs it for
 CLAUDE.md rule 3 consistency, though it draws no randomness.
@@ -217,9 +222,8 @@ def realdata_numbers(rd: dict) -> dict:
             "provenance": r["provenance"],
         }
     return {
-        "note": "real off-target datasets; synthetic proxy by default (the real GSE184929 / STRING / "
-        "microarray-supplement join is a tracked gap). The off-target measurements are the "
-        "datasets the certificate is evaluated against.",
+        "note": "real measured off-target datasets; these are the datasets the certificate is "
+        "evaluated against. No values appear here unless the real-data experiment produced them.",
         "theorem4_radius": rd.get("theorem4_radius"),
         "per_dataset": per,
         "cross_assay": rd["cross_assay"],
@@ -271,7 +275,7 @@ def write_summary(numbers: dict, captions: dict) -> None:
 
     lines = ["# AAAI results summary", ""]
 
-    # The three headline lines: soundness (synthetic), application (real
+    # The three headline lines: soundness (random graphs), application (real
     # off-target), backbone competitiveness (efficacy).
     lines.append("## Headline")
     if cov:
@@ -279,9 +283,10 @@ def write_summary(numbers: dict, captions: dict) -> None:
             (d["min_empirical_coverage"] for d in cov["nominal_vs_empirical"]), default=None
         )
         lines.append(
-            f"- Certificate soundness (synthetic): empirical coverage of the certified radius is "
-            f"{worst} (>= nominal 1 minus delta at every delta); verdict {cov['verdict']}, max "
-            f"excess violation {cov['max_excess_violation']} (never violated more than delta)."
+            f"- Certificate soundness (random-graph verification, no biological claim): empirical "
+            f"coverage of the certified radius is {worst} (>= nominal 1 minus delta at every delta); "
+            f"verdict {cov['verdict']}, max excess violation {cov['max_excess_violation']} (never "
+            "violated more than delta)."
         )
     if app:
         g = app["per_dataset"].get("gse184929", {})
@@ -294,6 +299,12 @@ def write_summary(numbers: dict, captions: dict) -> None:
             f"{acc['flag']} across GSE184929 and {len(app['cross_assay']['microarray_datasets'])} "
             "microarray sets."
         )
+    else:
+        lines.append(
+            "- Application (real off-target data): PENDING real data. exp_realdata.py runs the "
+            "Theorem 4 certificate the moment the real off-target / STRING join is wired; no "
+            "non-real number is reported."
+        )
     if back:
         ht = back["per_dataset"].get("huesken_test", {})
         ba = back["acceptance"]
@@ -303,10 +314,16 @@ def write_summary(numbers: dict, captions: dict) -> None:
             f"{ba['flag']} vs reported {ba.get('best_reported_name')} "
             f"({ba.get('best_reported_pearson')})."
         )
+    else:
+        lines.append(
+            "- Backbone competitiveness (efficacy): PENDING real data. exp_backbone_efficacy.py "
+            "trains on the real OligoFormer suite when the CSVs are present; no non-real number "
+            "is reported."
+        )
     lines.append("")
 
-    # Section 1: certificate soundness (synthetic).
-    lines.append("## 1. Certificate soundness (synthetic graphs only, no biological claim)")
+    # Section 1: certificate soundness (random-graph math verification).
+    lines.append("## 1. Certificate soundness (random-graph verification, no biological claim)")
     if cert:
         ex = cert["bernstein_example"]
         eig = cert["p_alpha_eigenvalue_range"]
@@ -340,6 +357,12 @@ def write_summary(numbers: dict, captions: dict) -> None:
 
     # Section 2: application results (real off-target data).
     lines.append("## 2. Application results (real off-target data)")
+    if not app:
+        lines.append(
+            "PENDING real data. Per the hard data policy, exp_realdata.py uses only real measured "
+            "off-target calls and a real STRING GRN and raises until that join is wired, so no "
+            "containment numbers are reported here yet."
+        )
     if app:
         lines.append(app["note"])
         lines.append("")
@@ -369,6 +392,12 @@ def write_summary(numbers: dict, captions: dict) -> None:
 
     # Section 3: backbone competitiveness (efficacy data).
     lines.append("## 3. Backbone competitiveness (efficacy data, on-target only)")
+    if not back:
+        lines.append(
+            "PENDING real data. exp_backbone_efficacy.py trains the CCMP backbone on the real "
+            "OligoFormer suite and raises when the CSVs are absent, so no efficacy numbers are "
+            "reported here yet."
+        )
     if back:
         lines.append(back["note"])
         lines.append("")
@@ -413,7 +442,7 @@ def main() -> int:
 
     # Three clearly separated sections.
     soundness = {
-        "note": "synthetic random-graph ensembles: certificate soundness only, no biological claim.",
+        "note": "random-graph ensembles: certificate math soundness only, no biological claim.",
         "certificate": certificate_quantities(alpha, delta),
     }
     if cov:
