@@ -25,6 +25,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from .cache import CacheKey, cached_frame, sha256_file
@@ -248,4 +249,280 @@ def load_seedseq(raw_path=None, cache_root=None, rebuild: bool = False) -> OffTa
         frame=union,
         assay=meta["assay"],
         provenance=meta["provenance"] + " (built from available members)",
+    )
+
+
+# ===========================================================================
+# SeedMatchR evaluation metric (off-target metric for Theorem 4), implemented
+# natively in Python: a one-sided two-sample Kolmogorov-Smirnov test comparing
+# the log2 fold-change ECDF of seed-matched transcripts against non-seed-matched
+# (background) transcripts. Seed-matched transcripts are expected to be more
+# repressed (more negative log2FC), so the default tests left-shift of the
+# seed-matched distribution.
+# ===========================================================================
+@dataclass(frozen=True)
+class KSResult:
+    """One-sided KS comparison of seed-matched vs background log2FC."""
+
+    statistic: float  # the KS D statistic (max signed ECDF gap)
+    pvalue: float  # asymptotic one-sided / two-sided p-value
+    n_seed_match: int
+    n_background: int
+    alternative: str
+
+
+def _ks_pvalue_one_sided(d: float, ne: float) -> float:
+    """Asymptotic one-sided two-sample KS p-value (Smirnov): exp(-2 ne D^2)."""
+    return float(np.exp(-2.0 * ne * d * d))
+
+
+def _ks_pvalue_two_sided(d: float, ne: float) -> float:
+    """Asymptotic two-sided KS p-value via the Kolmogorov series Q(t)."""
+    t = np.sqrt(ne) * d
+    if t <= 0.0:
+        return 1.0
+    total = 0.0
+    for k in range(1, 101):
+        term = ((-1.0) ** (k - 1)) * np.exp(-2.0 * k * k * t * t)
+        total += term
+        if abs(term) < 1e-12:
+            break
+    return float(min(max(2.0 * total, 0.0), 1.0))
+
+
+def seedmatch_ks_test(
+    log2fc,
+    is_seed_match,
+    alternative: str = "greater",
+) -> KSResult:
+    """One-sided KS test of seed-matched vs background log2FC (SeedMatchR metric).
+
+    Args:
+        log2fc: per-transcript log2 fold-change (array-like).
+        is_seed_match: boolean mask, True where the transcript carries a seed
+            match to the siRNA guide.
+        alternative: which one-sided (or two-sided) statistic, matching
+            ``scipy.stats.ks_2samp`` semantics with the seed-matched set as the
+            first sample:
+            - ``"greater"`` (default): D+ = sup(F_seed - F_background); large when
+              seed-matched transcripts are stochastically MORE repressed (more
+              negative log2FC). This is the SeedMatchR enrichment direction.
+            - ``"less"``: D- = sup(F_background - F_seed).
+            - ``"two-sided"``: D = max(D+, D-).
+
+    Returns:
+        A :class:`KSResult` with the D statistic and the asymptotic p-value.
+
+    The D statistic is computed exactly from the empirical CDFs; the p-value is
+    the asymptotic Smirnov (one-sided) or Kolmogorov-series (two-sided) form. The
+    one-sided p-value uses the plain Smirnov tail exp(-2 ne D^2), matching R's
+    ``ks.test`` (the backend SeedMatchR calls); this differs slightly from
+    ``scipy.stats.ks_2samp``, which adds the Hodges continuity correction, but
+    the D statistic is identical to scipy's.
+    """
+    values = np.asarray(log2fc, dtype=float)
+    mask = np.asarray(is_seed_match, dtype=bool)
+    if values.shape != mask.shape:
+        raise ValueError(f"log2fc and is_seed_match shape mismatch: {values.shape} vs {mask.shape}")
+    finite = np.isfinite(values)
+    seed = np.sort(values[mask & finite])
+    background = np.sort(values[~mask & finite])
+    n, m = seed.size, background.size
+    if n == 0 or m == 0:
+        raise ValueError(
+            "need at least one seed-matched and one background transcript with a finite "
+            f"log2FC (got {n} seed-matched, {m} background)"
+        )
+
+    pooled = np.concatenate([seed, background])
+    cdf_seed = np.searchsorted(seed, pooled, side="right") / n
+    cdf_bg = np.searchsorted(background, pooled, side="right") / m
+    diff = cdf_seed - cdf_bg
+    d_plus = float(diff.max())  # sup(F_seed - F_background)
+    d_minus = float((-diff).max())  # sup(F_background - F_seed)
+    ne = n * m / (n + m)
+
+    if alternative == "greater":
+        d, p = d_plus, _ks_pvalue_one_sided(d_plus, ne)
+    elif alternative == "less":
+        d, p = d_minus, _ks_pvalue_one_sided(d_minus, ne)
+    elif alternative == "two-sided":
+        d = max(d_plus, d_minus)
+        p = _ks_pvalue_two_sided(d, ne)
+    else:
+        raise ValueError(
+            f"alternative must be 'greater', 'less', or 'two-sided'; got {alternative!r}"
+        )
+    return KSResult(statistic=d, pvalue=p, n_seed_match=n, n_background=m, alternative=alternative)
+
+
+# ===========================================================================
+# GSE184929 / Schlegel et al. 2022 (rat liver Ttr GalNAc-siRNA) RNA-seq, the
+# REAL off-target ground truth. The SeedMatchR R package ships the DESeq2 results
+# as example data; export them to CSV with scripts/export_seedmatchr_data.R, then
+# load per-transcript log2FoldChange, p-value, and the seed-match annotation.
+# ===========================================================================
+SEEDMATCHR_SOURCE = (
+    "SeedMatchR R package example data (install.packages('SeedMatchR')); "
+    "Schlegel et al. 2022, GEO GSE184929 (rat liver Ttr GalNAc-siRNA). "
+    "Export with scripts/export_seedmatchr_data.R"
+)
+
+SEEDMATCHR_DATASETS: dict[str, dict] = {
+    "Schlegel_2022_Ttr_D1_30mkg": {"sirna_id": "Ttr_D1", "guide_label": "D1", "dose": "30 mg/kg"},
+    "Schlegel_2022_Ttr_D4_30mkg": {"sirna_id": "Ttr_D4", "guide_label": "D4", "dose": "30 mg/kg"},
+    "Schlegel_2022_Ttr_D1_10mkg": {"sirna_id": "Ttr_D1", "guide_label": "D1", "dose": "10 mg/kg"},
+}
+
+SEEDMATCHR_TISSUE = "rat liver (Rattus norvegicus)"
+SEEDMATCHR_ASSAY = "RNA-seq (DESeq2 results)"
+
+SEEDMATCHR_COLUMNS = [
+    "transcript_id",
+    "gene_name",
+    "log2fc",
+    "pvalue",
+    "padj",
+    "seed_match_count",
+    "seed_match",
+]
+
+_SM_ID = ("transcript_id", "gene_id", "ensembl", "ensembl_id", "transcript", "gene", "id")
+_SM_NAME = ("gene_name", "symbol", "name", "external_gene_name")
+_SM_LFC = ("log2foldchange", "log2fc", "log2_fold_change", "logfc", "lfc")
+_SM_P = ("pvalue", "p_value", "pval", "p")
+_SM_PADJ = ("padj", "fdr", "qvalue", "adj_pvalue", "adj_p")
+_SM_SEED = ("seed_match", "seed_matches", "seed_count", "seed_match_count", "n_seed", "matches")
+
+
+@dataclass(frozen=True)
+class SeedMatchRDataset:
+    """Per-transcript RNA-seq off-target table for one Schlegel 2022 contrast.
+
+    ``frame`` carries :data:`SEEDMATCHR_COLUMNS`: transcript id, gene name, the
+    DESeq2 ``log2fc`` and ``pvalue`` (and ``padj`` when present), and the seed
+    match annotation (``seed_match_count`` and the boolean-coded ``seed_match``,
+    1.0 where the transcript has at least one guide seed match, else 0.0, NaN if
+    the annotation was not exported).
+    """
+
+    name: str
+    sirna_id: str
+    dose: str
+    frame: pd.DataFrame
+    tissue: str = SEEDMATCHR_TISSUE
+    assay: str = SEEDMATCHR_ASSAY
+    role: str = field(default=OFFTARGET_CERTIFICATION)
+
+    def __len__(self) -> int:
+        return len(self.frame)
+
+    def log2fc(self) -> np.ndarray:
+        return self.frame["log2fc"].to_numpy(dtype=float)
+
+    def pvalues(self) -> np.ndarray:
+        return self.frame["pvalue"].to_numpy(dtype=float)
+
+    @property
+    def has_seed_annotation(self) -> bool:
+        return "seed_match" in self.frame.columns and bool(self.frame["seed_match"].notna().any())
+
+    def seed_match_mask(self) -> np.ndarray:
+        if not self.has_seed_annotation:
+            raise ValueError(
+                f"{self.name} has no seed-match annotation; run the seed-match step in "
+                "scripts/export_seedmatchr_data.R (a reference and the Ttr guide are required)"
+            )
+        return self.frame["seed_match"].to_numpy(dtype=float) == 1.0
+
+    def ks(self, alternative: str = "greater") -> KSResult:
+        """SeedMatchR KS test: seed-matched vs background log2FC for this contrast."""
+        return seedmatch_ks_test(self.log2fc(), self.seed_match_mask(), alternative=alternative)
+
+
+def _parse_seedmatchr(path: Path) -> pd.DataFrame:
+    df = pd.read_csv(path, sep=None, engine="python", compression="infer")
+    cols = list(df.columns)
+    lfc = _pick(cols, _SM_LFC)
+    if lfc is None:
+        raise ValueError(
+            f"{path}: need a log2 fold-change column ({_SM_LFC}); found {cols}. Export with "
+            "scripts/export_seedmatchr_data.R."
+        )
+    idc = _pick(cols, _SM_ID) or cols[0]  # write.csv puts the gene id in the first column
+    name = _pick(cols, _SM_NAME)
+    pcol = _pick(cols, _SM_P)
+    padj = _pick(cols, _SM_PADJ)
+    seed = _pick(cols, _SM_SEED)
+    n = len(df)
+
+    if seed is not None:
+        count = pd.to_numeric(df[seed], errors="coerce").to_numpy(dtype=float)
+        seed_match = np.where(np.isfinite(count), (count > 0).astype(float), np.nan)
+    else:
+        count = np.full(n, np.nan)
+        seed_match = np.full(n, np.nan)
+
+    return pd.DataFrame(
+        {
+            "transcript_id": df[idc].astype(str).to_numpy(),
+            "gene_name": (df[name].astype(str).to_numpy() if name else [""] * n),
+            "log2fc": pd.to_numeric(df[lfc], errors="coerce").to_numpy(dtype=float),
+            "pvalue": (
+                pd.to_numeric(df[pcol], errors="coerce").to_numpy(dtype=float)
+                if pcol
+                else np.full(n, np.nan)
+            ),
+            "padj": (
+                pd.to_numeric(df[padj], errors="coerce").to_numpy(dtype=float)
+                if padj
+                else np.full(n, np.nan)
+            ),
+            "seed_match_count": count,
+            "seed_match": seed_match,
+        }
+    )[SEEDMATCHR_COLUMNS]
+
+
+def default_seedmatchr_dir() -> Path:
+    return default_raw_dir() / "offtarget" / "seedmatchr"
+
+
+def load_schlegel2022(
+    dataset: str,
+    raw_dir: str | Path | None = None,
+    cache_root: str | Path | None = None,
+    rebuild: bool = False,
+) -> SeedMatchRDataset:
+    """Load one Schlegel 2022 GSE184929 contrast (REAL data; raise if absent).
+
+    Args:
+        dataset: one of :data:`SEEDMATCHR_DATASETS` (e.g.
+            ``"Schlegel_2022_Ttr_D1_30mkg"``).
+        raw_dir: directory holding ``<dataset>.csv``. Default
+            ``data/raw/offtarget/seedmatchr``.
+        cache_root: parquet cache root. Default ``data/cache``.
+        rebuild: reparse and overwrite the cache.
+    """
+    if dataset not in SEEDMATCHR_DATASETS:
+        raise KeyError(
+            f"unknown SeedMatchR dataset {dataset!r}; known: {sorted(SEEDMATCHR_DATASETS)}"
+        )
+    meta = SEEDMATCHR_DATASETS[dataset]
+    raw_dir = Path(raw_dir) if raw_dir is not None else default_seedmatchr_dir()
+    path = raw_dir / f"{dataset}.csv"
+    if not path.exists():
+        raise FileNotFoundError(
+            f"{dataset} not found at {path}. This is the REAL off-target ground truth. "
+            f"Fetch it: {SEEDMATCHR_SOURCE}. REAL DATA ONLY: no values are generated."
+        )
+    cache_root = Path(cache_root) if cache_root is not None else default_cache_dir()
+    key = CacheKey(
+        name=f"seedmatchr_{dataset}",
+        version=PARSER_VERSION,
+        params={"sha256": sha256_file(path)},
+    )
+    frame = cached_frame(key, cache_root, lambda: _parse_seedmatchr(path), rebuild=rebuild)
+    return SeedMatchRDataset(
+        name=dataset, sirna_id=meta["sirna_id"], dose=meta["dose"], frame=frame
     )

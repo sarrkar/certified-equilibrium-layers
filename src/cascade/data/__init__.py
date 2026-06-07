@@ -34,11 +34,17 @@ from .huesken import (
 )
 from .offtarget import (
     OFFTARGET_SOURCES,
+    SEEDMATCHR_DATASETS,
+    SEEDMATCHR_SOURCE,
+    KSResult,
     OffTargetDataset,
+    SeedMatchRDataset,
     load_birmingham2006,
     load_jackson2003,
     load_jackson2006,
+    load_schlegel2022,
     load_seedseq,
+    seedmatch_ks_test,
 )
 from .paths import cache_dir, data_dir, raw_dir, repo_root
 from .perturbseq import (
@@ -105,6 +111,13 @@ __all__ = [
     "load_birmingham2006",
     "load_seedseq",
     "OFFTARGET_SOURCES",
+    # GSE184929 / Schlegel 2022 RNA-seq via SeedMatchR + the KS off-target metric
+    "SeedMatchRDataset",
+    "load_schlegel2022",
+    "SEEDMATCHR_DATASETS",
+    "SEEDMATCHR_SOURCE",
+    "seedmatch_ks_test",
+    "KSResult",
     # GSE184929 off-target
     "GEOOffTargetDataset",
     "load_gse184929",

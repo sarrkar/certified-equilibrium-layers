@@ -101,7 +101,24 @@ synthetic fallback on any of these paths.
   the four contrasts `D1_10mg`, `D1_30mg`, `D4_10mg`, `D4_30mg`
   (`cascade.data.load_gse184929`). URL
   https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE184929 . This is the
-  highest-resolution off-target set used here.
+  highest-resolution off-target set used here. REAL.
+
+  - **SeedMatchR export (recommended path).** The SeedMatchR R package ships the
+    real DESeq2 results as example data: `Schlegel_2022_Ttr_D1_30mkg`,
+    `Schlegel_2022_Ttr_D4_30mkg`, `Schlegel_2022_Ttr_D1_10mkg` (Schlegel et al.
+    2022, the GSE184929 study). Run `scripts/export_seedmatchr_data.R` (needs R +
+    `install.packages("SeedMatchR")`) to write per-contrast CSVs with
+    log2FoldChange, pvalue, padj, and the seed-match annotation to
+    `data/raw/offtarget/seedmatchr/`. `cascade.data.load_schlegel2022(dataset)`
+    loads one contrast (per-transcript `log2fc`, `pvalue`, `seed_match`) and
+    raises with the exact source if absent. REAL DATA ONLY: no fallback.
+  - **Off-target evaluation metric (Theorem 4).** `seedmatch_ks_test` /
+    `SeedMatchRDataset.ks()` is the SeedMatchR metric implemented natively in
+    Python: a one-sided two-sample Kolmogorov-Smirnov test comparing the log2FC
+    ECDF of seed-matched vs non-seed-matched transcripts, returning the D
+    statistic and p-value. The D statistic matches `scipy.stats.ks_2samp`; the
+    one-sided p uses the plain Smirnov tail `exp(-2 ne D^2)`, matching R's
+    `ks.test` (the SeedMatchR backend).
 
   Rat-liver specificity caveat (READ THIS): GSE184929 measures off-target
   effects in a single tissue (rat liver), a single species, and a single
