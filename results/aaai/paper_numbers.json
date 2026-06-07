@@ -1,167 +1,294 @@
 {
-  "alpha": 0.5,
-  "source_files": [
-    "coverage.json",
-    "tightness.json",
-    "normalized.json",
-    "realdata.json",
-    "backbone_efficacy.json"
-  ],
-  "certificate_soundness_synthetic": {
-    "note": "random-graph ensembles: certificate math soundness only, no biological claim.",
-    "certificate": {
-      "alpha": 0.5,
-      "radius_constant_one_minus_alpha_over_alpha": 1.0,
-      "p_alpha_eigenvalue_range": [
-        0.3333333333333333,
-        1.0
-      ],
-      "p_alpha_operator_norm": 1.0,
-      "bernstein_example": {
-        "config": "star graph, 32 uncertain edges, c = 0.5, delta = 0.05",
-        "v": 8.0,
-        "L": 0.5,
-        "b_delta": 13.11735788958531,
-        "radius_unit_x0": 13.11735788958531
-      }
-    },
-    "coverage": {
-      "verdict": "PASS",
-      "any_violation": false,
-      "max_excess_violation": -0.01,
-      "regime": "spectrally-bounded random matchings (||A||_op <= 1), the regime where the un-normalized P_alpha certificate assumption ||P_alpha||=1 holds",
-      "nominal_vs_empirical": [
-        {
-          "delta": 0.3,
-          "nominal_coverage": 0.7,
-          "min_empirical_coverage": 1.0
-        },
-        {
-          "delta": 0.2,
-          "nominal_coverage": 0.8,
-          "min_empirical_coverage": 1.0
-        },
-        {
-          "delta": 0.1,
-          "nominal_coverage": 0.9,
-          "min_empirical_coverage": 1.0
-        },
-        {
-          "delta": 0.05,
-          "nominal_coverage": 0.95,
-          "min_empirical_coverage": 1.0
-        },
-        {
-          "delta": 0.02,
-          "nominal_coverage": 0.98,
-          "min_empirical_coverage": 1.0
-        },
-        {
-          "delta": 0.01,
-          "nominal_coverage": 0.99,
-          "min_empirical_coverage": 1.0
-        }
-      ]
-    },
-    "tightness": {
-      "sqrt_c_one_minus_c": {
-        "variance_term_argmax_c": 0.5,
-        "variance_term_over_sqrt_c1mc_cv": 4.685968054479842e-16,
-        "full_radius_argmax_vs_edges": {
-          "16": 0.36,
-          "64": 0.42,
-          "256": 0.46,
-          "1024": 0.48,
-          "4096": 0.49
-        }
-      },
-      "matching_lower_bound": {
-        "v": 8.0,
-        "sqrt_v": 2.8284271247461903,
-        "bernstein_b": 13.11735788958531,
-        "b_over_empirical_quantile": 4.637686357488316
-      },
-      "probabilistic_vs_deterministic": {
-        "fitted_ratio_exponent": 0.5326220640552931,
-        "approx_sqrt_e": true
-      }
-    },
-    "min_degree_breakdown": {
-      "criterion": "rho = max_i t_i/dbar_i < 1 (degrees concentrate); breakdown at first cutoff with rho >= 1",
-      "breakdown_cutoff_rho_ge_1": 0.925,
-      "llv_breakdown_cutoff": 0.95,
-      "min_degree_vs_threshold": [
-        {
-          "cutoff": 0.7,
-          "min_expected_degree": 43.18503153578777,
-          "degree_rel_fluctuation": 0.39055942624017753,
-          "assumption_holds": true
-        },
-        {
-          "cutoff": 0.725,
-          "min_expected_degree": 40.35389593628495,
-          "degree_rel_fluctuation": 0.39973421631161576,
-          "assumption_holds": true
-        },
-        {
-          "cutoff": 0.75,
-          "min_expected_degree": 37.38524225789728,
-          "degree_rel_fluctuation": 0.41188644940424707,
-          "assumption_holds": true
-        },
-        {
-          "cutoff": 0.775,
-          "min_expected_degree": 34.35348978377394,
-          "degree_rel_fluctuation": 0.42608188546572046,
-          "assumption_holds": true
-        },
-        {
-          "cutoff": 0.8,
-          "min_expected_degree": 29.609363274216555,
-          "degree_rel_fluctuation": 0.4553568306298412,
-          "assumption_holds": true
-        },
-        {
-          "cutoff": 0.825,
-          "min_expected_degree": 25.56380943866865,
-          "degree_rel_fluctuation": 0.4866399018121875,
-          "assumption_holds": true
-        },
-        {
-          "cutoff": 0.85,
-          "min_expected_degree": 20.242237427431753,
-          "degree_rel_fluctuation": 0.5703990938517416,
-          "assumption_holds": true
-        },
-        {
-          "cutoff": 0.875,
-          "min_expected_degree": 16.777700732406014,
-          "degree_rel_fluctuation": 0.6370404083530942,
-          "assumption_holds": true
-        },
-        {
-          "cutoff": 0.9,
-          "min_expected_degree": 13.131254461744108,
-          "degree_rel_fluctuation": 0.7618932913577882,
-          "assumption_holds": true
-        },
-        {
-          "cutoff": 0.925,
-          "min_expected_degree": 7.786519213530186,
-          "degree_rel_fluctuation": 1.0382931191303826,
-          "assumption_holds": false
-        },
-        {
-          "cutoff": 0.95,
-          "min_expected_degree": 2.8891558580539076,
-          "degree_rel_fluctuation": 2.6103826758833364,
-          "assumption_holds": false
-        }
-      ],
-      "coverage_when_valid": {
-        "structure_coverage": 1.0,
-        "prediction_coverage": 1.0
-      }
+  "data_policy": "REAL DATA ONLY: every number names its real source dataset; a section whose real data is absent is recorded as pending with the exact source, never a fabricated value.",
+  "T1_leakage_free_identifiability": {
+    "provenance": "Huesken 2005 on-target efficacy (OligoFormer suite); disjoint CCMP backbone vs a shared-encoder CBM and a Concept Embedding Model on the SAME real data",
+    "status": "pending_real_data",
+    "source": "Huesken 2005 efficacy table not found under /home/shadi/ICLR2026/data/raw/efficacy (looked for ['huesken.csv', 'huesken.tsv', 'huesken.txt'] or a master ['siRNAEfficacyDB.csv', 'siRNAEfficacyDB.tsv', 'efficacy_master.csv']). Fetch the real file: https://raw.githubusercontent.com/lulab/OligoFormer/main/data/Huesken.csv  (source: https://github.com/lulab/OligoFormer (data/ directory)). Run scripts/download_efficacy.sh, or place it at /home/shadi/ICLR2026/data/raw/efficacy/huesken.csv. REAL DATA ONLY: no rows are generated when the file is absent.",
+    "metrics": {
+      "per_channel_leakage_machine_zero": null,
+      "probe_auc_vs_baseline": null,
+      "completeness": null,
+      "shared_vs_disjoint": null
     }
-  }
+  },
+  "T2_contraction_stability": {
+    "provenance": "TRRUST v2 (human); https://www.grnpedia.org/trrust/data/trrust_rawdata.human.tsv",
+    "status": "ok",
+    "acceptance": "RESTRICTED",
+    "rho_S": 1.0000000000000013,
+    "operator_2norm_S": 8.31298825078874,
+    "inf_norm_S": 1.0000000000000002,
+    "certified_contraction_constant_l2_rho": 1.0000000000000235,
+    "true_operator_2norm_max": 2.364708423498622,
+    "measured_max_ratio": 0.9530133807090254,
+    "l2_rho_constant_holds": false,
+    "inf_norm_nonexpansive": true,
+    "alpha_min_l2_norm_regime": 0.8797063138029674,
+    "signed_spectral_gap": {
+      "rho": 1.0000000000000009,
+      "second_abs": 0.707106781186548,
+      "spectral_gap": 0.29289321881345287,
+      "min_real_eig": -0.5219290358875505
+    },
+    "alpha_sweep": [
+      {
+        "alpha": 0.05,
+        "certified_l2_rho": 1.0000000000000235,
+        "certified_l2_norm": null,
+        "certified_inf": 1.0000000000000036,
+        "operator_2norm": 0.9999999999999991,
+        "measured_l2_max_ratio": 0.10349881225155586,
+        "dirichlet_ratio": 0.0032119892064853828
+      },
+      {
+        "alpha": 0.1,
+        "certified_l2_rho": 1.0000000000000124,
+        "certified_l2_norm": null,
+        "certified_inf": 1.0000000000000024,
+        "operator_2norm": 0.9996742569784011,
+        "measured_l2_max_ratio": 0.15005934938064427,
+        "dirichlet_ratio": 0.012341093848157859
+      },
+      {
+        "alpha": 0.2,
+        "certified_l2_rho": 1.0000000000000058,
+        "certified_l2_norm": null,
+        "certified_inf": 1.0000000000000013,
+        "operator_2norm": 1.6571786886915008,
+        "measured_l2_max_ratio": 0.2655403582093798,
+        "dirichlet_ratio": 0.046056827930679604
+      },
+      {
+        "alpha": 0.3,
+        "certified_l2_rho": 1.0000000000000029,
+        "certified_l2_norm": null,
+        "certified_inf": 1.0000000000000002,
+        "operator_2norm": 2.0834999386974298,
+        "measured_l2_max_ratio": 0.36983622797643295,
+        "dirichlet_ratio": 0.09799233975605315
+      },
+      {
+        "alpha": 0.4,
+        "certified_l2_rho": 1.000000000000002,
+        "certified_l2_norm": null,
+        "certified_inf": 1.0000000000000002,
+        "operator_2norm": 2.3094894889694486,
+        "measured_l2_max_ratio": 0.4649515880653713,
+        "dirichlet_ratio": 0.16676305305334457
+      },
+      {
+        "alpha": 0.5,
+        "certified_l2_rho": 1.0000000000000013,
+        "certified_l2_norm": null,
+        "certified_inf": 1.0000000000000002,
+        "operator_2norm": 2.364708423498622,
+        "measured_l2_max_ratio": 0.5562517580971724,
+        "dirichlet_ratio": 0.252290280864662
+      },
+      {
+        "alpha": 0.6,
+        "certified_l2_rho": 1.0000000000000009,
+        "certified_l2_norm": null,
+        "certified_inf": 1.0000000000000002,
+        "operator_2norm": 2.2715747151522385,
+        "measured_l2_max_ratio": 0.6435517960472321,
+        "dirichlet_ratio": 0.35556658238418826
+      },
+      {
+        "alpha": 0.7,
+        "certified_l2_rho": 1.0000000000000007,
+        "certified_l2_norm": null,
+        "certified_inf": 1.0,
+        "operator_2norm": 2.0510200390290367,
+        "measured_l2_max_ratio": 0.729754816546069,
+        "dirichlet_ratio": 0.47855202711467126
+      },
+      {
+        "alpha": 0.8,
+        "certified_l2_rho": 1.0000000000000002,
+        "certified_l2_norm": null,
+        "certified_inf": 1.0,
+        "operator_2norm": 1.7302226257083855,
+        "measured_l2_max_ratio": 0.8174787446894437,
+        "dirichlet_ratio": 0.6241569948182305
+      },
+      {
+        "alpha": 0.9,
+        "certified_l2_rho": 1.0000000000000002,
+        "certified_l2_norm": 5.334876893541386,
+        "certified_inf": 1.0,
+        "operator_2norm": 1.3552442044870712,
+        "measured_l2_max_ratio": 0.907055014236089,
+        "dirichlet_ratio": 0.7962942260170927
+      },
+      {
+        "alpha": 0.95,
+        "certified_l2_rho": 1.0000000000000002,
+        "certified_l2_norm": 1.6257363650962613,
+        "certified_inf": 1.0,
+        "operator_2norm": 1.169904103381228,
+        "measured_l2_max_ratio": 0.9530133807090254,
+        "dirichlet_ratio": 0.8938374748670134
+      }
+    ],
+    "dirichlet_energies": [
+      {
+        "alpha": 0.05,
+        "ratio": 0.0032119892064853828
+      },
+      {
+        "alpha": 0.1,
+        "ratio": 0.012341093848157859
+      },
+      {
+        "alpha": 0.2,
+        "ratio": 0.046056827930679604
+      },
+      {
+        "alpha": 0.3,
+        "ratio": 0.09799233975605315
+      },
+      {
+        "alpha": 0.4,
+        "ratio": 0.16676305305334457
+      },
+      {
+        "alpha": 0.5,
+        "ratio": 0.252290280864662
+      },
+      {
+        "alpha": 0.6,
+        "ratio": 0.35556658238418826
+      },
+      {
+        "alpha": 0.7,
+        "ratio": 0.47855202711467126
+      },
+      {
+        "alpha": 0.8,
+        "ratio": 0.6241569948182305
+      },
+      {
+        "alpha": 0.9,
+        "ratio": 0.7962942260170927
+      },
+      {
+        "alpha": 0.95,
+        "ratio": 0.8938374748670134
+      }
+    ],
+    "note": "rho-based L2 constant is exact for the symmetric variant and exceeded on the signed/directed GRN by non-normality; the inf-norm certificate holds for every alpha and the L2 ||S||_2 bound holds for alpha > alpha_min."
+  },
+  "T3_mass_action_constraint": {
+    "provenance": "Huesken 2005 efficacy + ViennaRNA seed-duplex free energy dG (real)",
+    "status": "pending_real_data",
+    "source": "Huesken 2005 efficacy table not found under /home/shadi/ICLR2026/data/raw/efficacy (looked for ['huesken.csv', 'huesken.tsv', 'huesken.txt'] or a master ['siRNAEfficacyDB.csv', 'siRNAEfficacyDB.tsv', 'efficacy_master.csv']). Fetch the real file: https://raw.githubusercontent.com/lulab/OligoFormer/main/data/Huesken.csv  (source: https://github.com/lulab/OligoFormer (data/ directory)). Run scripts/download_efficacy.sh, or place it at /home/shadi/ICLR2026/data/raw/efficacy/huesken.csv. REAL DATA ONLY: no rows are generated when the file is absent.",
+    "metrics": {
+      "constraint_residual_max": null,
+      "accuracy_with_vs_without_projection": null
+    }
+  },
+  "T4_certified_offtarget_bound": {
+    "provenance": "GSE184929 RNA-seq (SeedMatchR export), Jackson 2006 and Birmingham 2006 microarray; STRING v12 GRN",
+    "status": "pending_real_data",
+    "acceptance": "PENDING",
+    "pending": {
+      "gse184929": {
+        "assay": "rna_seq",
+        "source": "Schlegel_2022_Ttr_D1_30mkg not found at /home/shadi/ICLR2026/data/raw/offtarget/seedmatchr/Schlegel_2022_Ttr_D1_30mkg.csv. This is the REAL off-target ground truth. Fetch it: SeedMatchR R package example data (install.packages('SeedMatchR')); Schlegel et al. 2022, GEO GSE184929 (rat liver Ttr GalNAc-siRNA). Export with scripts/export_seedmatchr_data.R. REAL DATA ONLY: no values are generated."
+      },
+      "jackson2006": {
+        "assay": "microarray",
+        "source": "jackson2006 off-target table not found at /home/shadi/ICLR2026/data/raw/offtarget/jackson2006.csv. Place the parsed supplement table there; see docs/DATA_CARD.md."
+      },
+      "birmingham2006": {
+        "assay": "microarray",
+        "source": "birmingham2006 off-target table not found at /home/shadi/ICLR2026/data/raw/offtarget/birmingham2006.csv. Place the parsed supplement table there; see docs/DATA_CARD.md."
+      }
+    },
+    "cross_assay": {
+      "rna_seq_mean_ks_D": null,
+      "microarray_mean_ks_D": null,
+      "note": "RNA-seq (GSE184929) and microarray (Jackson, Birmingham) are different assays; differences in the KS separation and the bound tightness are expected and reported."
+    },
+    "metrics": {
+      "certified_bound_vs_measured_deviation": null,
+      "ks_D": null,
+      "bound_binds": null
+    }
+  },
+  "baselines_efficacy": {
+    "provenance": "Huesken 2005 efficacy train/test split (OligoFormer protocol)",
+    "status": "pending_real_data",
+    "source": "Huesken 2005 efficacy table not found under /home/shadi/ICLR2026/data/raw/efficacy (looked for ['huesken.csv', 'huesken.tsv', 'huesken.txt'] or a master ['siRNAEfficacyDB.csv', 'siRNAEfficacyDB.tsv', 'efficacy_master.csv']). Fetch the real file: https://raw.githubusercontent.com/lulab/OligoFormer/main/data/Huesken.csv  (source: https://github.com/lulab/OligoFormer (data/ directory)). Run scripts/download_efficacy.sh, or place it at /home/shadi/ICLR2026/data/raw/efficacy/huesken.csv. REAL DATA ONLY: no rows are generated when the file is absent.",
+    "reported_baselines": [
+      {
+        "name": "BIOPREDsi (Huesken ANN)",
+        "source": "Huesken et al., Nat Biotechnol 23:995-1001 (2005), 10.1038/nbt1118",
+        "dataset": "Huesken test (249)",
+        "metric": "pearson",
+        "reported_value": 0.66,
+        "note": "classic Pearson R for the BIOPREDsi predictor on the 249-siRNA Huesken test split; verify against the source table before use.",
+        "verify": true
+      },
+      {
+        "name": "OligoFormer",
+        "source": "OligoFormer (lulab/OligoFormer, public release)",
+        "dataset": "Huesken test",
+        "metric": "pearson",
+        "reported_value": null,
+        "note": "transcribe from the OligoFormer paper / repo table; not asserted here.",
+        "verify": true
+      },
+      {
+        "name": "siRNADiscovery (GNN)",
+        "source": "siRNADiscovery (public release)",
+        "dataset": "Huesken test",
+        "metric": "pearson",
+        "reported_value": null,
+        "note": "transcribe from the siRNADiscovery table; not asserted here.",
+        "verify": true
+      },
+      {
+        "name": "TargetScan context++",
+        "source": "Agarwal et al., eLife 4:e05005 (2015)",
+        "dataset": "seed scoring (off-target context)",
+        "metric": "context++ score",
+        "reported_value": null,
+        "note": "published seed-affinity model; reported reference, not recomputed here.",
+        "verify": true
+      },
+      {
+        "name": "scanMiR",
+        "source": "Soutschek et al., Bioinformatics 38:2466 (2022)",
+        "dataset": "seed scoring",
+        "metric": "scanMiR affinity",
+        "reported_value": null,
+        "note": "published biochemical seed-affinity model; reported reference.",
+        "verify": true
+      },
+      {
+        "name": "PITA",
+        "source": "Kertesz et al., Nat Genet 39:1278 (2007)",
+        "dataset": "seed scoring",
+        "metric": "ddG (seed binding minus opening)",
+        "reported_value": null,
+        "note": "published seed thermodynamics model; reported reference.",
+        "verify": true
+      }
+    ],
+    "metrics": {
+      "huesken_test_pearson": null,
+      "huesken_test_spearman": null,
+      "beats_mean_baseline": null,
+      "beats_linear_baseline": null
+    }
+  },
+  "source_files": [
+    "t1_leakage.json",
+    "t2_stability.json",
+    "t3_constraint.json",
+    "t4_bound.json",
+    "baselines.json"
+  ]
 }

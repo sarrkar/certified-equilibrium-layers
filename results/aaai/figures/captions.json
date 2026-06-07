@@ -1,7 +1,3 @@
 {
-  "coverage.png": "Empirical versus nominal coverage of the matrix-Bernstein certified radius across delta on spectrally-bounded random matchings. Empirical coverage stays at or above 1 minus delta at every delta (verdict PASS, no violations).",
-  "tightness_radius_vs_c.png": "Certified radius versus edge confidence c on a star graph. The variance term peaks at the coin-flip confidence c = 0.5 and follows the sqrt(c(1-c)) scaling law; it is tightest as confidences approach 0 or 1.",
-  "tightness_prob_vs_det.png": "Probabilistic Bernstein radius versus the deterministic resolvent-Lipschitz envelope as the number of uncertain edges grows. The deterministic envelope grows linearly while the probabilistic radius grows as sqrt(E), so the probabilistic certificate is tighter by approximately sqrt(number of edges).",
-  "normalized_breakdown.png": "Symmetric-normalized (C5) certificate via degree concentration: minimum expected degree and the degree relative fluctuation rho versus STRING confidence threshold. The certificate is valid while rho < 1 and breaks down as the graph is thresholded sparser.",
-  "certified_region.png": "Resolvent-perturbation certified L2 region under the Gaussian per-edge model: certified radius versus delta and the realized out-of-sample coverage."
+  "t2_stability.png": "Theorem 2 on the real TRRUST signed/directed GRN: the true L2 operator norm of P_alpha versus the certified rho-based and inf-norm constants across alpha (the rho-based L2 constant is exceeded by non-normality; the inf-norm certificate holds for every alpha), and the Dirichlet-energy oversmoothing curve."
 }

@@ -1,31 +1,23 @@
 #!/usr/bin/env python3
-"""Project 2 (AAAI): aggregate the certification results into paper numbers.
+"""AAAI: aggregate the four-theorem experiment results into paper numbers.
 
-Reads the per-experiment JSONs under results/aaai/ and aggregates them into
-results/aaai/paper_numbers.json under three clearly separated sections:
+Reads the per-theorem result JSONs under results/aaai/ and aggregates them into
+results/aaai/paper_numbers.json under four clearly labeled sections that match the
+theorems, plus a real-data baselines block:
 
-- certificate_soundness_synthetic: C3 coverage, C4 tightness, and the C5
-  minimum-degree breakdown verified on random-graph ensembles (math soundness
-  only, no biological claim; produced by experiments/soundness/);
-- application_real_offtarget: per-dataset certified containment on the real
-  off-target sets (GSE184929, Jackson 2003/2006, Birmingham 2006, SeedSeq) plus
-  the cross-assay comparison (produced by experiments/aaai/exp_realdata.py);
-- backbone_competitiveness_efficacy: the CCMP backbone on-target efficacy on the
-  OligoFormer suite (produced by experiments/aaai/exp_backbone_efficacy.py).
+  T1 (leakage-free per-concept identifiability): exp_t1_leakage.py
+  T2 (P_alpha contraction / stability on the real signed/directed GRN): exp_t2_stability.py
+  T3 (KKT mass-action / thermodynamic constraint): exp_t3_constraint.py
+  T4 (certified off-target bound): exp_t4_bound.py
+  baselines (real efficacy, with the mandatory mean / linear comparison): exp_baselines.py
 
-Per the hard data policy (CLAUDE.md), sections 2 and 3 only appear when their
-real-data experiment has produced a JSON; until the real data is wired those
-experiments raise and the export records the application / backbone sections as
-pending real data rather than reporting any non-real number.
+REAL DATA ONLY. Every number carries a ``provenance`` field naming the real
+dataset it came from. No fabricated numbers are emitted: a section whose real data
+is not yet present is recorded as pending with the exact source to fetch, never
+backfilled. The aggregation draws no randomness and is deterministic.
 
-It copies all figures into results/aaai/figures/ with plain-string captions and
-writes a plain markdown results/aaai/SUMMARY.md whose headline leads with three
-lines: certified-radius empirical coverage vs nominal (random-graph soundness),
-certified containment on real off-target data, and backbone competitiveness on
-the efficacy suite.
-
-Deterministic aggregation: no LaTeX, no .tex. Accepts --seed and logs it for
-CLAUDE.md rule 3 consistency, though it draws no randomness.
+Copies the theorem figures into results/aaai/figures/ with plain-string captions
+and writes a plain markdown results/aaai/SUMMARY.md. No LaTeX, no .tex.
 """
 
 from __future__ import annotations
@@ -36,58 +28,43 @@ import shutil
 import sys
 from pathlib import Path
 
-import numpy as np
-import scipy.sparse as sp
+AAAI = Path(__file__).resolve().parents[2] / "results" / "aaai"
 
-REPO = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(REPO / "src"))
-
-from certification import (  # noqa: E402
-    EdgeBernoulliNoise,
-    bernstein_certificate,
-    p_alpha_eigenvalue_range,
-)
-
-AAAI = REPO / "results" / "aaai"
+# Provenance: the real dataset each theorem section draws from.
+PROVENANCE = {
+    "T1": "Huesken 2005 on-target efficacy (OligoFormer suite); disjoint CCMP backbone vs a "
+    "shared-encoder CBM and a Concept Embedding Model on the SAME real data",
+    "T2": "TRRUST v2 human signed/directed GRN (https://www.grnpedia.org/trrust/)",
+    "T3": "Huesken 2005 efficacy + ViennaRNA seed-duplex free energy dG (real)",
+    "T4": "GSE184929 RNA-seq (SeedMatchR export), Jackson 2006 and Birmingham 2006 microarray; "
+    "STRING v12 GRN",
+    "baselines": "Huesken 2005 efficacy train/test split (OligoFormer protocol)",
+}
 
 FIGURE_CAPTIONS = {
-    "coverage.png": (
-        "Empirical versus nominal coverage of the matrix-Bernstein certified radius "
-        "across delta on spectrally-bounded random matchings. Empirical coverage stays "
-        "at or above 1 minus delta at every delta (verdict PASS, no violations)."
+    "t1_leakage.png": (
+        "Theorem 1 leakage audit on real efficacy data: maximum cross-channel embedding change "
+        "per model (the disjoint CCMP backbone is at machine zero; the shared-encoder CBM and the "
+        "Concept Embedding Model leak), and the Havasi probe leakage gap and Yeh completeness."
     ),
-    "tightness_radius_vs_c.png": (
-        "Certified radius versus edge confidence c on a star graph. The variance term "
-        "peaks at the coin-flip confidence c = 0.5 and follows the sqrt(c(1-c)) scaling "
-        "law; it is tightest as confidences approach 0 or 1."
+    "t2_stability.png": (
+        "Theorem 2 on the real TRRUST signed/directed GRN: the true L2 operator norm of P_alpha "
+        "versus the certified rho-based and inf-norm constants across alpha (the rho-based L2 "
+        "constant is exceeded by non-normality; the inf-norm certificate holds for every alpha), "
+        "and the Dirichlet-energy oversmoothing curve."
     ),
-    "tightness_prob_vs_det.png": (
-        "Probabilistic Bernstein radius versus the deterministic resolvent-Lipschitz "
-        "envelope as the number of uncertain edges grows. The deterministic envelope "
-        "grows linearly while the probabilistic radius grows as sqrt(E), so the "
-        "probabilistic certificate is tighter by approximately sqrt(number of edges)."
+    "t3_constraint.png": (
+        "Theorem 3 on real Huesken efficacy with real ViennaRNA dG: the mass-action constraint "
+        "residual (KKT-projected at machine precision versus the unconstrained model) and the "
+        "held-out accuracy with and without the projection."
     ),
-    "normalized_breakdown.png": (
-        "Symmetric-normalized (C5) certificate via degree concentration: minimum "
-        "expected degree and the degree relative fluctuation rho versus STRING "
-        "confidence threshold. The certificate is valid while rho < 1 and breaks down "
-        "as the graph is thresholded sparser."
+    "t4_bound.png": (
+        "Theorem 4 on the real off-target datasets: the certified bound versus the measured "
+        "predicted-vs-DESeq2 deviation per dataset, with the per-transcript row-wise refinement."
     ),
-    "realdata.png": (
-        "Application across every off-target dataset (GSE184929 RNA-seq, Jackson 2003/2006, "
-        "Birmingham 2006, SeedSeq): the predicted off-target effect vs the measured calls "
-        "(AUC and containment separation), the contained fraction by class (measured "
-        "off-targets vs non-off-targets), certified radius vs STRING threshold per source, "
-        "and degradation with the C5 breakdown under edge subsampling."
-    ),
-    "backbone_efficacy.png": (
-        "CCMP backbone on-target efficacy (the x0 predictor) on the OligoFormer suite: "
-        "Pearson and Spearman on the Huesken test split and cross-dataset generalization to "
-        "Taka, Mix, and Shabalina, with the reported BIOPREDsi reference overlaid."
-    ),
-    "certified_region.png": (
-        "Resolvent-perturbation certified L2 region under the Gaussian per-edge model: "
-        "certified radius versus delta and the realized out-of-sample coverage."
+    "baselines.png": (
+        "Backbone efficacy on the real OligoFormer suite: Pearson / Spearman on the Huesken test "
+        "split versus the mandatory mean and ridge/linear baselines."
     ),
 }
 
@@ -95,153 +72,208 @@ FIGURE_CAPTIONS = {
 def _load(name: str) -> dict | None:
     path = AAAI / f"{name}.json"
     if not path.exists():
-        print(f"[export] WARNING: {path} missing; skipping its numbers")
+        print(f"[export] WARNING: {path} missing; section recorded as absent")
         return None
     return json.loads(path.read_text())
 
 
-def _star_confidence(n_edges: int, c: float) -> sp.csr_matrix:
-    rows, cols, data = [], [], []
-    for k in range(n_edges):
-        rows += [0, k + 1]
-        cols += [k + 1, 0]
-        data += [c, c]
-    return sp.coo_matrix((data, (rows, cols)), shape=(n_edges + 1, n_edges + 1)).tocsr()
+def _is_pending(j: dict) -> bool:
+    return (
+        j.get("status", "").startswith("pending")
+        or j.get("acceptance", {}).get("flag") == "PENDING"
+    )
 
 
-def certificate_quantities(alpha: float, delta: float) -> dict:
-    """Canonical Bernstein quantities on the star example (E=32, c=0.5)."""
-    noise = EdgeBernoulliNoise(C=_star_confidence(32, 0.5))
-    x0 = np.ones(noise.n_nodes) / np.sqrt(noise.n_nodes)  # ||x0|| = 1
-    cert = bernstein_certificate(x0, noise, alpha, delta)
-    eig_min, eig_max = p_alpha_eigenvalue_range(alpha)
+def _source_of(j: dict) -> str | None:
+    if "detail" in j and isinstance(j["detail"], dict):
+        return j["detail"].get("source")
+    if "efficacy" in j and isinstance(j["efficacy"], dict):
+        return j["efficacy"].get("source")
+    return j.get("source")
+
+
+def t1_numbers(j: dict | None) -> dict:
+    prov = PROVENANCE["T1"]
+    if j is None:
+        return {"provenance": prov, "status": "absent"}
+    if _is_pending(j):
+        return {
+            "provenance": prov,
+            "status": "pending_real_data",
+            "source": _source_of(j),
+            "metrics": {
+                "per_channel_leakage_machine_zero": None,
+                "probe_auc_vs_baseline": None,
+                "completeness": None,
+                "shared_vs_disjoint": None,
+            },
+        }
+    models = j["models"]
     return {
-        "alpha": alpha,
-        "radius_constant_one_minus_alpha_over_alpha": (1.0 - alpha) / alpha,
-        "p_alpha_eigenvalue_range": [eig_min, eig_max],
-        "p_alpha_operator_norm": eig_max,
-        "bernstein_example": {
-            "config": "star graph, 32 uncertain edges, c = 0.5, delta = " + str(delta),
-            "v": cert.v,
-            "L": cert.L,
-            "b_delta": cert.b,
-            "radius_unit_x0": cert.radius,
-        },
-    }
-
-
-def coverage_numbers(cov: dict) -> dict:
-    per_delta = []
-    for delta in cov["delta_grid"]:
-        emps = [
-            d["empirical_coverage"]
-            for cfg in cov["configs"]
-            for d in cfg["per_delta"]
-            if d["delta"] == delta
-        ]
-        per_delta.append(
-            {
-                "delta": delta,
-                "nominal_coverage": 1.0 - delta,
-                "min_empirical_coverage": float(min(emps)),
-            }
-        )
-    return {
-        "verdict": cov["verdict"],
-        "any_violation": cov["any_violation"],
-        "max_excess_violation": cov["max_excess_violation"],
-        "regime": cov["regime"],
-        "nominal_vs_empirical": per_delta,
-    }
-
-
-def tightness_numbers(ti: dict) -> dict:
-    a = ti["A_variance_scaling"]
-    b = ti["B_matching_lower_bound"]["c=0.5"]
-    c = ti["C_probabilistic_vs_deterministic"]
-    return {
-        "sqrt_c_one_minus_c": {
-            "variance_term_argmax_c": a["argmax_c_variance_term"],
-            "variance_term_over_sqrt_c1mc_cv": a["variance_term_over_sqrt_c1mc_cv"],
-            "full_radius_argmax_vs_edges": a["full_radius_argmax_vs_e"],
-        },
-        "matching_lower_bound": {
-            "v": b["v"],
-            "sqrt_v": b["sqrt_v"],
-            "bernstein_b": b["bernstein_b"],
-            "b_over_empirical_quantile": b["b_over_empirical_quantile"],
-        },
-        "probabilistic_vs_deterministic": {
-            "fitted_ratio_exponent": c["fitted_ratio_exponent"],
-            "approx_sqrt_e": c["approx_sqrt_e"],
-        },
-    }
-
-
-def breakdown_numbers(no: dict) -> dict:
-    bd = no["breakdown"]
-    return {
-        "criterion": bd["criterion"],
-        "breakdown_cutoff_rho_ge_1": bd["breakdown_cutoff"],
-        "llv_breakdown_cutoff": bd["llv_breakdown_cutoff"],
-        "min_degree_vs_threshold": [
-            {
-                "cutoff": d["cutoff"],
-                "min_expected_degree": d["min_expected_degree"],
-                "degree_rel_fluctuation": d["degree_rel_fluctuation"],
-                "assumption_holds": d["assumption_holds"],
-            }
-            for d in bd["per_cutoff"]
+        "provenance": prov,
+        "status": "ok",
+        "acceptance": j["acceptance"]["flag"],
+        "disjoint_max_cross_channel_change": models["disjoint_ccmp"]["max_cross_channel_change"],
+        "disjoint_machine_zero": j["acceptance"]["disjoint_machine_zero"],
+        "shared_encoder_max_cross_channel_change": models["shared_encoder_cbm"][
+            "max_cross_channel_change"
         ],
-        "coverage_when_valid": {
-            "structure_coverage": no["coverage"]["structure_coverage"],
-            "prediction_coverage": no["coverage"]["prediction_coverage"],
+        "cem_max_cross_channel_change": models["concept_embedding_model"][
+            "max_cross_channel_change"
+        ],
+        "probe_leakage_auc_gap": {
+            "disjoint": models["disjoint_ccmp"]["leakage_mi"]["mean_leakage_auc_gap"],
+            "shared_encoder": models["shared_encoder_cbm"]["leakage_mi"]["mean_leakage_auc_gap"],
+            "cem": models["concept_embedding_model"]["leakage_mi"]["mean_leakage_auc_gap"],
         },
+        "completeness": {m: models[m]["completeness"]["completeness"] for m in models},
     }
 
 
-def realdata_numbers(rd: dict) -> dict:
-    """Application results: per-dataset certified containment on real off-target sets."""
-    per = {}
-    for name, r in rd["per_dataset"].items():
-        c = r["containment"]
-        per[name] = {
-            "assay": r["assay"],
-            "n_nodes": r["n_nodes"],
-            "n_measured_offtargets": r["n_measured_offtargets"],
-            "certified_radius": r["certificate"]["radius"],
-            "overall_contained_fraction": c["overall_contained_fraction"],
-            "offtarget_contained_fraction": c["offtarget_contained_fraction"],
-            "background_contained_fraction": c["background_contained_fraction"],
-            "separation": c["separation"],
-            "auc_predicted_vs_measured": c["auc_predicted_vs_measured"],
-            "measured_offtargets_mostly_uncontained": c["measured_offtargets_mostly_uncontained"],
-            "radius_vs_threshold": r["radius_vs_threshold"],
-            "breakdown_subsample_fraction": r["degradation"]["breakdown_subsample_fraction"],
-            "meaningful": r["meaningful"],
-            "provenance": r["provenance"],
+def t2_numbers(j: dict | None) -> dict:
+    prov = PROVENANCE["T2"]
+    if j is None:
+        return {"provenance": prov, "status": "absent"}
+    if _is_pending(j):
+        return {"provenance": prov, "status": "pending_real_data", "source": _source_of(j)}
+    sd = j["signed_directed"]
+    sweep = [
+        {
+            "alpha": r["alpha"],
+            "certified_l2_rho": r["certified_l2_rho"],
+            "certified_l2_norm": r["certified_l2_norm"],
+            "certified_inf": r["certified_inf"],
+            "operator_2norm": r["operator_2norm"],
+            "measured_l2_max_ratio": r["measured_l2_max_ratio"],
+            "dirichlet_ratio": r["dirichlet_ratio"],
+        }
+        for r in sd["per_alpha"]
+    ]
+    return {
+        "provenance": j["grn"],
+        "status": "ok",
+        "acceptance": j["acceptance"]["flag"],
+        "rho_S": sd["rho"],
+        "operator_2norm_S": sd["operator_2norm"],
+        "inf_norm_S": sd["inf_norm"],
+        "certified_contraction_constant_l2_rho": max(
+            r["certified_l2_rho"] for r in sd["per_alpha"]
+        ),
+        "true_operator_2norm_max": max(r["operator_2norm"] for r in sd["per_alpha"]),
+        "measured_max_ratio": max(r["measured_l2_max_ratio"] for r in sd["per_alpha"]),
+        "l2_rho_constant_holds": j["acceptance"]["l2_rho_constant_holds_directed"],
+        "inf_norm_nonexpansive": j["acceptance"]["inf_norm_nonexpansive_directed"],
+        "alpha_min_l2_norm_regime": sd["alpha_min_l2_norm_regime"],
+        "signed_spectral_gap": sd["signed_spectral_gap"],
+        "alpha_sweep": sweep,
+        "dirichlet_energies": [
+            {"alpha": r["alpha"], "ratio": r["dirichlet_ratio"]} for r in sd["per_alpha"]
+        ],
+        "note": "rho-based L2 constant is exact for the symmetric variant and exceeded on the "
+        "signed/directed GRN by non-normality; the inf-norm certificate holds for every alpha and "
+        "the L2 ||S||_2 bound holds for alpha > alpha_min.",
+    }
+
+
+def t3_numbers(j: dict | None) -> dict:
+    prov = PROVENANCE["T3"]
+    if j is None:
+        return {"provenance": prov, "status": "absent"}
+    if _is_pending(j):
+        return {
+            "provenance": prov,
+            "status": "pending_real_data",
+            "source": _source_of(j),
+            "metrics": {
+                "constraint_residual_max": None,
+                "accuracy_with_vs_without_projection": None,
+            },
+        }
+    res = j["constraint_residual"]
+    acc = j["accuracy"]
+    return {
+        "provenance": prov,
+        "status": "ok",
+        "acceptance": j["acceptance"]["flag"],
+        "constraint_residual_max": res["constrained_max"],
+        "residual_tolerance": res["tolerance"],
+        "unconstrained_residual_max": res["unconstrained_max"],
+        "accuracy_unconstrained_pearson": acc["unconstrained"]["pearson"],
+        "accuracy_constrained_pearson": acc["constrained_kkt"]["pearson"],
+        "constraint_costs_accuracy": j["acceptance"].get("constraint_costs_accuracy"),
+    }
+
+
+def t4_numbers(j: dict | None) -> dict:
+    prov = PROVENANCE["T4"]
+    if j is None:
+        return {"provenance": prov, "status": "absent"}
+    per = j.get("per_dataset", {})
+    if not per:
+        return {
+            "provenance": prov,
+            "status": "pending_real_data",
+            "acceptance": j["acceptance"]["flag"],
+            "pending": {
+                n: {"assay": d["assay"], "source": d["source"]}
+                for n, d in j.get("pending", {}).items()
+            },
+            "cross_assay": j.get("cross_assay"),
+            "metrics": {
+                "certified_bound_vs_measured_deviation": None,
+                "ks_D": None,
+                "bound_binds": None,
+            },
         }
     return {
-        "note": "real measured off-target datasets; these are the datasets the certificate is "
-        "evaluated against. No values appear here unless the real-data experiment produced them.",
-        "theorem4_radius": rd.get("theorem4_radius"),
-        "per_dataset": per,
-        "cross_assay": rd["cross_assay"],
-        "acceptance": rd["acceptance"],
+        "provenance": prov,
+        "status": "ok",
+        "acceptance": j["acceptance"]["flag"],
+        "per_dataset": {
+            n: {
+                "assay": d["assay"],
+                "certified_bound": d["certified_bound"]["bound"],
+                "measured_deviation": d["measured_deviation"],
+                "bound_holds": d["bound_holds"],
+                "bound_over_measured": d["bound_over_measured"],
+                "vacuous": d["vacuous"],
+                "ks_D_measured": d["ks_measured"]["D"],
+                "ks_D_predicted": d["ks_predicted"]["D"],
+            }
+            for n, d in per.items()
+        },
+        "cross_assay": j.get("cross_assay"),
     }
 
 
-def backbone_numbers(be: dict) -> dict:
-    """Backbone competitiveness: on-target efficacy on the OligoFormer suite."""
+def baselines_numbers(j: dict | None) -> dict:
+    prov = PROVENANCE["baselines"]
+    if j is None:
+        return {"provenance": prov, "status": "absent"}
+    eff = j.get("efficacy", {})
+    if eff.get("status", "").startswith("pending") or j["acceptance"]["flag"] == "PENDING":
+        return {
+            "provenance": prov,
+            "status": "pending_real_data",
+            "source": eff.get("source"),
+            "reported_baselines": eff.get("reported_baselines"),
+            "metrics": {
+                "huesken_test_pearson": None,
+                "huesken_test_spearman": None,
+                "beats_mean_baseline": None,
+                "beats_linear_baseline": None,
+            },
+        }
+    acc = j["acceptance"]
     return {
-        "note": "on-target efficacy of the CCMP backbone (the x0 direct-repression predictor). "
-        "This measures on-target potency and does NOT validate the off-target certificate.",
-        "provenance": be["provenance"],
-        "protocol": be["protocol"],
-        "per_dataset": be["our_model"],
-        "reported_baselines": be["reported_baselines"],
-        "acceptance": be["acceptance"],
-        "cross_dataset_note": be["cross_dataset_note"],
+        "provenance": prov,
+        "status": "ok",
+        "acceptance": acc["flag"],
+        "huesken_test_pearson": acc.get("cascade_pearson"),
+        "ridge_pearson": acc.get("ridge_pearson"),
+        "beats_linear_baseline": acc.get("beats_linear"),
+        "beats_mean_baseline": acc.get("beats_mean"),
+        "reported_baselines": eff.get("reported_baselines"),
     }
 
 
@@ -255,164 +287,127 @@ def copy_figures() -> dict:
             shutil.copy2(src, fig_dir / name)
             copied[name] = caption
         else:
-            print(f"[export] WARNING: figure {src} missing; not copied")
+            print(f"[export] figure {name} not present (its experiment is pending); not copied")
     (fig_dir / "captions.json").write_text(json.dumps(copied, indent=2), encoding="utf-8")
     return copied
 
 
 def _fmt(x, nd: int = 3) -> str:
-    return "n/a" if x is None else f"{x:.{nd}f}"
+    return "pending" if x is None else (f"{x:.{nd}f}" if isinstance(x, int | float) else str(x))
 
 
 def write_summary(numbers: dict, captions: dict) -> None:
-    sound = numbers.get("certificate_soundness_synthetic", {})
-    app = numbers.get("application_real_offtarget", {})
-    back = numbers.get("backbone_competitiveness_efficacy", {})
-    cov = sound.get("coverage", {})
-    cert = sound.get("certificate", {})
-    ti = sound.get("tightness", {})
-    bd = sound.get("min_degree_breakdown", {})
+    t1 = numbers["T1_leakage_free_identifiability"]
+    t2 = numbers["T2_contraction_stability"]
+    t3 = numbers["T3_mass_action_constraint"]
+    t4 = numbers["T4_certified_offtarget_bound"]
+    bl = numbers["baselines_efficacy"]
 
-    lines = ["# AAAI results summary", ""]
+    lines = ["# AAAI four-theorem results summary", ""]
+    lines.append("## Headline (real data only)")
 
-    # The three headline lines: soundness (random graphs), application (real
-    # off-target), backbone competitiveness (efficacy).
-    lines.append("## Headline")
-    if cov:
-        worst = min(
-            (d["min_empirical_coverage"] for d in cov["nominal_vs_empirical"]), default=None
-        )
+    # 1. Baselines: beats linear / mean on real efficacy.
+    if bl["status"] == "ok":
         lines.append(
-            f"- Certificate soundness (random-graph verification, no biological claim): empirical "
-            f"coverage of the certified radius is {worst} (>= nominal 1 minus delta at every delta); "
-            f"verdict {cov['verdict']}, max excess violation {cov['max_excess_violation']} (never "
-            "violated more than delta)."
-        )
-    if app:
-        g = app["per_dataset"].get("gse184929", {})
-        acc = app["acceptance"]
-        lines.append(
-            f"- Application (real off-target data): on GSE184929 RNA-seq the certified containment "
-            f"separates measured off-targets (AUC {_fmt(g.get('auc_predicted_vs_measured'))}, "
-            f"measured-off-target contained {_fmt(g.get('offtarget_contained_fraction'))} vs "
-            f"non-off-target {_fmt(g.get('background_contained_fraction'))}); acceptance "
-            f"{acc['flag']} across GSE184929 and {len(app['cross_assay']['microarray_datasets'])} "
-            "microarray sets."
+            f"- Baselines (real Huesken efficacy): CASCADE beats the mean baseline="
+            f"{bl.get('beats_mean_baseline')} and the ridge/linear baseline="
+            f"{bl.get('beats_linear_baseline')} (Huesken-test Pearson "
+            f"{_fmt(bl.get('huesken_test_pearson'))})."
         )
     else:
         lines.append(
-            "- Application (real off-target data): PENDING real data. exp_realdata.py runs the "
-            "Theorem 4 certificate the moment the real off-target / STRING join is wired; no "
-            "non-real number is reported."
+            "- Baselines (real Huesken efficacy): PENDING real data. The mandatory mean and "
+            "ridge/linear comparison runs the moment the real OligoFormer CSVs are present; no "
+            "number is fabricated."
         )
-    if back:
-        ht = back["per_dataset"].get("huesken_test", {})
-        ba = back["acceptance"]
+    # 2. T2 certified constant on the real GRN.
+    if t2["status"] == "ok":
         lines.append(
-            f"- Backbone competitiveness (efficacy): Huesken-test Pearson "
-            f"{_fmt(ht.get('pearson'))} / Spearman {_fmt(ht.get('spearman'))}; acceptance "
-            f"{ba['flag']} vs reported {ba.get('best_reported_name')} "
-            f"({ba.get('best_reported_pearson')})."
+            f"- T2 (real TRRUST GRN): rho(S)={_fmt(t2['rho_S'])}, certified L2 contraction constant "
+            f"{_fmt(t2['certified_contraction_constant_l2_rho'])}; verdict {t2['acceptance']} "
+            f"(rho-based L2 bound holds={t2['l2_rho_constant_holds']}, inf-norm non-expansive="
+            f"{t2['inf_norm_nonexpansive']} for every alpha; ||S||_2={_fmt(t2['operator_2norm_S'])})."
+        )
+    else:
+        lines.append("- T2: PENDING real GRN.")
+    # 3. T3 residual.
+    if t3["status"] == "ok":
+        lines.append(
+            f"- T3 (real Huesken + ViennaRNA): constraint residual {_fmt(t3['constraint_residual_max'], 2)} "
+            f"(< {t3['residual_tolerance']:g}); constraint costs accuracy={t3.get('constraint_costs_accuracy')}."
         )
     else:
         lines.append(
-            "- Backbone competitiveness (efficacy): PENDING real data. exp_backbone_efficacy.py "
-            "trains on the real OligoFormer suite when the CSVs are present; no non-real number "
-            "is reported."
+            "- T3 (real Huesken + ViennaRNA): PENDING real efficacy data. The KKT projection holds "
+            "the mass-action residual below 1e-8 on every seed in the fixture check; the real-data "
+            "residual runs when the OligoFormer CSVs are present."
+        )
+    # 4. T4 binds on real GSE184929.
+    if t4["status"] == "ok" and "gse184929" in t4.get("per_dataset", {}):
+        g = t4["per_dataset"]["gse184929"]
+        lines.append(
+            f"- T4 (real GSE184929 RNA-seq): bound holds={g['bound_holds']}, bound/measured="
+            f"{_fmt(g['bound_over_measured'], 2)}, vacuous={g['vacuous']}."
+        )
+    else:
+        lines.append(
+            "- T4 (real GSE184929 RNA-seq): PENDING real data. Whether the certified bound binds is "
+            "reported once the SeedMatchR export and the STRING / sequence join are wired."
         )
     lines.append("")
 
-    # Section 1: certificate soundness (random-graph math verification).
-    lines.append("## 1. Certificate soundness (random-graph verification, no biological claim)")
-    if cert:
-        ex = cert["bernstein_example"]
-        eig = cert["p_alpha_eigenvalue_range"]
-        lines += [
-            f"- alpha = {cert['alpha']}; certified-radius constant (1-alpha)/alpha = "
-            f"{cert['radius_constant_one_minus_alpha_over_alpha']}; P_alpha eigenvalues in "
-            f"[{eig[0]:.4f}, {eig[1]:.1f}] (operator norm {cert['p_alpha_operator_norm']}).",
-            f"- Bernstein quantities ({ex['config']}): v = {ex['v']}, L = {ex['L']}, "
-            f"b(delta) = {ex['b_delta']:.4f}.",
-        ]
-    if ti:
-        s = ti["sqrt_c_one_minus_c"]
-        p = ti["probabilistic_vs_deterministic"]
-        lines += [
-            f"- Tightness (C4): the variance term peaks at c = {s['variance_term_argmax_c']} and "
-            f"follows sqrt(c(1-c)) (CV {s['variance_term_over_sqrt_c1mc_cv']:.2e}); probabilistic "
-            f"vs deterministic ratio exponent {p['fitted_ratio_exponent']:.3f} (approx sqrt(E)).",
-        ]
-    if cov:
+    lines.append("## T1 leakage-free per-concept identifiability")
+    lines.append(f"- Provenance: {t1['provenance']}")
+    if t1["status"] == "ok":
         lines.append(
-            f"- Coverage (C3): empirical vs nominal across delta on random matchings, verdict "
-            f"{cov['verdict']}."
+            f"- Disjoint cross-channel change {_fmt(t1['disjoint_max_cross_channel_change'], 2)} "
+            f"(machine zero={t1['disjoint_machine_zero']}); shared encoder "
+            f"{_fmt(t1['shared_encoder_max_cross_channel_change'])}, CEM "
+            f"{_fmt(t1['cem_max_cross_channel_change'])}. Verdict {t1['acceptance']}."
         )
-    if bd:
-        lines.append(
-            f"- Symmetric-normalized breakdown (C5): degree concentration fails (rho >= 1) at "
-            f"STRING cutoff {bd['breakdown_cutoff_rho_ge_1']}; LLV min-degree condition lost at "
-            f"{bd['llv_breakdown_cutoff']}."
-        )
+    else:
+        lines.append(f"- PENDING real data ({t1['status']}).")
     lines.append("")
 
-    # Section 2: application results (real off-target data).
-    lines.append("## 2. Application results (real off-target data)")
-    if not app:
+    lines.append("## T2 P_alpha contraction / stability (real signed/directed GRN)")
+    if t2["status"] == "ok":
         lines.append(
-            "PENDING real data. Per the hard data policy, exp_realdata.py uses only real measured "
-            "off-target calls and a real STRING GRN and raises until that join is wired, so no "
-            "containment numbers are reported here yet."
+            f"- rho(S)={_fmt(t2['rho_S'])}, ||S||_2={_fmt(t2['operator_2norm_S'])}, "
+            f"||S||_inf={_fmt(t2['inf_norm_S'])}; max true ||P_alpha||_2 "
+            f"{_fmt(t2['true_operator_2norm_max'])}, max measured ratio {_fmt(t2['measured_max_ratio'])}; "
+            f"alpha sweep over {len(t2['alpha_sweep'])} values; signed spectral gap "
+            f"{_fmt(t2['signed_spectral_gap']['spectral_gap'])} (min real eig "
+            f"{_fmt(t2['signed_spectral_gap']['min_real_eig'])})."
         )
-    if app:
-        lines.append(app["note"])
-        lines.append("")
+        lines.append(f"- {t2['note']}")
+    else:
+        lines.append("- PENDING real GRN.")
+    lines.append("")
+
+    lines.append("## T3 KKT mass-action / thermodynamic constraint")
+    lines.append(
+        f"- Provenance: {t3['provenance']}; PENDING real data"
+        if t3["status"] != "ok"
+        else f"- Provenance: {t3['provenance']}"
+    )
+    lines.append("")
+
+    lines.append("## T4 certified off-target bound (per real dataset)")
+    if t4["status"] == "ok":
         lines.append(
-            "| dataset | assay | AUC | separation | off-target contained | non-off contained | meaningful |"
+            "| dataset | assay | certified bound | measured deviation | binds | KS D (measured) |"
         )
-        lines.append("| --- | --- | --- | --- | --- | --- | --- |")
-        for name, r in app["per_dataset"].items():
+        lines.append("| --- | --- | --- | --- | --- | --- |")
+        for n, d in t4["per_dataset"].items():
             lines.append(
-                f"| {name} | {r['assay']} | {_fmt(r['auc_predicted_vs_measured'])} | "
-                f"{_fmt(r['separation'])} | {_fmt(r['offtarget_contained_fraction'])} | "
-                f"{_fmt(r['background_contained_fraction'])} | {r['meaningful']} |"
+                f"| {n} | {d['assay']} | {_fmt(d['certified_bound'])} | {_fmt(d['measured_deviation'])} "
+                f"| {d['bound_holds'] and not d['vacuous']} | {_fmt(d['ks_D_measured'])} |"
             )
-        ca = app["cross_assay"]
-        lines.append("")
+    else:
+        pend = t4.get("pending", {})
         lines.append(
-            f"- Cross-assay: RNA-seq mean AUC {_fmt(ca['rna_seq_mean_auc'])} vs microarray mean "
-            f"AUC {_fmt(ca['microarray_mean_auc'])}. {ca['note']}"
+            "- PENDING real data for: " + ", ".join(f"{n} ({d['assay']})" for n, d in pend.items())
         )
-        acc = app["acceptance"]
-        lines.append(
-            f"- ACCEPTANCE {acc['flag']}: GSE184929 meaningful={acc['gse184929_meaningful']}, "
-            f"any microarray meaningful={acc['any_microarray_meaningful']}; inconsistencies="
-            f"{acc['inconsistencies']}."
-        )
-    lines.append("")
-
-    # Section 3: backbone competitiveness (efficacy data).
-    lines.append("## 3. Backbone competitiveness (efficacy data, on-target only)")
-    if not back:
-        lines.append(
-            "PENDING real data. exp_backbone_efficacy.py trains the CCMP backbone on the real "
-            "OligoFormer suite and raises when the CSVs are absent, so no efficacy numbers are "
-            "reported here yet."
-        )
-    if back:
-        lines.append(back["note"])
-        lines.append("")
-        lines.append("| dataset | n | Pearson | Spearman |")
-        lines.append("| --- | --- | --- | --- |")
-        for name, r in back["per_dataset"].items():
-            lines.append(f"| {name} | {r['n']} | {_fmt(r['pearson'])} | {_fmt(r['spearman'])} |")
-        ba = back["acceptance"]
-        lines.append("")
-        lines.append(
-            f"- ACCEPTANCE {ba['flag']}: our Huesken-test Pearson "
-            f"{_fmt(ba['our_huesken_test_pearson'])} vs best reported {ba.get('best_reported_name')} "
-            f"({ba.get('best_reported_pearson')}). {ba['note']}"
-        )
-        lines.append(f"- {back['cross_dataset_note']}")
     lines.append("")
 
     lines.append("## Figures (results/aaai/figures/)")
@@ -430,44 +425,24 @@ def main() -> int:
     )
     parser.add_argument("--out-dir", type=Path, default=AAAI)
     args = parser.parse_args()
-    print(f"[export] seed={args.seed} (deterministic aggregation)")
-
-    cov = _load("coverage")
-    ti = _load("tightness")
-    no = _load("normalized")
-    rd = _load("realdata")
-    be = _load("backbone_efficacy")
-    alpha = ti["alpha"] if ti else 0.5
-    delta = ti["delta"] if ti else 0.05
-
-    # Three clearly separated sections.
-    soundness = {
-        "note": "random-graph ensembles: certificate math soundness only, no biological claim.",
-        "certificate": certificate_quantities(alpha, delta),
-    }
-    if cov:
-        soundness["coverage"] = coverage_numbers(cov)
-    if ti:
-        soundness["tightness"] = tightness_numbers(ti)
-    if no:
-        soundness["min_degree_breakdown"] = breakdown_numbers(no)
+    print(f"[export] seed={args.seed} (deterministic aggregation, real data only)")
 
     numbers = {
-        "alpha": alpha,
+        "data_policy": "REAL DATA ONLY: every number names its real source dataset; a section whose "
+        "real data is absent is recorded as pending with the exact source, never a fabricated value.",
+        "T1_leakage_free_identifiability": t1_numbers(_load("t1_leakage")),
+        "T2_contraction_stability": t2_numbers(_load("t2_stability")),
+        "T3_mass_action_constraint": t3_numbers(_load("t3_constraint")),
+        "T4_certified_offtarget_bound": t4_numbers(_load("t4_bound")),
+        "baselines_efficacy": baselines_numbers(_load("baselines")),
         "source_files": [
-            "coverage.json",
-            "tightness.json",
-            "normalized.json",
-            "realdata.json",
-            "backbone_efficacy.json",
+            "t1_leakage.json",
+            "t2_stability.json",
+            "t3_constraint.json",
+            "t4_bound.json",
+            "baselines.json",
         ],
-        "certificate_soundness_synthetic": soundness,
     }
-    if rd:
-        numbers["application_real_offtarget"] = realdata_numbers(rd)
-    if be:
-        numbers["backbone_competitiveness_efficacy"] = backbone_numbers(be)
-
     out_path = args.out_dir / "paper_numbers.json"
     out_path.write_text(json.dumps(numbers, indent=2), encoding="utf-8")
     print(f"[export] wrote {out_path}")
