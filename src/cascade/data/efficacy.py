@@ -41,11 +41,18 @@ from .paths import cache_dir as default_cache_dir
 from .paths import raw_dir as default_raw_dir
 from .roles import EFFICACY_BACKBONE
 
-PARSER_VERSION = "efficacy-v2"
+PARSER_VERSION = "efficacy-v3"
 
-# Canonical public sources for the real efficacy compilation.
+# Canonical public sources for the real efficacy compilation. The OligoFormer
+# release stores the parsed sets under Comparison methods/Monopoli-RF/datasets/
+# (Hu.csv = Huesken, Taka.csv = Katoh, Mixset.csv = the pooled mix); the 19mer
+# column is the SENSE strand and the guide is its reverse complement.
 OLIGOFORMER_DATA = "https://raw.githubusercontent.com/lulab/OligoFormer/main/data"
-OLIGOFORMER_REPO = "https://github.com/lulab/OligoFormer (data/ directory)"
+OLIGOFORMER_DATASETS = (
+    "https://raw.githubusercontent.com/lulab/OligoFormer/main/"
+    "Comparison%20methods/Monopoli-RF/datasets"
+)
+OLIGOFORMER_REPO = "https://github.com/lulab/OligoFormer (Comparison methods/Monopoli-RF/datasets)"
 SIRNA_EFFICACY_DB = (
     "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11665841/ (siRNAEfficacyDB supplement)"
 )
@@ -61,10 +68,10 @@ EFFICACY_STUDIES: dict[str, dict] = {
         "cell_line": "H1299",
         "assay": "branched-DNA residual mRNA",
         "citation": "Huesken et al., Nat Biotechnol 23:995-1001 (2005), 10.1038/nbt1118",
-        "n_sirna": 2431,
+        "n_sirna": 2361,
         "n_mrna": 34,
         "filename": "huesken.csv",
-        "url": f"{OLIGOFORMER_DATA}/Huesken.csv",
+        "url": f"{OLIGOFORMER_DATASETS}/Hu.csv",
         "source": OLIGOFORMER_REPO,
         "has_split": True,
     },
@@ -143,7 +150,20 @@ EFFICACY_STUDIES: dict[str, dict] = {
         "n_sirna": 702,
         "n_mrna": 1,
         "filename": "katoh.csv",
-        "url": f"{OLIGOFORMER_DATA}/Katoh.csv",
+        "url": f"{OLIGOFORMER_DATASETS}/Taka.csv",
+        "source": OLIGOFORMER_REPO,
+        "has_split": False,
+    },
+    "mix": {
+        "study": "Mix (OligoFormer)",
+        "match": "Mix",
+        "cell_line": "various",
+        "assay": "various",
+        "citation": "OligoFormer Mixset (pooled Reynolds / Vickers / Harborth / Ui-Tei / Khvorova)",
+        "n_sirna": 472,
+        "n_mrna": None,
+        "filename": "mix.csv",
+        "url": f"{OLIGOFORMER_DATASETS}/Mixset.csv",
         "source": OLIGOFORMER_REPO,
         "has_split": False,
     },
@@ -234,10 +254,62 @@ def _normalize_efficacy(values: np.ndarray) -> np.ndarray:
     return np.clip(eff, 0.0, 1.0)
 
 
-def _to_schema(df: pd.DataFrame, key: str) -> pd.DataFrame:
-    """Map a raw frame to :data:`COLUMNS` for study ``key`` (column-name tolerant)."""
+_RNA_COMPLEMENT = {"A": "U", "U": "A", "G": "C", "C": "G", "N": "N"}
+
+
+def reverse_complement(seq: str) -> str:
+    """RNA reverse complement over {A, C, G, U}: A<->U, G<->C, then reverse.
+
+    Used to recover the antisense (guide) strand from the OligoFormer 19mer, which
+    is the SENSE / passenger strand given 5' to 3'. An involution: rc(rc(x)) == x.
+    """
+    rna = str(seq).strip().upper().replace("T", "U")
+    return "".join(_RNA_COMPLEMENT.get(b, b) for b in reversed(rna))
+
+
+# OligoFormer release schema (Comparison methods/Monopoli-RF/datasets/*.csv):
+# ``19mer`` is the SENSE (passenger) strand 5'->3'; ``expression`` is residual mRNA %.
+_OLIGOFORMER_SEQ = ("19mer", "sequence", "seq", "sirna")
+_OLIGOFORMER_EXPR = ("expression", "residual_expression", "norm_expression")
+
+
+def _is_oligoformer(cols: list[str]) -> bool:
+    return (
+        _pick(cols, _OLIGOFORMER_SEQ) is not None
+        and _pick(cols, _OLIGOFORMER_EXPR) is not None
+        and _pick(cols, _ANTISENSE) is None
+    )
+
+
+def _parse_oligoformer(df: pd.DataFrame, key: str) -> pd.DataFrame:
+    """OligoFormer schema: sense = 19mer (RNA), antisense = rc(19mer), efficacy = 1 - expr/100."""
     meta = EFFICACY_STUDIES[key]
     cols = list(df.columns)
+    seq = _pick(cols, _OLIGOFORMER_SEQ)
+    expr = _pick(cols, _OLIGOFORMER_EXPR)
+    n = len(df)
+    sense = df[seq].astype(str).str.strip().str.upper().str.replace("T", "U", regex=False)
+    antisense = sense.map(reverse_complement)
+    efficacy = np.clip(1.0 - pd.to_numeric(df[expr], errors="coerce").to_numpy() / 100.0, 0.0, 1.0)
+    return pd.DataFrame(
+        {
+            "antisense": antisense.to_numpy(),
+            "sense": sense.to_numpy(),
+            "mrna_id": [meta["study"]] * n,
+            "efficacy": efficacy,
+            "source_study": [meta["study"]] * n,
+            "cell_line": [meta["cell_line"]] * n,
+            "assay": [meta["assay"]] * n,
+        }
+    )[COLUMNS]
+
+
+def _to_schema(df: pd.DataFrame, key: str) -> pd.DataFrame:
+    """Map a raw frame to :data:`COLUMNS` for study ``key`` (column-name tolerant)."""
+    cols = list(df.columns)
+    if _is_oligoformer(cols):  # OligoFormer 19mer (sense) + expression (residual %)
+        return _parse_oligoformer(df, key)
+    meta = EFFICACY_STUDIES[key]
     anti = _pick(cols, _ANTISENSE)
     eff = _pick(cols, _EFF)
     if anti is None or eff is None:
@@ -394,8 +466,13 @@ def load_khvorova(raw_dir=None, cache_root=None, rebuild: bool = False) -> Effic
 
 
 def load_katoh(raw_dir=None, cache_root=None, rebuild: bool = False) -> EfficacyDataset:
-    """Katoh (Takayuki) 702-siRNA luciferase efficacy set."""
+    """Katoh (Takayuki) 702-siRNA luciferase efficacy set (OligoFormer Taka.csv)."""
     return _load_study("katoh", raw_dir, cache_root, rebuild)
+
+
+def load_mix(raw_dir=None, cache_root=None, rebuild: bool = False) -> EfficacyDataset:
+    """OligoFormer Mixset: pooled cross-dataset efficacy (Reynolds/Vickers/...)."""
+    return _load_study("mix", raw_dir, cache_root, rebuild)
 
 
 def load_efficacy_suite(

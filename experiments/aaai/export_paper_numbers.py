@@ -122,11 +122,11 @@ def t1_numbers(j: dict | None) -> dict:
             "max_cross_channel_change"
         ],
         "probe_leakage_auc_gap": {
-            "disjoint": models["disjoint_ccmp"]["leakage_mi"]["mean_leakage_auc_gap"],
-            "shared_encoder": models["shared_encoder_cbm"]["leakage_mi"]["mean_leakage_auc_gap"],
-            "cem": models["concept_embedding_model"]["leakage_mi"]["mean_leakage_auc_gap"],
+            "disjoint": models["disjoint_ccmp"]["mean_leakage_auc_gap"],
+            "shared_encoder": models["shared_encoder_cbm"]["mean_leakage_auc_gap"],
+            "cem": models["concept_embedding_model"]["mean_leakage_auc_gap"],
         },
-        "completeness": {m: models[m]["completeness"]["completeness"] for m in models},
+        "completeness": {m: models[m]["mean_completeness"] for m in models},
     }
 
 
@@ -191,16 +191,19 @@ def t3_numbers(j: dict | None) -> dict:
         }
     res = j["constraint_residual"]
     acc = j["accuracy"]
+    accept = j["acceptance"]
     return {
         "provenance": prov,
         "status": "ok",
-        "acceptance": j["acceptance"]["flag"],
+        "acceptance": accept["flag"],
         "constraint_residual_max": res["constrained_max"],
         "residual_tolerance": res["tolerance"],
+        "residual_below_tol_all_seeds": accept.get("constraint_residual_below_tol_all_seeds"),
         "unconstrained_residual_max": res["unconstrained_max"],
         "accuracy_unconstrained_pearson": acc["unconstrained"]["pearson"],
         "accuracy_constrained_pearson": acc["constrained_kkt"]["pearson"],
-        "constraint_costs_accuracy": j["acceptance"].get("constraint_costs_accuracy"),
+        "no_accuracy_regression": accept.get("no_accuracy_regression"),
+        "constraint_costs_accuracy_any_seed": accept.get("constraint_costs_accuracy_any_seed"),
     }
 
 
@@ -265,14 +268,31 @@ def baselines_numbers(j: dict | None) -> dict:
             },
         }
     acc = j["acceptance"]
+    # Cross-dataset transfer: CASCADE (mean over seeds) vs the ridge baseline per set.
+    cross = {}
+    per_seed = eff.get("per_seed", [])
+    ridge = eff.get("deterministic_baselines", {}).get("ridge_linear", {})
+    for name in ("katoh", "mix"):
+        cas = [s["cascade_ccmp"][name]["pearson"] for s in per_seed if name in s["cascade_ccmp"]]
+        if cas and name in ridge:
+            cas_mean = sum(cas) / len(cas)
+            cross[name] = {
+                "n": ridge[name]["n"],
+                "cascade_pearson": cas_mean,
+                "ridge_pearson": ridge[name]["pearson"],
+                "cascade_beats_ridge": cas_mean > ridge[name]["pearson"],
+            }
     return {
         "provenance": prov,
         "status": "ok",
         "acceptance": acc["flag"],
-        "huesken_test_pearson": acc.get("cascade_pearson"),
-        "ridge_pearson": acc.get("ridge_pearson"),
-        "beats_linear_baseline": acc.get("beats_linear"),
-        "beats_mean_baseline": acc.get("beats_mean"),
+        "huesken_test_pearson": acc.get("cascade_pearson_mean"),
+        "ridge_pearson": acc.get("ridge_pearson_mean"),
+        "cascade_mse": acc.get("cascade_mse_mean"),
+        "mean_baseline_mse": acc.get("mean_mse_mean"),
+        "beats_linear_baseline": acc.get("beats_linear_all"),
+        "beats_mean_baseline": acc.get("beats_mean_all"),
+        "cross_dataset_transfer": cross,
         "reported_baselines": eff.get("reported_baselines"),
     }
 
@@ -296,6 +316,10 @@ def _fmt(x, nd: int = 3) -> str:
     return "pending" if x is None else (f"{x:.{nd}f}" if isinstance(x, int | float) else str(x))
 
 
+def _sci(x, nd: int = 2) -> str:
+    return "pending" if x is None else (f"{x:.{nd}e}" if isinstance(x, int | float) else str(x))
+
+
 def write_summary(numbers: dict, captions: dict) -> None:
     t1 = numbers["T1_leakage_free_identifiability"]
     t2 = numbers["T2_contraction_stability"]
@@ -308,11 +332,14 @@ def write_summary(numbers: dict, captions: dict) -> None:
 
     # 1. Baselines: beats linear / mean on real efficacy.
     if bl["status"] == "ok":
+        katoh = bl.get("cross_dataset_transfer", {}).get("katoh", {})
         lines.append(
-            f"- Baselines (real Huesken efficacy): CASCADE beats the mean baseline="
-            f"{bl.get('beats_mean_baseline')} and the ridge/linear baseline="
-            f"{bl.get('beats_linear_baseline')} (Huesken-test Pearson "
-            f"{_fmt(bl.get('huesken_test_pearson'))})."
+            f"- Baselines (real Huesken efficacy): CASCADE Pearson {_fmt(bl.get('huesken_test_pearson'))} "
+            f"vs ridge/linear {_fmt(bl.get('ridge_pearson'))} on the Huesken test split. Beats the mean "
+            f"baseline={bl.get('beats_mean_baseline')}; beats the ridge/linear baseline="
+            f"{bl.get('beats_linear_baseline')} (a near-tie, the gap is just outside the 0.02 band). "
+            f"Out of distribution CASCADE beats ridge on the Katoh transfer set "
+            f"(CASCADE {_fmt(katoh.get('cascade_pearson'))} vs ridge {_fmt(katoh.get('ridge_pearson'))})."
         )
     else:
         lines.append(
@@ -333,8 +360,11 @@ def write_summary(numbers: dict, captions: dict) -> None:
     # 3. T3 residual.
     if t3["status"] == "ok":
         lines.append(
-            f"- T3 (real Huesken + ViennaRNA): constraint residual {_fmt(t3['constraint_residual_max'], 2)} "
-            f"(< {t3['residual_tolerance']:g}); constraint costs accuracy={t3.get('constraint_costs_accuracy')}."
+            f"- T3 (real Huesken + ViennaRNA): mass-action constraint residual "
+            f"{_sci(t3['constraint_residual_max'])} (< {t3['residual_tolerance']:g}, machine precision); "
+            f"the KKT projection costs some accuracy (unconstrained Pearson "
+            f"{_fmt(t3['accuracy_unconstrained_pearson'])} -> constrained "
+            f"{_fmt(t3['accuracy_constrained_pearson'])}), verdict {t3['acceptance']}."
         )
     else:
         lines.append(
@@ -385,11 +415,18 @@ def write_summary(numbers: dict, captions: dict) -> None:
     lines.append("")
 
     lines.append("## T3 KKT mass-action / thermodynamic constraint")
-    lines.append(
-        f"- Provenance: {t3['provenance']}; PENDING real data"
-        if t3["status"] != "ok"
-        else f"- Provenance: {t3['provenance']}"
-    )
+    lines.append(f"- Provenance: {t3['provenance']}")
+    if t3["status"] == "ok":
+        lines.append(
+            f"- Constraint residual {_sci(t3['constraint_residual_max'])} (< {t3['residual_tolerance']:g}, "
+            f"below tol on every seed={t3.get('residual_below_tol_all_seeds')}); unconstrained Pearson "
+            f"{_fmt(t3['accuracy_unconstrained_pearson'])} vs constrained "
+            f"{_fmt(t3['accuracy_constrained_pearson'])} (no accuracy regression="
+            f"{t3.get('no_accuracy_regression')}, costs accuracy any seed="
+            f"{t3.get('constraint_costs_accuracy_any_seed')}). Verdict {t3['acceptance']}."
+        )
+    else:
+        lines.append("- PENDING real data.")
     lines.append("")
 
     lines.append("## T4 certified off-target bound (per real dataset)")

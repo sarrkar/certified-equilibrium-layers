@@ -2,13 +2,21 @@
   "data_policy": "REAL DATA ONLY: every number names its real source dataset; a section whose real data is absent is recorded as pending with the exact source, never a fabricated value.",
   "T1_leakage_free_identifiability": {
     "provenance": "Huesken 2005 on-target efficacy (OligoFormer suite); disjoint CCMP backbone vs a shared-encoder CBM and a Concept Embedding Model on the SAME real data",
-    "status": "pending_real_data",
-    "source": "Huesken 2005 efficacy table not found under /home/shadi/ICLR2026/data/raw/efficacy (looked for ['huesken.csv', 'huesken.tsv', 'huesken.txt'] or a master ['siRNAEfficacyDB.csv', 'siRNAEfficacyDB.tsv', 'efficacy_master.csv']). Fetch the real file: https://raw.githubusercontent.com/lulab/OligoFormer/main/data/Huesken.csv  (source: https://github.com/lulab/OligoFormer (data/ directory)). Run scripts/download_efficacy.sh, or place it at /home/shadi/ICLR2026/data/raw/efficacy/huesken.csv. REAL DATA ONLY: no rows are generated when the file is absent.",
-    "metrics": {
-      "per_channel_leakage_machine_zero": null,
-      "probe_auc_vs_baseline": null,
-      "completeness": null,
-      "shared_vs_disjoint": null
+    "status": "ok",
+    "acceptance": "PASS",
+    "disjoint_max_cross_channel_change": 0.0,
+    "disjoint_machine_zero": true,
+    "shared_encoder_max_cross_channel_change": 0.7000277638435364,
+    "cem_max_cross_channel_change": 1.3381731510162354,
+    "probe_leakage_auc_gap": {
+      "disjoint": 1.1692637329392326e-06,
+      "shared_encoder": 0.036369287188658644,
+      "cem": 0.03400719215333748
+    },
+    "completeness": {
+      "disjoint_ccmp": 1.0,
+      "shared_encoder_cbm": 1.0,
+      "concept_embedding_model": 0.8521428677399486
     }
   },
   "T2_contraction_stability": {
@@ -181,12 +189,16 @@
   },
   "T3_mass_action_constraint": {
     "provenance": "Huesken 2005 efficacy + ViennaRNA seed-duplex free energy dG (real)",
-    "status": "pending_real_data",
-    "source": "Huesken 2005 efficacy table not found under /home/shadi/ICLR2026/data/raw/efficacy (looked for ['huesken.csv', 'huesken.tsv', 'huesken.txt'] or a master ['siRNAEfficacyDB.csv', 'siRNAEfficacyDB.tsv', 'efficacy_master.csv']). Fetch the real file: https://raw.githubusercontent.com/lulab/OligoFormer/main/data/Huesken.csv  (source: https://github.com/lulab/OligoFormer (data/ directory)). Run scripts/download_efficacy.sh, or place it at /home/shadi/ICLR2026/data/raw/efficacy/huesken.csv. REAL DATA ONLY: no rows are generated when the file is absent.",
-    "metrics": {
-      "constraint_residual_max": null,
-      "accuracy_with_vs_without_projection": null
-    }
+    "status": "ok",
+    "acceptance": "FAIL",
+    "constraint_residual_max": 1.6653345369377348e-16,
+    "residual_tolerance": 1e-08,
+    "residual_below_tol_all_seeds": true,
+    "unconstrained_residual_max": 0.0584148280540861,
+    "accuracy_unconstrained_pearson": 0.4246048178098516,
+    "accuracy_constrained_pearson": 0.3890067988741863,
+    "no_accuracy_regression": false,
+    "constraint_costs_accuracy_any_seed": true
   },
   "T4_certified_offtarget_bound": {
     "provenance": "GSE184929 RNA-seq (SeedMatchR export), Jackson 2006 and Birmingham 2006 microarray; STRING v12 GRN",
@@ -219,8 +231,28 @@
   },
   "baselines_efficacy": {
     "provenance": "Huesken 2005 efficacy train/test split (OligoFormer protocol)",
-    "status": "pending_real_data",
-    "source": "Huesken 2005 efficacy table not found under /home/shadi/ICLR2026/data/raw/efficacy (looked for ['huesken.csv', 'huesken.tsv', 'huesken.txt'] or a master ['siRNAEfficacyDB.csv', 'siRNAEfficacyDB.tsv', 'efficacy_master.csv']). Fetch the real file: https://raw.githubusercontent.com/lulab/OligoFormer/main/data/Huesken.csv  (source: https://github.com/lulab/OligoFormer (data/ directory)). Run scripts/download_efficacy.sh, or place it at /home/shadi/ICLR2026/data/raw/efficacy/huesken.csv. REAL DATA ONLY: no rows are generated when the file is absent.",
+    "status": "ok",
+    "acceptance": "FAIL",
+    "huesken_test_pearson": 0.6053010242885367,
+    "ridge_pearson": 0.627513658868671,
+    "cascade_mse": 0.016096190109105173,
+    "mean_baseline_mse": 0.02508148636505264,
+    "beats_linear_baseline": false,
+    "beats_mean_baseline": true,
+    "cross_dataset_transfer": {
+      "katoh": {
+        "n": 702,
+        "cascade_pearson": 0.1683447251376804,
+        "ridge_pearson": 0.06468399111660178,
+        "cascade_beats_ridge": true
+      },
+      "mix": {
+        "n": 472,
+        "cascade_pearson": 0.5162392071374016,
+        "ridge_pearson": 0.5192353968193841,
+        "cascade_beats_ridge": false
+      }
+    },
     "reported_baselines": [
       {
         "name": "BIOPREDsi (Huesken ANN)",
@@ -276,13 +308,7 @@
         "note": "published seed thermodynamics model; reported reference.",
         "verify": true
       }
-    ],
-    "metrics": {
-      "huesken_test_pearson": null,
-      "huesken_test_spearman": null,
-      "beats_mean_baseline": null,
-      "beats_linear_baseline": null
-    }
+    ]
   },
   "source_files": [
     "t1_leakage.json",

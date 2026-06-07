@@ -89,8 +89,9 @@ def test_full_path_on_fixtures(tmp_path) -> None:
     acc = ex._acceptance(sec)
     assert acc["flag"] in {"PASS", "FAIL"}
     assert isinstance(acc["beats_mean"], bool) and isinstance(acc["beats_linear"], bool)
-    # harborth / uitei are not in the fixture master: recorded unavailable, not faked.
-    assert {"harborth", "uitei"} <= set(sec["cross_datasets_unavailable"])
+    # Cross-datasets: katoh resolves from the fixture master; mix is absent, so it is
+    # recorded unavailable, never faked.
+    assert "mix" in set(sec["cross_datasets_unavailable"])
 
 
 def test_aggregate_acceptance_is_conservative() -> None:

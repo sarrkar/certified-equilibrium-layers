@@ -1,3 +1,5 @@
 {
-  "t2_stability.png": "Theorem 2 on the real TRRUST signed/directed GRN: the true L2 operator norm of P_alpha versus the certified rho-based and inf-norm constants across alpha (the rho-based L2 constant is exceeded by non-normality; the inf-norm certificate holds for every alpha), and the Dirichlet-energy oversmoothing curve."
+  "t1_leakage.png": "Theorem 1 leakage audit on real efficacy data: maximum cross-channel embedding change per model (the disjoint CCMP backbone is at machine zero; the shared-encoder CBM and the Concept Embedding Model leak), and the Havasi probe leakage gap and Yeh completeness.",
+  "t2_stability.png": "Theorem 2 on the real TRRUST signed/directed GRN: the true L2 operator norm of P_alpha versus the certified rho-based and inf-norm constants across alpha (the rho-based L2 constant is exceeded by non-normality; the inf-norm certificate holds for every alpha), and the Dirichlet-energy oversmoothing curve.",
+  "t3_constraint.png": "Theorem 3 on real Huesken efficacy with real ViennaRNA dG: the mass-action constraint residual (KKT-projected at machine precision versus the unconstrained model) and the held-out accuracy with and without the projection."
 }

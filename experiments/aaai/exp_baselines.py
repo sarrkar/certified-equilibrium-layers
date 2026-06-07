@@ -2,9 +2,9 @@
 """Baseline comparison on REAL data: efficacy backbone + off-target SeedMatchR.
 
 EFFICACY. Trains the CCMP backbone (the x0 / direct-repression predictor) on the
-real Huesken split (2182 train / 249 test) and reports Pearson / Spearman on the
-Huesken test split plus cross-dataset transfer to Reynolds, Vickers, Harborth,
-and Ui-Tei (the OligoFormer protocol). On the SAME real splits it computes two
+real Huesken split (2182 train / 179 test, OligoFormer Hu.csv) and reports Pearson
+/ Spearman on the Huesken test split plus cross-dataset transfer to Katoh (Taka)
+and the pooled Mix (Mixset) sets. On the SAME real splits it computes two
 MANDATORY simple baselines: a global-mean predictor and a ridge / linear
 regression. Deep efficacy / perturbation models repeatedly fail to beat these
 simple baselines (Ahlmann-Eltze et al., Nature Methods 2025), so the acceptance
@@ -44,7 +44,10 @@ from cascade.features import concept_layout, featurize_pairs  # noqa: E402
 from cascade.features.seedmatch import revcomp  # noqa: E402
 
 OUT = REPO / "results" / "aaai"
-CROSS_STUDIES = ("reynolds", "vickers", "harborth", "uitei")
+# Cross-dataset transfer: the OligoFormer suite ships Katoh (Taka) and the pooled
+# Mix (Mixset) as the separate real cross-datasets (Reynolds/Vickers/Harborth/
+# Ui-Tei are pooled inside Mix without per-study labels).
+CROSS_STUDIES = ("katoh", "mix")
 EVAL_SETS = ("huesken_test", *CROSS_STUDIES)
 
 PEARSON_TOL = 0.02  # CASCADE ties the linear baseline if within this on Pearson
@@ -137,25 +140,14 @@ def load_real_efficacy(raw_dir: Path, cache_root: Path) -> tuple[dict, dict, dic
     dataset is loaded best-effort; an absent one is recorded (with its source) and
     skipped, never fabricated.
     """
-    from cascade.data import (
-        load_harborth,
-        load_huesken_efficacy,
-        load_reynolds,
-        load_uitei,
-        load_vickers,
-    )
+    from cascade.data import load_huesken_efficacy, load_katoh, load_mix
 
     hue = load_huesken_efficacy(raw_dir, cache_root=cache_root)  # raises if absent
     feats, labels = {}, {}
     feats["huesken_train"], labels["huesken_train"] = _featurize_frame(hue.train().frame)
     feats["huesken_test"], labels["huesken_test"] = _featurize_frame(hue.test().frame)
 
-    loaders = {
-        "reynolds": load_reynolds,
-        "vickers": load_vickers,
-        "harborth": load_harborth,
-        "uitei": load_uitei,
-    }
+    loaders = {"katoh": load_katoh, "mix": load_mix}
     unavailable = {}
     for key, loader in loaders.items():
         try:
@@ -258,8 +250,8 @@ def efficacy_section(raw_dir: Path, cache_root: Path, seed: int, epochs: int, lr
     return {
         "status": "ok",
         "cascade_status": cascade_status,
-        "protocol": "train on real Huesken train (2182); Pearson/Spearman on Huesken test (249) "
-        "and cross-dataset transfer to Reynolds, Vickers, Harborth, Ui-Tei (OligoFormer protocol)",
+        "protocol": "train on real Huesken train (2182, OligoFormer Hu.csv); Pearson/Spearman on "
+        "Huesken test (179) and cross-dataset transfer to Katoh (Taka) and the pooled Mix (Mixset)",
         "n_features": concept_layout().total_dim,
         "our_models": our,
         "cross_datasets_unavailable": unavailable,
@@ -367,8 +359,8 @@ def efficacy_multiseed(
     section = {
         "status": "ok",
         "cascade_status": cascade_status,
-        "protocol": "train on real Huesken train (2182); Pearson/Spearman on Huesken test (249) "
-        "and cross-dataset transfer to Reynolds, Vickers, Harborth, Ui-Tei (OligoFormer protocol)",
+        "protocol": "train on real Huesken train (2182, OligoFormer Hu.csv); Pearson/Spearman on "
+        "Huesken test (179) and cross-dataset transfer to Katoh (Taka) and the pooled Mix (Mixset)",
         "n_features": concept_layout().total_dim,
         "deterministic_baselines": {"mean": mean, "ridge_linear": ridge},
         "per_seed": per_seed,

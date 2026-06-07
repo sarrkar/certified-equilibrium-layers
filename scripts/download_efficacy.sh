@@ -32,20 +32,19 @@ done
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 RAW="$REPO_ROOT/data/raw/efficacy"
 MANIFEST="$RAW/CHECKSUMS.sha256"
-OF="https://raw.githubusercontent.com/lulab/OligoFormer/main/data"
-DB_PAGE="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11665841/"
+# OligoFormer parsed datasets (Comparison methods/Monopoli-RF/datasets/). The
+# 19mer column is the SENSE strand; cascade.data.efficacy recovers the antisense
+# guide as its reverse complement and efficacy as 1 - expression/100.
+OF="https://raw.githubusercontent.com/lulab/OligoFormer/main/Comparison%20methods/Monopoli-RF/datasets"
+DB_PAGE="https://github.com/lulab/OligoFormer (Comparison methods/Monopoli-RF/datasets)"
 
 mkdir -p "$RAW"
 
 # study | local filename | default URL | source page (for manual fetch)
 STUDIES=(
-    "huesken|huesken.csv|${HUESKEN_URL:-$OF/Huesken.csv}|$OF"
-    "reynolds|reynolds.csv|${REYNOLDS_URL:-$OF/Reynolds.csv}|$DB_PAGE"
-    "vickers|vickers.csv|${VICKERS_URL:-$OF/Vickers.csv}|$DB_PAGE"
-    "harborth|harborth.csv|${HARBORTH_URL:-$OF/Harborth.csv}|$DB_PAGE"
-    "uitei|uitei.csv|${UITEI_URL:-$OF/Ui-Tei.csv}|$DB_PAGE"
-    "khvorova|khvorova.csv|${KHVOROVA_URL:-$OF/Khvorova.csv}|$DB_PAGE"
-    "katoh|katoh.csv|${KATOH_URL:-$OF/Katoh.csv}|$OF"
+    "huesken|huesken.csv|${HUESKEN_URL:-$OF/Hu.csv}|$DB_PAGE"
+    "katoh|katoh.csv|${KATOH_URL:-$OF/Taka.csv}|$DB_PAGE"
+    "mix|mix.csv|${MIX_URL:-$OF/Mixset.csv}|$DB_PAGE"
 )
 
 sha() { if command -v sha256sum >/dev/null 2>&1; then sha256sum "$1" | awk '{print $1}'; else shasum -a 256 "$1" | awk '{print $1}'; fi; }

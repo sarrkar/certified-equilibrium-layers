@@ -17,10 +17,12 @@ from .efficacy import (
     load_huesken_efficacy,
     load_katoh,
     load_khvorova,
+    load_mix,
     load_oligoformer_efficacy,
     load_reynolds,
     load_uitei,
     load_vickers,
+    reverse_complement,
 )
 from .geo import (
     DEFAULT_CONTRASTS,
@@ -109,6 +111,8 @@ __all__ = [
     "load_uitei",
     "load_khvorova",
     "load_katoh",
+    "load_mix",
+    "reverse_complement",
     # Huesken efficacy (one efficacy_backbone source)
     "HueskenDataset",
     "load_huesken",

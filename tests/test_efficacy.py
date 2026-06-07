@@ -81,7 +81,7 @@ def test_missing_dir_raises(cache_root: Path) -> None:
 
 
 # --- REAL per-study loaders (cascade.data.efficacy v2) ------------------------
-def test_registry_covers_the_seven_studies() -> None:
+def test_registry_covers_the_studies() -> None:
     assert set(EFFICACY_STUDIES) == {
         "huesken",
         "reynolds",
@@ -90,6 +90,7 @@ def test_registry_covers_the_seven_studies() -> None:
         "uitei",
         "khvorova",
         "katoh",
+        "mix",
     }
     # Every study carries a citation and an exact fetch URL (REAL DATA ONLY).
     for meta in EFFICACY_STUDIES.values():
@@ -160,3 +161,38 @@ def test_missing_suite_lists_missing_urls(cache_root: Path, tmp_path) -> None:
         load_efficacy_suite(raw_dir=tmp_path / "empty", cache_root=cache_root)
     msg = str(exc.value)
     assert EFFICACY_STUDIES["huesken"]["url"] in msg
+
+
+# --- OligoFormer schema: 19mer = sense, guide = reverse_complement -----------
+def test_reverse_complement_is_involution_and_rna() -> None:
+    from cascade.data import reverse_complement
+
+    # RNA complement over {A,C,G,U}: A<->U, G<->C, then reverse.
+    assert reverse_complement("AUGC") == "GCAU"
+    for seq in ("CUAAUAUGUUAAUUGAUUU", "GAUUUAUACAAUUCCUUUC", "AGACCAAAAUUAAAUAAGA"):
+        rc = reverse_complement(seq)
+        assert len(rc) == len(seq)
+        assert set(rc) <= set("ACGU")
+        assert reverse_complement(rc) == seq  # involution: rc(rc(x)) == x
+        assert rc != seq  # the guide differs from the sense on these real rows
+
+
+def test_oligoformer_transform_sense_guide_efficacy(fixtures_dir: Path, cache_root: Path, tmp_path) -> None:
+    # Place the real OligoFormer-schema slice as huesken.csv and load it.
+    import shutil
+
+    from cascade.data import load_huesken_efficacy, reverse_complement
+
+    raw = tmp_path / "efficacy"
+    raw.mkdir()
+    shutil.copy2(fixtures_dir / "efficacy" / "oligoformer_hu_slice.csv", raw / "huesken.csv")
+    ds = load_huesken_efficacy(raw, cache_root=cache_root)
+    f = ds.frame
+    assert len(f) == 6
+    # sense is the given 19mer; antisense is its reverse complement (the guide).
+    assert f["sense"].iloc[0] == "CUAAUAUGUUAAUUGAUUU"
+    assert f["antisense"].iloc[0] == reverse_complement("CUAAUAUGUUAAUUGAUUU")
+    assert bool((f["antisense"] != f["sense"]).all())  # guide != sense
+    # efficacy = 1 - expression/100 (row 1: 65.548 -> 0.3445).
+    assert np.isclose(f["efficacy"].iloc[0], 1.0 - 65.54809843 / 100.0)
+    assert f["efficacy"].min() >= 0.0 and f["efficacy"].max() <= 1.0

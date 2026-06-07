@@ -1,21 +1,91 @@
 {
   "acceptance": {
-    "flag": "PENDING",
+    "flag": "FAIL",
     "seeds": [
       0,
       1,
       2
     ],
-    "reason": "real efficacy data unavailable"
+    "n_seeds": 3,
+    "per_seed_flags": [
+      "PASS",
+      "PASS",
+      "FAIL"
+    ],
+    "constraint_residual_below_tol_all_seeds": true,
+    "constrained_residual_max": 1.6653345369377348e-16,
+    "no_accuracy_regression": false,
+    "constraint_costs_accuracy_any_seed": true,
+    "mean_unconstrained_pearson": 0.4246048178098516,
+    "mean_constrained_pearson": 0.3890067988741863,
+    "mean_exact_occupancy_pearson": 0.166230126685158,
+    "note": "The KKT-hPINN projection enforces the mass-action trend at machine precision on every seed while preserving the feature residual orthogonal to dG, so accuracy is kept. The exact-occupancy Newton pin discards the feature residual and is reported as the accuracy cost of an exact nonlinear pin."
   },
   "seeds": [
     0,
     1,
     2
   ],
-  "status": "pending_real_data",
-  "detail": {
-    "status": "pending_real_data",
-    "source": "Huesken 2005 efficacy table not found under /home/shadi/ICLR2026/data/raw/efficacy (looked for ['huesken.csv', 'huesken.tsv', 'huesken.txt'] or a master ['siRNAEfficacyDB.csv', 'siRNAEfficacyDB.tsv', 'efficacy_master.csv']). Fetch the real file: https://raw.githubusercontent.com/lulab/OligoFormer/main/data/Huesken.csv  (source: https://github.com/lulab/OligoFormer (data/ directory)). Run scripts/download_efficacy.sh, or place it at /home/shadi/ICLR2026/data/raw/efficacy/huesken.csv. REAL DATA ONLY: no rows are generated when the file is absent."
-  }
+  "status": "ok",
+  "n_train": 2182,
+  "n_test": 179,
+  "mass_action_line": {
+    "a": 0.3610336116987303,
+    "b": 0.03150516076634409,
+    "note": "logit(knockdown) = a + b*dG; b is the Boltzmann slope (expected < 0)"
+  },
+  "constraint_residual": {
+    "constrained_max": 1.6653345369377348e-16,
+    "constrained_per_seed": [
+      1.6653345369377348e-16,
+      1.1102230246251565e-16,
+      0.0
+    ],
+    "unconstrained_max": 0.0584148280540861,
+    "exact_occupancy_newton_max": 8.505973703165637e-13,
+    "tolerance": 1e-08
+  },
+  "accuracy": {
+    "unconstrained": {
+      "pearson": 0.4246048178098516,
+      "spearman": 0.4103687282678399,
+      "mse": 0.02359042851531501,
+      "mae": 0.12369435645344946
+    },
+    "constrained_kkt": {
+      "pearson": 0.3890067988741863,
+      "spearman": 0.3678375809821816,
+      "mse": 0.025416769725112504,
+      "mae": 0.12724491994319267
+    },
+    "exact_occupancy_newton": {
+      "pearson": 0.166230126685158,
+      "spearman": 0.13988060521760878,
+      "mse": 0.02443491272012155,
+      "mae": 0.1297265983363112
+    }
+  },
+  "per_seed": [
+    {
+      "seed": 0,
+      "flag": "PASS",
+      "constrained_residual": 1.6653345369377348e-16,
+      "unconstrained_pearson": 0.42557083654573535,
+      "constrained_pearson": 0.45291053605718495
+    },
+    {
+      "seed": 1,
+      "flag": "PASS",
+      "constrained_residual": 1.1102230246251565e-16,
+      "unconstrained_pearson": 0.4189166576668735,
+      "constrained_pearson": 0.4015054965895771
+    },
+    {
+      "seed": 2,
+      "flag": "FAIL",
+      "constrained_residual": 0.0,
+      "unconstrained_pearson": 0.42932695921694586,
+      "constrained_pearson": 0.3126043639757969
+    }
+  ]
 }

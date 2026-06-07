@@ -1,14 +1,25 @@
 {
   "acceptance": {
-    "flag": "PENDING",
     "seeds": [
       0,
       1,
       2
     ],
     "n_seeds": 3,
-    "reason": "real efficacy data unavailable; no CASCADE run to judge",
-    "note": "CASCADE must at least tie the ridge/linear baseline on Pearson and beat the global-mean predictor on MSE on the real Huesken test split, on every seed (conservative aggregate). Simple baselines are a hard bar: deep efficacy/perturbation models often fail to beat them (Ahlmann-Eltze et al., Nat Methods 2025)."
+    "per_seed_flags": [
+      "PASS",
+      "PASS",
+      "FAIL"
+    ],
+    "metric": "pearson vs ridge (tie) and mse vs mean (beat) on Huesken test, all seeds",
+    "note": "CASCADE must at least tie the ridge/linear baseline on Pearson and beat the global-mean predictor on MSE on the real Huesken test split, on every seed (conservative aggregate). Simple baselines are a hard bar: deep efficacy/perturbation models often fail to beat them (Ahlmann-Eltze et al., Nat Methods 2025).",
+    "flag": "FAIL",
+    "beats_linear_all": false,
+    "beats_mean_all": true,
+    "cascade_pearson_mean": 0.6053010242885367,
+    "ridge_pearson_mean": 0.627513658868671,
+    "cascade_mse_mean": 0.016096190109105173,
+    "mean_mse_mean": 0.02508148636505264
   },
   "seeds": [
     0,
@@ -16,8 +27,172 @@
     2
   ],
   "efficacy": {
-    "status": "pending_real_data",
-    "source": "Huesken 2005 efficacy table not found under /home/shadi/ICLR2026/data/raw/efficacy (looked for ['huesken.csv', 'huesken.tsv', 'huesken.txt'] or a master ['siRNAEfficacyDB.csv', 'siRNAEfficacyDB.tsv', 'efficacy_master.csv']). Fetch the real file: https://raw.githubusercontent.com/lulab/OligoFormer/main/data/Huesken.csv  (source: https://github.com/lulab/OligoFormer (data/ directory)). Run scripts/download_efficacy.sh, or place it at /home/shadi/ICLR2026/data/raw/efficacy/huesken.csv. REAL DATA ONLY: no rows are generated when the file is absent.",
+    "status": "ok",
+    "cascade_status": "ok",
+    "protocol": "train on real Huesken train (2182, OligoFormer Hu.csv); Pearson/Spearman on Huesken test (179) and cross-dataset transfer to Katoh (Taka) and the pooled Mix (Mixset)",
+    "n_features": 37,
+    "deterministic_baselines": {
+      "mean": {
+        "huesken_test": {
+          "n": 179,
+          "pearson": NaN,
+          "spearman": NaN,
+          "mse": 0.02508148636505264,
+          "mae": 0.13000711628233466
+        },
+        "katoh": {
+          "n": 702,
+          "pearson": NaN,
+          "spearman": NaN,
+          "mse": 0.04529225440702632,
+          "mae": 0.1770296733787159
+        },
+        "mix": {
+          "n": 472,
+          "pearson": NaN,
+          "spearman": NaN,
+          "mse": 0.10309381577967436,
+          "mae": 0.2898206312448896
+        }
+      },
+      "ridge_linear": {
+        "huesken_test": {
+          "n": 179,
+          "pearson": 0.627513658868671,
+          "spearman": 0.6277898642341648,
+          "mse": 0.015724453149852075,
+          "mae": 0.10285634250940268
+        },
+        "katoh": {
+          "n": 702,
+          "pearson": 0.06468399111660178,
+          "spearman": 0.0806679823399538,
+          "mse": 0.05399336027682442,
+          "mae": 0.191684093351253
+        },
+        "mix": {
+          "n": 472,
+          "pearson": 0.5192353968193841,
+          "spearman": 0.51477040032337,
+          "mse": 0.07958729063552854,
+          "mae": 0.24991191276077704
+        }
+      }
+    },
+    "per_seed": [
+      {
+        "seed": 0,
+        "cascade_ccmp": {
+          "huesken_test": {
+            "n": 179,
+            "pearson": 0.6098683176748769,
+            "spearman": 0.5908331707805928,
+            "mse": 0.01590484126129636,
+            "mae": 0.10093929823802018
+          },
+          "katoh": {
+            "n": 702,
+            "pearson": 0.1792145552215243,
+            "spearman": 0.19325625651347964,
+            "mse": 0.050796219540470436,
+            "mae": 0.18321872075029302
+          },
+          "mix": {
+            "n": 472,
+            "pearson": 0.5081123435084683,
+            "spearman": 0.5093087180941809,
+            "mse": 0.07847642124258236,
+            "mae": 0.24729571000034525
+          }
+        },
+        "acceptance": {
+          "flag": "PASS",
+          "metric": "pearson vs ridge (tie), mse vs mean (beat), on Huesken test",
+          "cascade_pearson": 0.6098683176748769,
+          "ridge_pearson": 0.627513658868671,
+          "cascade_mse": 0.01590484126129636,
+          "mean_mse": 0.02508148636505264,
+          "beats_linear": true,
+          "beats_mean": true,
+          "note": "CASCADE must at least tie the ridge/linear baseline on Pearson and beat the global-mean predictor on MSE on the real Huesken test split, on every seed (conservative aggregate). Simple baselines are a hard bar: deep efficacy/perturbation models often fail to beat them (Ahlmann-Eltze et al., Nat Methods 2025)."
+        }
+      },
+      {
+        "seed": 1,
+        "cascade_ccmp": {
+          "huesken_test": {
+            "n": 179,
+            "pearson": 0.6091266486910032,
+            "spearman": 0.5902065024330008,
+            "mse": 0.015994461918982836,
+            "mae": 0.10281060467924596
+          },
+          "katoh": {
+            "n": 702,
+            "pearson": 0.18411349766175125,
+            "spearman": 0.20486912542120375,
+            "mse": 0.05136553291477914,
+            "mae": 0.18454236155030104
+          },
+          "mix": {
+            "n": 472,
+            "pearson": 0.517867477603025,
+            "spearman": 0.5215531479205503,
+            "mse": 0.07893270249267273,
+            "mae": 0.24821472794312538
+          }
+        },
+        "acceptance": {
+          "flag": "PASS",
+          "metric": "pearson vs ridge (tie), mse vs mean (beat), on Huesken test",
+          "cascade_pearson": 0.6091266486910032,
+          "ridge_pearson": 0.627513658868671,
+          "cascade_mse": 0.015994461918982836,
+          "mean_mse": 0.02508148636505264,
+          "beats_linear": true,
+          "beats_mean": true,
+          "note": "CASCADE must at least tie the ridge/linear baseline on Pearson and beat the global-mean predictor on MSE on the real Huesken test split, on every seed (conservative aggregate). Simple baselines are a hard bar: deep efficacy/perturbation models often fail to beat them (Ahlmann-Eltze et al., Nat Methods 2025)."
+        }
+      },
+      {
+        "seed": 2,
+        "cascade_ccmp": {
+          "huesken_test": {
+            "n": 179,
+            "pearson": 0.5969081064997298,
+            "spearman": 0.5776040868819257,
+            "mse": 0.01638926714703632,
+            "mae": 0.10414756048528777
+          },
+          "katoh": {
+            "n": 702,
+            "pearson": 0.14170612252976558,
+            "spearman": 0.1653737280305899,
+            "mse": 0.05314788024728847,
+            "mae": 0.18747131090784824
+          },
+          "mix": {
+            "n": 472,
+            "pearson": 0.5227378003007114,
+            "spearman": 0.5199856458057951,
+            "mse": 0.07955073867373197,
+            "mae": 0.24926839333712045
+          }
+        },
+        "acceptance": {
+          "flag": "FAIL",
+          "metric": "pearson vs ridge (tie), mse vs mean (beat), on Huesken test",
+          "cascade_pearson": 0.5969081064997298,
+          "ridge_pearson": 0.627513658868671,
+          "cascade_mse": 0.01638926714703632,
+          "mean_mse": 0.02508148636505264,
+          "beats_linear": false,
+          "beats_mean": true,
+          "note": "CASCADE must at least tie the ridge/linear baseline on Pearson and beat the global-mean predictor on MSE on the real Huesken test split, on every seed (conservative aggregate). Simple baselines are a hard bar: deep efficacy/perturbation models often fail to beat them (Ahlmann-Eltze et al., Nat Methods 2025)."
+        }
+      }
+    ],
+    "cross_datasets_unavailable": {},
     "reported_baselines": [
       {
         "name": "BIOPREDsi (Huesken ANN)",
