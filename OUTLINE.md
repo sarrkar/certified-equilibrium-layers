@@ -1,4 +1,4 @@
-# CLAUDE.md
+# OUTLINE.md
 
 This file is the authoritative project contract. It is read at the start of
 every Claude Code session. Every future change MUST conform to the rules below.
