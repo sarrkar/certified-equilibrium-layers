@@ -5,7 +5,7 @@ Interpretable GNN for siRNA seed-mediated off-target prediction.
 CASCADE extends CCMP (FiLM-conditioned per-concept heterogeneous message
 passing, K=9 concept channels) and preserves its by-construction zero
 cross-concept leakage property (L_k = 0). The full project contract,
-including hard engineering rules, lives in [CLAUDE.md](CLAUDE.md).
+including hard engineering rules, lives in [OUTLINE.md](OUTLINE.md).
 
 ## Quickstart
 
@@ -18,7 +18,7 @@ make repro   # reproduce all headline numbers from cached data
 
 ## Layout
 
-See [CLAUDE.md](CLAUDE.md) for the canonical repository layout.
+See [OUTLINE.md](OUTLINE.md) for the canonical repository layout.
 
 ## Reproducibility
 
