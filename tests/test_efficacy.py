@@ -177,7 +177,9 @@ def test_reverse_complement_is_involution_and_rna() -> None:
         assert rc != seq  # the guide differs from the sense on these real rows
 
 
-def test_oligoformer_transform_sense_guide_efficacy(fixtures_dir: Path, cache_root: Path, tmp_path) -> None:
+def test_oligoformer_transform_sense_guide_efficacy(
+    fixtures_dir: Path, cache_root: Path, tmp_path
+) -> None:
     # Place the real OligoFormer-schema slice as huesken.csv and load it.
     import shutil
 
