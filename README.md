@@ -18,7 +18,7 @@ make repro   # reproduce all headline numbers from cached data
 
 ## Layout
 
-See [CLAUDE.md](CLAUDE.md) for the canonical repository layout.
+See [OUTLINE.md](OUTLINE.md) for the canonical repository layout.
 
 ## Reproducibility
 
