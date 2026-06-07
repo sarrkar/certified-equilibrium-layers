@@ -103,15 +103,25 @@ synthetic fallback on any of these paths.
   https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE184929 . This is the
   highest-resolution off-target set used here. REAL.
 
-  - **SeedMatchR export (recommended path).** The SeedMatchR R package ships the
-    real DESeq2 results as example data: `Schlegel_2022_Ttr_D1_30mkg`,
-    `Schlegel_2022_Ttr_D4_30mkg`, `Schlegel_2022_Ttr_D1_10mkg` (Schlegel et al.
-    2022, the GSE184929 study). Run `scripts/export_seedmatchr_data.R` (needs R +
-    `install.packages("SeedMatchR")`) to write per-contrast CSVs with
-    log2FoldChange, pvalue, padj, and the seed-match annotation to
-    `data/raw/offtarget/seedmatchr/`. `cascade.data.load_schlegel2022(dataset)`
-    loads one contrast (per-transcript `log2fc`, `pvalue`, `seed_match`) and
-    raises with the exact source if absent. REAL DATA ONLY: no fallback.
+  - **GEO direct (recommended path, no R).** The real DESeq2 result tables are the
+    GSE184929 supplementary files. `scripts/download_offtarget.sh` fetches the three
+    Ttr contrasts `Schlegel_2022_Ttr_D1_30mkg`, `Schlegel_2022_Ttr_D4_30mkg`,
+    `Schlegel_2022_Ttr_D1_10mkg` (the GEO files `GSE184929_Fig3-TTR-2_groupD1_30mkg`,
+    `...groupD4_30mkg`, `GSE184929_Fig3-TTR-1_groupD1_10mkg`,
+    `.vs.Mock.DESeq2.txt.gz`) and gunzips them to `data/raw/offtarget/seedmatchr/`
+    as `<dataset>.csv` (32883 rat genes; columns `ensembl_gene_id`, `baseMean`,
+    `log2FoldChange`, `pvalue`, `padj`, `symbol`). `cascade.data.load_schlegel2022`
+    reads these directly (per-transcript `log2fc`, `pvalue`, `padj`) and raises with
+    the exact source if absent. REAL DATA ONLY: no fallback.
+  - **Seed-match annotation (tracked next step).** The GEO tables carry no
+    seed-match column, so `has_seed_annotation` is False and the Theorem-4 KS test
+    is reported PENDING until the annotation is wired. It is computed NATIVELY in
+    Python (`cascade.features.seedmatch`) from a rat 3'UTR reference and the verified
+    Ttr guide, not via R. The D4 guide is not yet verified against Schlegel 2022.
+  - **SeedMatchR R route (equivalent, optional).** The archived SeedMatchR package
+    re-serves the same tables via AnnotationHub; `scripts/export_seedmatchr_data.R`
+    (needs R + `install.packages("SeedMatchR")` + Bioconductor) writes the same
+    per-contrast CSVs. The GEO-direct path above supersedes it and needs no R.
   - **Off-target evaluation metric (Theorem 4).** `seedmatch_ks_test` /
     `SeedMatchRDataset.ks()` is the SeedMatchR metric implemented natively in
     Python: a one-sided two-sample Kolmogorov-Smirnov test comparing the log2FC

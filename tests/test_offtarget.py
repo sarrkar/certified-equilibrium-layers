@@ -204,3 +204,20 @@ def test_schlegel_unknown_dataset_raises(cache_root: Path, tmp_path) -> None:
 
     with pytest.raises(KeyError, match="unknown SeedMatchR dataset"):
         load_schlegel2022("not_a_dataset", raw_dir=tmp_path, cache_root=cache_root)
+
+
+def test_schlegel_loads_geo_direct_schema(fixtures_dir: Path, cache_root: Path) -> None:
+    # The R-free path: the raw GEO GSE184929 DESeq2 table (ensembl_gene_id,
+    # log2FoldChange, pvalue, padj, symbol) loads directly via download_offtarget.sh,
+    # with no seed annotation yet (computed natively in a later step, not faked).
+    from cascade.data import load_schlegel2022
+
+    raw = fixtures_dir / "offtarget" / "seedmatchr_geo"
+    ds = load_schlegel2022("Schlegel_2022_Ttr_D1_30mkg", raw_dir=raw, cache_root=cache_root)
+    assert ds.sirna_id == "Ttr_D1"
+    # log2FoldChange parsed; on-target Ttr is strongly down-regulated.
+    ttr = ds.frame[ds.frame["gene_name"] == "Ttr"]
+    assert float(ttr["log2fc"].iloc[0]) < -5.0
+    # The GEO table carries no seed-match column: annotation deferred, not fabricated.
+    assert ds.has_seed_annotation is False
+    assert ds.frame["seed_match"].isna().all()

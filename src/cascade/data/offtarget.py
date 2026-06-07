@@ -363,15 +363,33 @@ def seedmatch_ks_test(
 # load per-transcript log2FoldChange, p-value, and the seed-match annotation.
 # ===========================================================================
 SEEDMATCHR_SOURCE = (
-    "SeedMatchR R package example data (install.packages('SeedMatchR')); "
-    "Schlegel et al. 2022, GEO GSE184929 (rat liver Ttr GalNAc-siRNA). "
-    "Export with scripts/export_seedmatchr_data.R"
+    "Schlegel et al. 2022, GEO GSE184929 (rat liver Ttr GalNAc-siRNA): the real DESeq2 "
+    "result tables are the GEO supplementary files; fetch them with scripts/download_offtarget.sh "
+    "(no R needed). Equivalently, the SeedMatchR R package re-serves the same tables via "
+    "AnnotationHub (install.packages('SeedMatchR'); scripts/export_seedmatchr_data.R)"
 )
 
+# Each dataset maps to its REAL GEO GSE184929 supplementary DESeq2 table (the
+# authoritative source; SeedMatchR's AnnotationHub copy derives from the same deposit).
 SEEDMATCHR_DATASETS: dict[str, dict] = {
-    "Schlegel_2022_Ttr_D1_30mkg": {"sirna_id": "Ttr_D1", "guide_label": "D1", "dose": "30 mg/kg"},
-    "Schlegel_2022_Ttr_D4_30mkg": {"sirna_id": "Ttr_D4", "guide_label": "D4", "dose": "30 mg/kg"},
-    "Schlegel_2022_Ttr_D1_10mkg": {"sirna_id": "Ttr_D1", "guide_label": "D1", "dose": "10 mg/kg"},
+    "Schlegel_2022_Ttr_D1_30mkg": {
+        "sirna_id": "Ttr_D1",
+        "guide_label": "D1",
+        "dose": "30 mg/kg",
+        "geo_suppl": "GSE184929_Fig3-TTR-2_groupD1_30mkg.vs.Mock.DESeq2.txt.gz",
+    },
+    "Schlegel_2022_Ttr_D4_30mkg": {
+        "sirna_id": "Ttr_D4",
+        "guide_label": "D4",
+        "dose": "30 mg/kg",
+        "geo_suppl": "GSE184929_Fig3-TTR-2_groupD4_30mkg.vs.Mock.DESeq2.txt.gz",
+    },
+    "Schlegel_2022_Ttr_D1_10mkg": {
+        "sirna_id": "Ttr_D1",
+        "guide_label": "D1",
+        "dose": "10 mg/kg",
+        "geo_suppl": "GSE184929_Fig3-TTR-1_groupD1_10mkg.vs.Mock.DESeq2.txt.gz",
+    },
 }
 
 SEEDMATCHR_TISSUE = "rat liver (Rattus norvegicus)"
