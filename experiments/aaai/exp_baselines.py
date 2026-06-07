@@ -18,7 +18,7 @@ OFF-TARGET. On real GSE184929 (Schlegel et al. 2022, via the SeedMatchR export)
 it runs the SeedMatchR one-sided KS / ECDF test on the measured DESeq2 log2FC
 (seed-matched vs background transcripts), per contrast.
 
-HARD DATA POLICY (CLAUDE.md): REAL DATA ONLY. Every input comes from a real
+HARD DATA POLICY (OUTLINE.md): REAL DATA ONLY. Every input comes from a real
 loader that RAISES when its file is absent. When the real data is not present the
 relevant section is recorded as pending with the exact source to fetch, and no
 number is produced from non-real inputs.

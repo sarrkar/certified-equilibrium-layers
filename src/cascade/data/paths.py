@@ -1,7 +1,7 @@
 """Filesystem path resolution for raw and cached datasets.
 
 Paths are derived from the repository root by default, so nothing here is
-hard-coded to a user-specific location (CLAUDE.md workflow rule). Override the
+hard-coded to a user-specific location (OUTLINE.md workflow rule). Override the
 data root with the ``CASCADE_DATA_DIR`` environment variable, or pass explicit
 paths to the loaders.
 """

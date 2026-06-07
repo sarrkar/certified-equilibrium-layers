@@ -1,7 +1,7 @@
 # DATA CARD
 
 This card documents every dataset used by CASCADE and the AAAI certification work.
-Per the project contract (see [CLAUDE.md](../CLAUDE.md)), raw data is fetched
+Per the project contract (see [OUTLINE.md](../OUTLINE.md)), raw data is fetched
 into `data/raw/` and parsed objects are cached under `data/cache/`; neither is
 tracked in git. Tiny committed fixtures under `tests/fixtures/` exercise each
 loader.
@@ -9,7 +9,7 @@ loader.
 ## Role tags
 
 The data layer holds ONLY real measured data. Per the hard data policy
-([CLAUDE.md](../CLAUDE.md)), no generated data sits on any AAAI reported-number
+([OUTLINE.md](../OUTLINE.md)), no generated data sits on any AAAI reported-number
 path; `scripts/assert_no_synthetic.py` enforces this in CI. Every dataset carries
 one of two real-data roles (`cascade.data.roles`):
 
@@ -202,7 +202,7 @@ files with `scripts/download_grn.sh`; loaders RAISE with the exact URL if absent
   signed/directed T2 network. `cascade.data.load_string_confidence` returns the
   raw confidence adjacency A_bar used by the random-subgraph noise model.
 - **Reactome** is a tracked gap (a stub graph builder with a visible xfail
-  test); see CLAUDE.md.
+  test); see OUTLINE.md.
 
 ## Biophysical inputs (Theorems 3 and 4)
 

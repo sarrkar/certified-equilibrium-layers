@@ -10,7 +10,7 @@ the paper) can never confuse what a dataset is for:
   the Jackson / Birmingham microarray sets, the SeedSeq union). These are the
   datasets the certificate is evaluated against.
 
-Per the hard data policy (CLAUDE.md), the data layer holds only real measured
+Per the hard data policy (OUTLINE.md), the data layer holds only real measured
 data. Random-graph certificate-soundness verification is not a dataset and lives
 outside the data layer, under ``experiments/soundness/``.
 

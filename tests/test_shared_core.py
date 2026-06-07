@@ -1,4 +1,4 @@
-"""Shared-core contract check (CLAUDE.md "Shared core contract").
+"""Shared-core contract check (OUTLINE.md "Shared core contract").
 
 The AAAI certification project depends on these imports from ``cascade``. This
 module confirms the implemented pieces import and run, and marks each tracked gap with

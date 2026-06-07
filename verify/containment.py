@@ -8,7 +8,7 @@ distance from the seed support (the spectral upgrade-bound ingredients), and
 writes a decay-vs-envelope plot plus a CSV to ``verify/_out/``.
 
 Exits non-zero if the certified envelope is violated, so it can gate ``make
-repro``. Per CLAUDE.md rule 3 it accepts ``--seed`` and logs the seed it ran with.
+repro``. Per OUTLINE.md rule 3 it accepts ``--seed`` and logs the seed it ran with.
 
 Example:
     python verify/containment.py --seed 0 --alpha 0.15 --graph tests/fixtures/string_tiny.txt

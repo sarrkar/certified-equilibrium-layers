@@ -20,7 +20,7 @@ from c_hat_k vs the X_k baseline; the leakage AUC gap), and the Yeh et al.
 completeness of the concept set. The disjoint model should be leakage-free where
 the shared encoders leak.
 
-HARD DATA POLICY (CLAUDE.md): REAL DATA ONLY. The efficacy data comes from a real
+HARD DATA POLICY (OUTLINE.md): REAL DATA ONLY. The efficacy data comes from a real
 loader that RAISES if absent; the section is then recorded as pending with the
 exact source, and no number is produced from non-real inputs.
 

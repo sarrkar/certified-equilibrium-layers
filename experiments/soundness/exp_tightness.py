@@ -30,7 +30,7 @@ C. Probabilistic vs deterministic. The deterministic resolvent-Lipschitz
    in the ratio, so it equals (sum_e max(c,1-c)) / b(delta).
 
 Writes results/aaai/tightness.json and two PNG figures. Accepts --seed and logs
-it (CLAUDE.md rule 3). Emits JSON and figures only, never LaTeX (rule 7).
+it (OUTLINE.md rule 3). Emits JSON and figures only, never LaTeX (rule 7).
 """
 
 from __future__ import annotations

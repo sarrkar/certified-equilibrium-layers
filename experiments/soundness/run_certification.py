@@ -8,7 +8,7 @@ STRING subgraph. Reports the Monte-Carlo radius, the analytic resolvent bound,
 and the out-of-sample coverage across several delta levels.
 
 Writes results/aaai/certified_region.json and a PNG figure. Accepts --seed and
-logs it (CLAUDE.md rule 3). Emits JSON and a figure only, never LaTeX or prose
+logs it (OUTLINE.md rule 3). Emits JSON and a figure only, never LaTeX or prose
 (rule 7).
 """
 

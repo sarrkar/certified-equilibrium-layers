@@ -20,7 +20,7 @@ Two parts.
    breakdown cutoff where rho crosses 1 and the certificate stops being valid.
 
 Writes results/aaai/normalized.json and a breakdown figure. Accepts --seed and
-logs it (CLAUDE.md rule 3). Emits JSON and figures only, never LaTeX (rule 7).
+logs it (OUTLINE.md rule 3). Emits JSON and figures only, never LaTeX (rule 7).
 """
 
 from __future__ import annotations

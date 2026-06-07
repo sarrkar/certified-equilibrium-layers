@@ -20,7 +20,7 @@ The cross-assay (RNA-seq vs microarray) behavior is reported, not hidden. The
 probabilistic matrix-Bernstein companion (certification module) is included only
 when REAL STRING confidences are supplied.
 
-HARD DATA POLICY (CLAUDE.md): REAL DATA ONLY. Every input comes from a real loader
+HARD DATA POLICY (OUTLINE.md): REAL DATA ONLY. Every input comes from a real loader
 that RAISES when absent; aligning the measured transcripts to the GRN nodes and
 computing e from real 3'UTR sequences is a tracked gap that RAISES
 NotImplementedError. No number is produced from non-real inputs.

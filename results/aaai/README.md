@@ -1,8 +1,8 @@
 # Project 2 (AAAI): certification results
 
-Generated artifacts (JSON + figures only, no prose paper; see CLAUDE.md rule 7).
+Generated artifacts (JSON + figures only, no prose paper; see OUTLINE.md rule 7).
 
-Per the hard data policy (CLAUDE.md), the real-data experiments under
+Per the hard data policy (OUTLINE.md), the real-data experiments under
 `experiments/aaai/` (`exp_realdata.py`, `exp_backbone_efficacy.py`) use ONLY real
 measured data and raise until that data is wired, so the application and backbone
 sections are reported as PENDING. The certificate-soundness experiments are

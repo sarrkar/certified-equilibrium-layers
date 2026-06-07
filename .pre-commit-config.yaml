@@ -28,7 +28,7 @@ repos:
     hooks:
       - id: no-em-dash
         name: forbid em-dashes
-        description: Em-dashes are banned per CLAUDE.md rule 4.
+        description: Em-dashes are banned per OUTLINE.md rule 4.
         entry: python scripts/check_no_em_dash.py
         language: system
         pass_filenames: true

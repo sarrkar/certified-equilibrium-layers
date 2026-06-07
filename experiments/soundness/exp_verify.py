@@ -21,7 +21,7 @@ then satisfies || A ||_op <= 1 and the certificate's assumption holds. This is
 verified at run time (max observed spectral norm is recorded).
 
 Writes results/aaai/coverage.json and results/aaai/coverage.png. Accepts --seed
-and logs it (CLAUDE.md rule 3). Emits JSON and a figure only, never LaTeX
+and logs it (OUTLINE.md rule 3). Emits JSON and a figure only, never LaTeX
 (rule 7).
 """
 

@@ -9,7 +9,7 @@ steps (no dense inverse). The teleport probability alpha is the single
 interpretable locality knob: it is parameterized as ``sigmoid(theta)`` so any
 learned value stays in the open interval (0, 1).
 
-Containment is enforced by construction, not by a loss penalty (CLAUDE.md hard
+Containment is enforced by construction, not by a loss penalty (OUTLINE.md hard
 rule 2). S is spectral-norm-clipped to ||S||_2 <= 1; the geometric series then
 gives
 

@@ -3,7 +3,7 @@
 Runnable numerical verification scripts. Each theorem in the paper has a
 matching script here that empirically confirms the bound on real data.
 
-Per the project contract (see [CLAUDE.md](../CLAUDE.md)), every script in
+Per the project contract (see [OUTLINE.md](../OUTLINE.md)), every script in
 this directory:
 
 - accepts `--seed` and logs the seed it ran with,

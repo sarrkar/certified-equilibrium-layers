@@ -1,9 +1,8 @@
-# CLAUDE.md
+# Project contract
 
-This file is the authoritative project contract. It is read at the start of
-every Claude Code session. Every future change MUST conform to the rules below.
-If a request conflicts with this file, stop and surface the conflict to the
-user before acting.
+This file is the authoritative project contract. Every future change MUST
+conform to the rules below. If a request conflicts with this file, stop and
+surface the conflict before acting.
 
 ## Project scope
 

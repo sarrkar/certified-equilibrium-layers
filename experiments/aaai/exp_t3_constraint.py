@@ -24,7 +24,7 @@ below the mean unconstrained Pearson. A one-time dg_diagnostic block reports how
 real ViennaRNA seed dG, and as a contrast the duplex-end asymmetry feature, each
 correlate with measured knockdown.
 
-HARD DATA POLICY (CLAUDE.md): REAL DATA ONLY. The efficacy data comes from a real
+HARD DATA POLICY (OUTLINE.md): REAL DATA ONLY. The efficacy data comes from a real
 loader that RAISES if absent, and the dG values come from ViennaRNA (RAISES if not
 installed). The section is then recorded as pending with the exact source.
 
