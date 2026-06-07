@@ -36,8 +36,8 @@ PROVENANCE = {
     "shared-encoder CBM and a Concept Embedding Model on the SAME real data",
     "T2": "TRRUST v2 human signed/directed GRN (https://www.grnpedia.org/trrust/)",
     "T3": "Huesken 2005 efficacy + ViennaRNA seed-duplex free energy dG (real)",
-    "T4": "GSE184929 RNA-seq (SeedMatchR export), Jackson 2006 and Birmingham 2006 microarray; "
-    "STRING v12 GRN",
+    "T4": "GSE184929 RNA-seq DESeq2 (GEO direct, no R), native seed-match of the confirmed Schlegel "
+    "2022 Ttr guide (seed UAUAGAG) against Ensembl Rnor_6.0 rat 3'UTRs; STRING v12 GRN for the bound",
     "baselines": "Huesken 2005 efficacy train/test split (OligoFormer protocol)",
 }
 
@@ -227,22 +227,37 @@ def t4_numbers(j: dict | None) -> dict:
     prov = PROVENANCE["T4"]
     if j is None:
         return {"provenance": prov, "status": "absent"}
+    # Real measured off-target SeedMatchR KS (independent of the certified-bound GRN gap).
+    mo = j.get("measured_offtarget") or {}
+    measured = None
+    if mo.get("status") == "ok":
+        measured = {
+            "guide": mo.get("guide"),
+            "seed": mo.get("seed"),
+            "reference": mo.get("reference"),
+            "per_contrast": {
+                n: {
+                    "ks_D": c["ks_D"],
+                    "ks_p": c["ks_p"],
+                    "n_seed_match": c["n_seed_match"],
+                    "n_background": c["n_background"],
+                }
+                for n, c in mo.get("per_contrast", {}).items()
+            },
+        }
     per = j.get("per_dataset", {})
     if not per:
         return {
             "provenance": prov,
-            "status": "pending_real_data",
+            "status": "measured_offtarget_real" if measured else "pending_real_data",
+            "certified_bound_status": "pending_real_data",
             "acceptance": j["acceptance"]["flag"],
+            "measured_offtarget": measured,
             "pending": {
                 n: {"assay": d["assay"], "source": d["source"]}
                 for n, d in j.get("pending", {}).items()
             },
             "cross_assay": j.get("cross_assay"),
-            "metrics": {
-                "certified_bound_vs_measured_deviation": None,
-                "ks_D": None,
-                "bound_binds": None,
-            },
         }
     return {
         "provenance": prov,
@@ -390,12 +405,24 @@ def write_summary(numbers: dict, captions: dict) -> None:
             "the mass-action residual below 1e-8 on every seed in the fixture check; the real-data "
             "residual runs when the OligoFormer CSVs are present."
         )
-    # 4. T4 binds on real GSE184929.
+    # 4. T4 measured off-target on real GSE184929 (certified bound pending the GRN join).
+    mo = t4.get("measured_offtarget") if t4["status"] == "measured_offtarget_real" else None
     if t4["status"] == "ok" and "gse184929" in t4.get("per_dataset", {}):
         g = t4["per_dataset"]["gse184929"]
         lines.append(
             f"- T4 (real GSE184929 RNA-seq): bound holds={g['bound_holds']}, bound/measured="
             f"{_fmt(g['bound_over_measured'], 2)}, vacuous={g['vacuous']}."
+        )
+    elif mo:
+        pc = mo["per_contrast"]
+        d1 = pc.get("Schlegel_2022_Ttr_D1_30mkg", {})
+        d4 = pc.get("Schlegel_2022_Ttr_D4_30mkg", {})
+        lines.append(
+            f"- T4 (real GSE184929 RNA-seq): measured off-target SeedMatchR KS is REAL (guide seed "
+            f"{mo['seed']}, Rnor_6.0 3'UTRs). Parent D1_30mkg D={_fmt(d1.get('ks_D'))} "
+            f"(p={_sci(d1.get('ks_p'))}) shows seed-mediated off-target; the g7-GNA D4_30mkg "
+            f"D={_fmt(d4.get('ks_D'))} (p={_sci(d4.get('ks_p'))}) abolishes it. The certified L2 "
+            f"bound stays PENDING the STRING / GRN-propagation join."
         )
     else:
         lines.append(
@@ -468,6 +495,18 @@ def write_summary(numbers: dict, captions: dict) -> None:
             lines.append(
                 f"| {n} | {d['assay']} | {_fmt(d['certified_bound'])} | {_fmt(d['measured_deviation'])} "
                 f"| {d['bound_holds'] and not d['vacuous']} | {_fmt(d['ks_D_measured'])} |"
+            )
+    elif mo:
+        lines.append(
+            f"- Measured off-target SeedMatchR KS is REAL (guide {mo['guide']}, seed {mo['seed']}; "
+            f"{mo['reference']}). The certified L2 bound stays PENDING the GRN-propagation join."
+        )
+        lines.append("")
+        lines.append("| contrast | KS D | p | n seed-match | n background |")
+        lines.append("| --- | --- | --- | --- | --- |")
+        for n, c in mo["per_contrast"].items():
+            lines.append(
+                f"| {n} | {_fmt(c['ks_D'])} | {_sci(c['ks_p'])} | {c['n_seed_match']} | {c['n_background']} |"
             )
     else:
         pend = t4.get("pending", {})

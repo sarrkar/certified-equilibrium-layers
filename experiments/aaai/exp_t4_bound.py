@@ -262,6 +262,48 @@ def aggregate_acceptance(merged: dict, per_seed_pd: list[dict], seeds: list[int]
     return acc
 
 
+def measured_offtarget(seedmatchr_dir: Path, cache_root: Path) -> dict:
+    """Real SeedMatchR one-sided KS on the MEASURED GSE184929 DESeq2 log2FC, per Ttr contrast.
+
+    Independent of the certified-bound (GRN-propagation) gap: needs only the real
+    measured log2FC and the native seed-match annotation (the confirmed Schlegel 2022
+    Ttr guide, seed UAUAGAG, scanned against build-matched Rnor_6.0 rat 3'UTRs). D1
+    (parent) and D4 (single g7 GNA) share the seed, so the seed-match set is identical;
+    the KS contrast measures whether the GNA destabilization removes the seed off-target.
+    """
+    from cascade.data import SEEDMATCHR_DATASETS, load_schlegel2022
+
+    per_contrast: dict = {}
+    pending: dict = {}
+    for name in SEEDMATCHR_DATASETS:
+        try:
+            ds = load_schlegel2022(name, raw_dir=seedmatchr_dir, cache_root=cache_root)
+        except FileNotFoundError as exc:
+            pending[name] = str(exc)
+            continue
+        if not ds.has_seed_annotation:
+            pending[name] = "loaded but no seed-match annotation; run scripts/annotate_seedmatch.py"
+            continue
+        res = ds.ks(alternative="greater")
+        per_contrast[name] = {
+            "sirna_id": ds.sirna_id,
+            "dose": ds.dose,
+            "ks_D": res.statistic,
+            "ks_p": res.pvalue,
+            "n_seed_match": res.n_seed_match,
+            "n_background": res.n_background,
+        }
+    return {
+        "status": "ok" if per_contrast else "pending_real_data",
+        "guide": "UUAUAGAGCAAGAACACUGUUUU",
+        "seed": "UAUAGAG",
+        "reference": "Ensembl Rnor_6.0 rat 3'UTRs (build-matched to GSE184929)",
+        "metric": "SeedMatchR one-sided KS (D, p): seed-matched vs background measured DESeq2 log2FC",
+        "per_contrast": per_contrast,
+        "pending": pending,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--seed", type=int, default=0, help="single RNG seed (logged)")
@@ -279,6 +321,13 @@ def main() -> int:
         default=None,
         help="real STRING file (required; no fabricated GRN)",
     )
+    parser.add_argument(
+        "--seedmatchr-dir",
+        type=Path,
+        default=REPO / "data" / "raw" / "offtarget" / "seedmatchr",
+        help="dir with the seed-match-annotated GSE184929 DESeq2 CSVs",
+    )
+    parser.add_argument("--cache", type=Path, default=OUT / "cache")
     parser.add_argument("--out-dir", type=Path, default=OUT)
     args = parser.parse_args()
     seeds = args.seeds if args.seeds else [args.seed]
@@ -306,16 +355,24 @@ def main() -> int:
             "note": "the matrix-Bernstein certificate (certification module) is included only with "
             "real STRING confidences; supply --string-links and the real measured join to enable it.",
         },
+        # Real measured off-target signal, independent of the certified-bound GRN gap.
+        "measured_offtarget": measured_offtarget(args.seedmatchr_dir, args.cache),
     }
     args.out_dir.mkdir(parents=True, exist_ok=True)
     out_path = args.out_dir / "t4_bound.json"
     out_path.write_text(json.dumps(numbers, indent=2), encoding="utf-8")
     if merged:
         _plot(merged, args.out_dir / "t4_bound.png")
+
+    mo = numbers["measured_offtarget"]
     print(
-        f"[t4] ACCEPTANCE {acc['flag']} (seeds {seeds}); assembled {len(merged)} datasets, "
-        f"{len(pending)} pending"
+        f"[t4] certified-bound ACCEPTANCE {acc['flag']} ({len(merged)} assembled, {len(pending)} pending)"
     )
+    print(f"[t4] measured off-target KS ({mo['status']}):")
+    for name, c in mo["per_contrast"].items():
+        print(
+            f"     {name}: KS D={c['ks_D']:.4f} p={c['ks_p']:.2e} (seed={c['n_seed_match']} bg={c['n_background']})"
+        )
     print(f"[t4] wrote {out_path}")
     return 0
 

@@ -3,21 +3,15 @@
     "flag": "PENDING",
     "reason": "no real off-target dataset assembled (real e / S / measured join pending)",
     "seeds": [
-      0,
-      1,
-      2
+      0
     ],
-    "n_seeds": 3,
+    "n_seeds": 1,
     "per_seed_flags": [
-      "PENDING",
-      "PENDING",
       "PENDING"
     ]
   },
   "seeds": [
-    0,
-    1,
-    2
+    0
   ],
   "alpha": 0.5,
   "bound_formula": "||E - E_true|| <= ||P_a(S)|| ||e - e_true|| + ((1-a)/a) ||P_a(S)|| ||P_a(S')|| ||S - S'|| ||e||  (second resolvent identity for the GRN-edge term)",
@@ -25,7 +19,7 @@
   "pending": {
     "gse184929": {
       "assay": "rna_seq",
-      "source": "Schlegel_2022_Ttr_D1_30mkg not found at /home/shadi/ICLR2026/data/raw/offtarget/seedmatchr/Schlegel_2022_Ttr_D1_30mkg.csv. This is the REAL off-target ground truth. Fetch it: SeedMatchR R package example data (install.packages('SeedMatchR')); Schlegel et al. 2022, GEO GSE184929 (rat liver Ttr GalNAc-siRNA). Export with scripts/export_seedmatchr_data.R. REAL DATA ONLY: no values are generated."
+      "source": "gse184929: a real STRING confidence file is required (--string-links); none given. Fetch STRING v12 with scripts/download_data.sh. REAL DATA ONLY."
     },
     "jackson2006": {
       "assay": "microarray",
@@ -44,5 +38,39 @@
   "probabilistic_companion": {
     "status": "not_run",
     "note": "the matrix-Bernstein certificate (certification module) is included only with real STRING confidences; supply --string-links and the real measured join to enable it."
+  },
+  "measured_offtarget": {
+    "status": "ok",
+    "guide": "UUAUAGAGCAAGAACACUGUUUU",
+    "seed": "UAUAGAG",
+    "reference": "Ensembl Rnor_6.0 rat 3'UTRs (build-matched to GSE184929)",
+    "metric": "SeedMatchR one-sided KS (D, p): seed-matched vs background measured DESeq2 log2FC",
+    "per_contrast": {
+      "Schlegel_2022_Ttr_D1_30mkg": {
+        "sirna_id": "Ttr_D1",
+        "dose": "30 mg/kg",
+        "ks_D": 0.15868186146579627,
+        "ks_p": 8.644613806104149e-24,
+        "n_seed_match": 1117,
+        "n_background": 18850
+      },
+      "Schlegel_2022_Ttr_D4_30mkg": {
+        "sirna_id": "Ttr_D4",
+        "dose": "30 mg/kg",
+        "ks_D": 0.04815100128470301,
+        "ks_p": 0.007522820667006979,
+        "n_seed_match": 1117,
+        "n_background": 18850
+      },
+      "Schlegel_2022_Ttr_D1_10mkg": {
+        "sirna_id": "Ttr_D1",
+        "dose": "10 mg/kg",
+        "ks_D": 0.007651755516144446,
+        "ks_p": 0.8867127494899683,
+        "n_seed_match": 1090,
+        "n_background": 17702
+      }
+    },
+    "pending": {}
   }
 }

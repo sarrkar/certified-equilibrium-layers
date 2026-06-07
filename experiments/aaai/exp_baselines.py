@@ -273,7 +273,8 @@ def offtarget_section(seedmatchr_dir: Path | None, cache_root: Path) -> dict:
             continue
         if not ds.has_seed_annotation:
             pending[name] = (
-                "loaded but no seed-match annotation; run the seed-match step in the R export"
+                "loaded but no seed-match annotation; run scripts/download_rat_3utr.sh then "
+                "scripts/annotate_seedmatch.py"
             )
             continue
         res = ds.ks(alternative="greater")
