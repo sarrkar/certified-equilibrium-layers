@@ -1,0 +1,80 @@
+{
+  "acceptance": {
+    "flag": "PENDING",
+    "beats_mean": null,
+    "beats_linear": null,
+    "reason": "real efficacy data or torch unavailable; no CASCADE run to judge",
+    "note": "CASCADE must at least tie the ridge/linear baseline on Pearson and beat the global-mean predictor on MSE on the real Huesken test split. Simple baselines are a hard bar: deep efficacy/perturbation models often fail to beat them (Ahlmann-Eltze et al., Nat Methods 2025)."
+  },
+  "seed": 0,
+  "efficacy": {
+    "status": "pending_real_data",
+    "source": "Huesken 2005 efficacy table not found under /home/shadi/ICLR2026/data/raw/efficacy (looked for ['huesken.csv', 'huesken.tsv', 'huesken.txt'] or a master ['siRNAEfficacyDB.csv', 'siRNAEfficacyDB.tsv', 'efficacy_master.csv']). Fetch the real file: https://raw.githubusercontent.com/lulab/OligoFormer/main/data/Huesken.csv  (source: https://github.com/lulab/OligoFormer (data/ directory)). Run scripts/download_efficacy.sh, or place it at /home/shadi/ICLR2026/data/raw/efficacy/huesken.csv. REAL DATA ONLY: no rows are generated when the file is absent.",
+    "reported_baselines": [
+      {
+        "name": "BIOPREDsi (Huesken ANN)",
+        "source": "Huesken et al., Nat Biotechnol 23:995-1001 (2005), 10.1038/nbt1118",
+        "dataset": "Huesken test (249)",
+        "metric": "pearson",
+        "reported_value": 0.66,
+        "note": "classic Pearson R for the BIOPREDsi predictor on the 249-siRNA Huesken test split; verify against the source table before use.",
+        "verify": true
+      },
+      {
+        "name": "OligoFormer",
+        "source": "OligoFormer (lulab/OligoFormer, public release)",
+        "dataset": "Huesken test",
+        "metric": "pearson",
+        "reported_value": null,
+        "note": "transcribe from the OligoFormer paper / repo table; not asserted here.",
+        "verify": true
+      },
+      {
+        "name": "siRNADiscovery (GNN)",
+        "source": "siRNADiscovery (public release)",
+        "dataset": "Huesken test",
+        "metric": "pearson",
+        "reported_value": null,
+        "note": "transcribe from the siRNADiscovery table; not asserted here.",
+        "verify": true
+      },
+      {
+        "name": "TargetScan context++",
+        "source": "Agarwal et al., eLife 4:e05005 (2015)",
+        "dataset": "seed scoring (off-target context)",
+        "metric": "context++ score",
+        "reported_value": null,
+        "note": "published seed-affinity model; reported reference, not recomputed here.",
+        "verify": true
+      },
+      {
+        "name": "scanMiR",
+        "source": "Soutschek et al., Bioinformatics 38:2466 (2022)",
+        "dataset": "seed scoring",
+        "metric": "scanMiR affinity",
+        "reported_value": null,
+        "note": "published biochemical seed-affinity model; reported reference.",
+        "verify": true
+      },
+      {
+        "name": "PITA",
+        "source": "Kertesz et al., Nat Genet 39:1278 (2007)",
+        "dataset": "seed scoring",
+        "metric": "ddG (seed binding minus opening)",
+        "reported_value": null,
+        "note": "published seed thermodynamics model; reported reference.",
+        "verify": true
+      }
+    ]
+  },
+  "offtarget": {
+    "status": "pending_real_data",
+    "metric": "SeedMatchR one-sided KS (D, p): seed-matched vs background measured DESeq2 log2FC",
+    "per_contrast": {},
+    "pending": {
+      "Schlegel_2022_Ttr_D1_30mkg": "Schlegel_2022_Ttr_D1_30mkg not found at /home/shadi/ICLR2026/data/raw/offtarget/seedmatchr/Schlegel_2022_Ttr_D1_30mkg.csv. This is the REAL off-target ground truth. Fetch it: SeedMatchR R package example data (install.packages('SeedMatchR')); Schlegel et al. 2022, GEO GSE184929 (rat liver Ttr GalNAc-siRNA). Export with scripts/export_seedmatchr_data.R. REAL DATA ONLY: no values are generated.",
+      "Schlegel_2022_Ttr_D4_30mkg": "Schlegel_2022_Ttr_D4_30mkg not found at /home/shadi/ICLR2026/data/raw/offtarget/seedmatchr/Schlegel_2022_Ttr_D4_30mkg.csv. This is the REAL off-target ground truth. Fetch it: SeedMatchR R package example data (install.packages('SeedMatchR')); Schlegel et al. 2022, GEO GSE184929 (rat liver Ttr GalNAc-siRNA). Export with scripts/export_seedmatchr_data.R. REAL DATA ONLY: no values are generated.",
+      "Schlegel_2022_Ttr_D1_10mkg": "Schlegel_2022_Ttr_D1_10mkg not found at /home/shadi/ICLR2026/data/raw/offtarget/seedmatchr/Schlegel_2022_Ttr_D1_10mkg.csv. This is the REAL off-target ground truth. Fetch it: SeedMatchR R package example data (install.packages('SeedMatchR')); Schlegel et al. 2022, GEO GSE184929 (rat liver Ttr GalNAc-siRNA). Export with scripts/export_seedmatchr_data.R. REAL DATA ONLY: no values are generated."
+    }
+  }
+}
