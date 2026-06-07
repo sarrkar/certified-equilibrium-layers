@@ -23,7 +23,9 @@ loader that RAISES when its file is absent. When the real data is not present th
 relevant section is recorded as pending with the exact source to fetch, and no
 number is produced from non-real inputs.
 
-Writes results/aaai/baselines.json. Accepts --seed and logs it. No LaTeX.
+Writes results/aaai/baselines.json. Accepts --seed or --seeds (multi-seed,
+aggregated conservatively: PASS only if CASCADE clears both bars on every seed)
+and logs them. No LaTeX.
 """
 
 from __future__ import annotations
@@ -47,6 +49,13 @@ EVAL_SETS = ("huesken_test", *CROSS_STUDIES)
 
 PEARSON_TOL = 0.02  # CASCADE ties the linear baseline if within this on Pearson
 MSE_REL_TOL = 0.02  # CASCADE beats the mean baseline if MSE within this relative band
+
+ACCEPTANCE_NOTE = (
+    "CASCADE must at least tie the ridge/linear baseline on Pearson and beat the global-mean "
+    "predictor on MSE on the real Huesken test split, on every seed (conservative aggregate). "
+    "Simple baselines are a hard bar: deep efficacy/perturbation models often fail to beat them "
+    "(Ahlmann-Eltze et al., Nat Methods 2025)."
+)
 
 # Published baselines: cite the source, never fabricate. reported_value is null
 # where it is not transcribed here.
@@ -293,19 +302,14 @@ def offtarget_section(seedmatchr_dir: Path | None, cache_root: Path) -> dict:
 
 
 def _acceptance(efficacy: dict) -> dict:
-    """CASCADE must tie the linear baseline (Pearson) and beat the mean (MSE) on Huesken test."""
-    note = (
-        "CASCADE must at least tie the ridge/linear baseline on Pearson and beat the global-mean "
-        "predictor on MSE on the real Huesken test split. Simple baselines are a hard bar: deep "
-        "efficacy/perturbation models often fail to beat them (Ahlmann-Eltze et al., Nat Methods 2025)."
-    )
+    """Single-seed acceptance: tie the linear baseline (Pearson), beat the mean (MSE)."""
     if efficacy.get("status") != "ok" or efficacy["our_models"].get("cascade_ccmp") is None:
         return {
             "flag": "PENDING",
             "beats_mean": None,
             "beats_linear": None,
             "reason": "real efficacy data or torch unavailable; no CASCADE run to judge",
-            "note": note,
+            "note": ACCEPTANCE_NOTE,
         }
     c = efficacy["our_models"]["cascade_ccmp"]["huesken_test"]
     m = efficacy["our_models"]["mean"]["huesken_test"]
@@ -328,13 +332,93 @@ def _acceptance(efficacy: dict) -> dict:
         "mean_mse": m["mse"],
         "beats_linear": bool(beats_linear),
         "beats_mean": bool(beats_mean),
-        "note": note,
+        "note": ACCEPTANCE_NOTE,
+    }
+
+
+def efficacy_multiseed(
+    raw_dir: Path, cache_root: Path, seeds: list[int], epochs: int, lr: float
+) -> tuple[dict, list[dict]]:
+    """Run the efficacy comparison across seeds (raises if Huesken absent).
+
+    The mean and ridge baselines are deterministic (seed-independent) and computed
+    once; only the CCMP backbone is retrained per seed. Returns the efficacy
+    section and the list of per-seed single-seed acceptance dicts.
+    """
+    feats, labels, unavailable = load_real_efficacy(raw_dir, cache_root)
+    mean = mean_baseline(feats, labels)
+    ridge = ridge_baseline(feats, labels)
+    per_seed: list[dict] = []
+    accs: list[dict] = []
+    cascade_status = "ok"
+    for s in seeds:
+        try:
+            cascade = cascade_backbone(feats, labels, s, epochs, lr)
+        except ImportError:
+            cascade, cascade_status = None, "pending_torch"
+        acc = _acceptance(
+            {
+                "status": "ok",
+                "our_models": {"mean": mean, "ridge_linear": ridge, "cascade_ccmp": cascade},
+            }
+        )
+        per_seed.append({"seed": s, "cascade_ccmp": cascade, "acceptance": acc})
+        accs.append(acc)
+    section = {
+        "status": "ok",
+        "cascade_status": cascade_status,
+        "protocol": "train on real Huesken train (2182); Pearson/Spearman on Huesken test (249) "
+        "and cross-dataset transfer to Reynolds, Vickers, Harborth, Ui-Tei (OligoFormer protocol)",
+        "n_features": concept_layout().total_dim,
+        "deterministic_baselines": {"mean": mean, "ridge_linear": ridge},
+        "per_seed": per_seed,
+        "cross_datasets_unavailable": unavailable,
+        "reported_baselines": REPORTED_BASELINES,
+    }
+    return section, accs
+
+
+def _aggregate_acceptance(accs: list[dict], seeds: list[int]) -> dict:
+    """Conservative aggregate: PASS only if CASCADE clears both bars on every seed."""
+    flags = [a["flag"] for a in accs]
+    base = {
+        "seeds": list(seeds),
+        "n_seeds": len(seeds),
+        "per_seed_flags": flags,
+        "metric": "pearson vs ridge (tie) and mse vs mean (beat) on Huesken test, all seeds",
+        "note": ACCEPTANCE_NOTE,
+    }
+    if not accs or any(f == "PENDING" for f in flags):
+        return {**base, "flag": "PENDING", "beats_linear_all": None, "beats_mean_all": None}
+    beats_linear_all = all(a["beats_linear"] for a in accs)
+    beats_mean_all = all(a["beats_mean"] for a in accs)
+
+    def _mean(key: str) -> float | None:
+        vals = [a[key] for a in accs if a.get(key) is not None]
+        return float(np.mean(vals)) if vals else None
+
+    return {
+        **base,
+        "flag": "PASS" if (beats_linear_all and beats_mean_all) else "FAIL",
+        "beats_linear_all": beats_linear_all,
+        "beats_mean_all": beats_mean_all,
+        "cascade_pearson_mean": _mean("cascade_pearson"),
+        "ridge_pearson_mean": _mean("ridge_pearson"),
+        "cascade_mse_mean": _mean("cascade_mse"),
+        "mean_mse_mean": _mean("mean_mse"),
     }
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--seed", type=int, default=0, help="RNG seed (logged)")
+    parser.add_argument("--seed", type=int, default=0, help="single RNG seed (logged)")
+    parser.add_argument(
+        "--seeds",
+        type=int,
+        nargs="+",
+        default=None,
+        help="multiple seeds to aggregate (conservative: PASS only if every seed passes)",
+    )
     parser.add_argument("--epochs", type=int, default=300)
     parser.add_argument("--lr", type=float, default=0.01)
     parser.add_argument("--raw-dir", type=str, default=str(REPO / "data" / "raw" / "efficacy"))
@@ -346,24 +430,34 @@ def main() -> int:
     parser.add_argument("--cache", type=Path, default=OUT / "cache")
     parser.add_argument("--out-dir", type=Path, default=OUT)
     args = parser.parse_args()
-    print(f"[baselines] seed={args.seed} epochs={args.epochs} raw_dir={args.raw_dir}")
+    seeds = args.seeds if args.seeds else [args.seed]
+    print(f"[baselines] seeds={seeds} epochs={args.epochs} raw_dir={args.raw_dir}")
 
     try:
-        efficacy = efficacy_section(Path(args.raw_dir), args.cache, args.seed, args.epochs, args.lr)
+        efficacy, accs = efficacy_multiseed(
+            Path(args.raw_dir), args.cache, seeds, args.epochs, args.lr
+        )
+        acceptance = _aggregate_acceptance(accs, seeds)
     except (FileNotFoundError, NotImplementedError) as exc:
         efficacy = {
             "status": "pending_real_data",
             "source": str(exc),
             "reported_baselines": REPORTED_BASELINES,
         }
+        acceptance = {
+            "flag": "PENDING",
+            "seeds": seeds,
+            "n_seeds": len(seeds),
+            "reason": "real efficacy data unavailable; no CASCADE run to judge",
+            "note": ACCEPTANCE_NOTE,
+        }
         print(f"[baselines] efficacy PENDING real data: {exc}")
 
     offtarget = offtarget_section(Path(args.seedmatchr_dir), args.cache)
 
-    acceptance = _acceptance(efficacy)
     numbers = {
         "acceptance": acceptance,  # prominently at the top
-        "seed": args.seed,
+        "seeds": seeds,
         "efficacy": efficacy,
         "offtarget": offtarget,
     }
@@ -371,13 +465,13 @@ def main() -> int:
     out_path = args.out_dir / "baselines.json"
     out_path.write_text(json.dumps(numbers, indent=2), encoding="utf-8")
 
-    print(f"[baselines] ACCEPTANCE {acceptance['flag']}")
+    print(f"[baselines] ACCEPTANCE {acceptance['flag']} (seeds {seeds})")
     if acceptance["flag"] != "PENDING":
         print(
-            f"[baselines]   beats_linear={acceptance['beats_linear']} (pearson "
-            f"{acceptance['cascade_pearson']} vs ridge {acceptance['ridge_pearson']}); "
-            f"beats_mean={acceptance['beats_mean']} (mse {acceptance['cascade_mse']} vs mean "
-            f"{acceptance['mean_mse']})"
+            f"[baselines]   beats_linear_all={acceptance['beats_linear_all']} "
+            f"(mean pearson {acceptance['cascade_pearson_mean']} vs ridge "
+            f"{acceptance['ridge_pearson_mean']}); beats_mean_all={acceptance['beats_mean_all']} "
+            f"(mean mse {acceptance['cascade_mse_mean']} vs mean {acceptance['mean_mse_mean']})"
         )
     print(f"[baselines] efficacy={efficacy['status']} offtarget={offtarget['status']}")
     print(f"[baselines] wrote {out_path}")

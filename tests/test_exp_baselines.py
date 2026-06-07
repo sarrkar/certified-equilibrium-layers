@@ -91,3 +91,46 @@ def test_full_path_on_fixtures(tmp_path) -> None:
     assert isinstance(acc["beats_mean"], bool) and isinstance(acc["beats_linear"], bool)
     # harborth / uitei are not in the fixture master: recorded unavailable, not faked.
     assert {"harborth", "uitei"} <= set(sec["cross_datasets_unavailable"])
+
+
+def test_aggregate_acceptance_is_conservative() -> None:
+    def acc(flag, beats_linear=True, beats_mean=True):
+        if flag == "PENDING":
+            return {"flag": "PENDING"}
+        return {
+            "flag": flag,
+            "beats_linear": beats_linear,
+            "beats_mean": beats_mean,
+            "cascade_pearson": 0.55,
+            "ridge_pearson": 0.54,
+            "cascade_mse": 0.10,
+            "mean_mse": 0.20,
+        }
+
+    # Every seed passes -> PASS, with the across-seed means reported.
+    agg = ex._aggregate_acceptance([acc("PASS")] * 3, [0, 1, 2])
+    assert agg["flag"] == "PASS" and agg["n_seeds"] == 3
+    assert agg["beats_linear_all"] and agg["beats_mean_all"]
+    assert agg["cascade_pearson_mean"] == 0.55
+
+    # One seed fails the mean bar -> conservative FAIL.
+    agg = ex._aggregate_acceptance(
+        [acc("PASS"), acc("FAIL", beats_mean=False), acc("PASS")], [0, 1, 2]
+    )
+    assert agg["flag"] == "FAIL" and agg["beats_mean_all"] is False
+
+    # Any pending seed -> PENDING aggregate.
+    agg = ex._aggregate_acceptance([acc("PASS"), acc("PENDING")], [0, 1])
+    assert agg["flag"] == "PENDING"
+
+
+def test_multiseed_on_fixtures(tmp_path) -> None:
+    pytest.importorskip("torch")
+    pytest.importorskip("sklearn")
+    seeds = [0, 1, 2]
+    section, accs = ex.efficacy_multiseed(FIXTURES, tmp_path / "cache", seeds, epochs=15, lr=0.01)
+    assert section["status"] == "ok"
+    assert len(section["per_seed"]) == len(seeds)  # CCMP retrained per seed
+    assert set(section["deterministic_baselines"]) == {"mean", "ridge_linear"}  # computed once
+    agg = ex._aggregate_acceptance(accs, seeds)
+    assert agg["flag"] in {"PASS", "FAIL"} and agg["n_seeds"] == 3

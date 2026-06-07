@@ -1,12 +1,20 @@
 {
   "acceptance": {
     "flag": "PENDING",
-    "beats_mean": null,
-    "beats_linear": null,
-    "reason": "real efficacy data or torch unavailable; no CASCADE run to judge",
-    "note": "CASCADE must at least tie the ridge/linear baseline on Pearson and beat the global-mean predictor on MSE on the real Huesken test split. Simple baselines are a hard bar: deep efficacy/perturbation models often fail to beat them (Ahlmann-Eltze et al., Nat Methods 2025)."
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "n_seeds": 3,
+    "reason": "real efficacy data unavailable; no CASCADE run to judge",
+    "note": "CASCADE must at least tie the ridge/linear baseline on Pearson and beat the global-mean predictor on MSE on the real Huesken test split, on every seed (conservative aggregate). Simple baselines are a hard bar: deep efficacy/perturbation models often fail to beat them (Ahlmann-Eltze et al., Nat Methods 2025)."
   },
-  "seed": 0,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
   "efficacy": {
     "status": "pending_real_data",
     "source": "Huesken 2005 efficacy table not found under /home/shadi/ICLR2026/data/raw/efficacy (looked for ['huesken.csv', 'huesken.tsv', 'huesken.txt'] or a master ['siRNAEfficacyDB.csv', 'siRNAEfficacyDB.tsv', 'efficacy_master.csv']). Fetch the real file: https://raw.githubusercontent.com/lulab/OligoFormer/main/data/Huesken.csv  (source: https://github.com/lulab/OligoFormer (data/ directory)). Run scripts/download_efficacy.sh, or place it at /home/shadi/ICLR2026/data/raw/efficacy/huesken.csv. REAL DATA ONLY: no rows are generated when the file is absent.",
