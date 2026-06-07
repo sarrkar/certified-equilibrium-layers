@@ -8,9 +8,19 @@ provenance and the rat-liver specificity caveat on GSE184929.
 from .cache import CacheKey, cache_dir_for, cached_frame, sha256_file
 from .efficacy import (
     EFFICACY_SOURCES,
+    EFFICACY_STUDIES,
     MIX_STUDIES,
     EfficacyDataset,
+    default_efficacy_dir,
+    load_efficacy_suite,
+    load_harborth,
+    load_huesken_efficacy,
+    load_katoh,
+    load_khvorova,
     load_oligoformer_efficacy,
+    load_reynolds,
+    load_uitei,
+    load_vickers,
 )
 from .geo import (
     DEFAULT_CONTRASTS,
@@ -73,6 +83,17 @@ __all__ = [
     "load_oligoformer_efficacy",
     "EFFICACY_SOURCES",
     "MIX_STUDIES",
+    # on-target efficacy backbone (REAL per-study loaders)
+    "EFFICACY_STUDIES",
+    "default_efficacy_dir",
+    "load_efficacy_suite",
+    "load_huesken_efficacy",
+    "load_reynolds",
+    "load_vickers",
+    "load_harborth",
+    "load_uitei",
+    "load_khvorova",
+    "load_katoh",
     # Huesken efficacy (one efficacy_backbone source)
     "HueskenDataset",
     "load_huesken",

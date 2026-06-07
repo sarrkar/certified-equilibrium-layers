@@ -1,0 +1,4 @@
+antisense,sense,mrna_id,efficacy,source_study,cell_line,assay
+UCGAAGUAUUCCGCGUACGUU,CGUACGCGGAAUACUUCGAUU,GL2_luc,0.85,Reynolds 2004,HEK293,reporter
+UCGAAGUACUCAGCGUAAGUU,CUUACGCUGAGUACUUCGAUU,GL3_luc,90.0,Katoh (Taka),HeLa,luciferase reporter
+UGUUCUUCUGGAAGUCCAGUU,CUGGACUUCCAGAAGAACAUU,LMNA,0.62,Vickers 2003,T24,endogenous mRNA

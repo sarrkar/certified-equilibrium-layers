@@ -69,6 +69,30 @@ off-target evidence.
   validation set) rather than re-parsing the raw journal supplements. The loader
   is column-name tolerant and percent efficacies are rescaled to [0, 1].
 
+### Per-study REAL loaders (`cascade.data.efficacy`)
+
+REAL DATA ONLY. Each per-study loader reads `data/raw/efficacy/<study>.csv` (or
+selects the study's rows out of a `siRNAEfficacyDB` master table) and RAISES
+`FileNotFoundError` with the exact URL when the file is absent. Fetch with
+`scripts/download_efficacy.sh` (writes `data/raw/efficacy/` + a sha256 manifest).
+Sources: the OligoFormer release `data/` directory
+(https://github.com/lulab/OligoFormer) and the siRNAEfficacyDB supplement
+(https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11665841/).
+
+| Study | Loader | Citation | Size | Cell line | Assay | Real? |
+| --- | --- | --- | --- | --- | --- | --- |
+| Huesken 2005 | `load_huesken_efficacy` (split 2182/249) | Huesken 2005, 10.1038/nbt1118 | 2431 siRNA / 34 mRNA | H1299 | branched-DNA residual mRNA | REAL |
+| Reynolds 2004 | `load_reynolds` | Reynolds 2004, 10.1038/nbt936 | 240 siRNA | HEK293 / HeLa | reporter / endogenous mRNA | REAL |
+| Vickers 2003 | `load_vickers` | Vickers 2003, 10.1074/jbc.M210326200 | 76 siRNA | T24 / HeLa | endogenous mRNA | REAL |
+| Harborth 2003 | `load_harborth` | Harborth 2003, 10.1089/108729003321629638 | 44 siRNA | HeLa | endogenous mRNA / protein | REAL |
+| Ui-Tei 2004 | `load_uitei` | Ui-Tei 2004, 10.1093/nar/gkh247 | 62 siRNA | various | reporter | REAL |
+| Khvorova 2003 | `load_khvorova` | Khvorova 2003, 10.1016/S0092-8674(03)00759-1 | ~90 siRNA | various | reporter | REAL |
+| Katoh (Taka) | `load_katoh` | Katoh / Takayuki, via OligoFormer | 702 siRNA | HeLa | luciferase reporter | REAL |
+
+`load_efficacy_suite` concatenates several studies and raises listing the missing
+files and their URLs if any requested study has no real file. There is no
+synthetic fallback on any of these paths.
+
 ## Role: offtarget_certification (measured off-target)
 
 - **GSE184929 (RNA-seq, primary off-target ground truth).** GalNAc-siRNA

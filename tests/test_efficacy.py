@@ -1,4 +1,4 @@
-"""Tests for the unified OligoFormer efficacy loader (role: efficacy_backbone)."""
+"""Tests for the efficacy loaders (role: efficacy_backbone). REAL DATA ONLY."""
 
 from __future__ import annotations
 
@@ -7,12 +7,26 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cascade.data import EFFICACY_BACKBONE, EfficacyDataset, load_oligoformer_efficacy
+from cascade.data import (
+    EFFICACY_BACKBONE,
+    EFFICACY_STUDIES,
+    EfficacyDataset,
+    load_efficacy_suite,
+    load_huesken_efficacy,
+    load_katoh,
+    load_oligoformer_efficacy,
+    load_reynolds,
+    load_vickers,
+)
 from cascade.data.efficacy import COLUMNS
 
 
 def _raw(fixtures_dir: Path) -> Path:
     return fixtures_dir / "oligoformer"
+
+
+def _eff(fixtures_dir: Path) -> Path:
+    return fixtures_dir / "efficacy"
 
 
 def test_load_unified_suite(fixtures_dir: Path, cache_root: Path) -> None:
@@ -64,3 +78,85 @@ def test_cache_is_idempotent(fixtures_dir: Path, cache_root: Path) -> None:
 def test_missing_dir_raises(cache_root: Path) -> None:
     with pytest.raises(FileNotFoundError):
         load_oligoformer_efficacy("/no/such/dir", cache_root=cache_root)
+
+
+# --- REAL per-study loaders (cascade.data.efficacy v2) ------------------------
+def test_registry_covers_the_seven_studies() -> None:
+    assert set(EFFICACY_STUDIES) == {
+        "huesken",
+        "reynolds",
+        "vickers",
+        "harborth",
+        "uitei",
+        "khvorova",
+        "katoh",
+    }
+    # Every study carries a citation and an exact fetch URL (REAL DATA ONLY).
+    for meta in EFFICACY_STUDIES.values():
+        assert meta["citation"] and isinstance(meta["citation"], str)
+        assert meta["url"].startswith("http")
+
+
+def test_huesken_loader_exposes_standard_split(fixtures_dir: Path, cache_root: Path) -> None:
+    ds = load_huesken_efficacy(_eff(fixtures_dir), cache_root=cache_root)
+    assert isinstance(ds, EfficacyDataset)
+    assert ds.role == EFFICACY_BACKBONE
+    assert ds.has_split
+    assert set(COLUMNS) <= set(ds.frame.columns)
+    assert len(ds.train()) == 3 and len(ds.test()) == 2
+    eff = ds.frame["efficacy"].to_numpy()
+    assert eff.min() >= 0.0 and eff.max() <= 1.0
+
+
+def test_non_huesken_dataset_has_no_split(fixtures_dir: Path, cache_root: Path) -> None:
+    ds = load_reynolds(_eff(fixtures_dir), cache_root=cache_root)
+    assert not ds.has_split
+    with pytest.raises(ValueError, match="no split"):
+        ds.train()
+
+
+def test_per_study_selection_from_master(fixtures_dir: Path, cache_root: Path) -> None:
+    # No reynolds.csv present -> selected out of the master compilation by study.
+    reynolds = load_reynolds(_eff(fixtures_dir), cache_root=cache_root)
+    assert len(reynolds) == 1
+    assert reynolds.sources() == ["Reynolds 2004"]
+    vickers = load_vickers(_eff(fixtures_dir), cache_root=cache_root)
+    assert vickers.sources() == ["Vickers 2003"]
+
+
+def test_master_percent_efficacy_normalized(fixtures_dir: Path, cache_root: Path) -> None:
+    katoh = load_katoh(_eff(fixtures_dir), cache_root=cache_root)
+    eff = katoh.frame["efficacy"].to_numpy()
+    assert eff.min() >= 0.0 and eff.max() <= 1.0
+    assert np.isclose(eff.max(), 0.90)  # 90.0 percent -> 0.90
+
+
+def test_suite_concatenates_requested_studies(fixtures_dir: Path, cache_root: Path) -> None:
+    ds = load_efficacy_suite(
+        studies=["reynolds", "vickers", "katoh"],
+        raw_dir=_eff(fixtures_dir),
+        cache_root=cache_root,
+    )
+    assert list(ds.frame.columns) == COLUMNS
+    assert len(ds) == 3
+    assert {"Reynolds 2004", "Vickers 2003", "Katoh (Taka)"} == set(ds.sources())
+
+
+def test_cache_parquet_is_written(fixtures_dir: Path, cache_root: Path) -> None:
+    load_reynolds(_eff(fixtures_dir), cache_root=cache_root)
+    assert list(cache_root.glob("efficacy_reynolds/*/frame.parquet"))
+
+
+def test_missing_per_study_file_raises_with_exact_url(cache_root: Path, tmp_path) -> None:
+    with pytest.raises(FileNotFoundError) as exc:
+        load_vickers(tmp_path / "empty", cache_root=cache_root)
+    msg = str(exc.value)
+    assert EFFICACY_STUDIES["vickers"]["url"] in msg
+    assert "REAL DATA ONLY" in msg
+
+
+def test_missing_suite_lists_missing_urls(cache_root: Path, tmp_path) -> None:
+    with pytest.raises(FileNotFoundError) as exc:
+        load_efficacy_suite(raw_dir=tmp_path / "empty", cache_root=cache_root)
+    msg = str(exc.value)
+    assert EFFICACY_STUDIES["huesken"]["url"] in msg
