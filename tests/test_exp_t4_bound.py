@@ -81,3 +81,37 @@ def test_load_real_dataset_raises_without_real_data() -> None:
     # GSE184929 via the SeedMatchR export is likewise absent.
     with pytest.raises(FileNotFoundError):
         ex.load_real_dataset("gse184929", string_links=None, alpha=0.5)
+
+
+def test_multiseed_aggregation_is_conservative() -> None:
+    def d(holds, meaningful, vac, bound, dev):
+        return {
+            "g": {
+                "assay": "rna_seq",
+                "bound_holds": holds,
+                "meaningful": meaningful,
+                "vacuous": vac,
+                "certified_bound": {"bound": bound},
+                "measured_deviation": dev,
+                "rowwise_refinement": {"max_bound": bound * 0.5},
+                "ks_measured": {"D": 0.8},
+                "ks_predicted": {"D": 0.7},
+            }
+        }
+
+    # Bound holds and is meaningful on every seed -> PASS; worst-case bound kept.
+    ps = [d(True, True, False, 0.20, 0.04), d(True, True, False, 0.25, 0.04)]
+    merged = ex.aggregate_per_dataset(ps, [0, 1])
+    assert merged["g"]["certified_bound"]["bound"] == 0.25  # worst seed
+    assert merged["g"]["per_seed_bound"] == [0.20, 0.25]
+    acc = ex.aggregate_acceptance(merged, ps, [0, 1])
+    assert acc["flag"] == "PASS" and acc["n_seeds"] == 2
+
+    # Bound fails on one seed -> conservative FAIL.
+    ps2 = [d(True, True, False, 0.2, 0.04), d(False, False, False, 0.2, 0.5)]
+    acc2 = ex.aggregate_acceptance(ex.aggregate_per_dataset(ps2, [0, 1]), ps2, [0, 1])
+    assert acc2["flag"] == "FAIL"
+
+    # All seeds pending (empty per_dataset) -> PENDING.
+    acc3 = ex.aggregate_acceptance(ex.aggregate_per_dataset([{}, {}], [0, 1]), [{}, {}], [0, 1])
+    assert acc3["flag"] == "PENDING"

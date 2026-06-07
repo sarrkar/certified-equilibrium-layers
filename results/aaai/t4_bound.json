@@ -1,16 +1,40 @@
 {
   "acceptance": {
     "flag": "PENDING",
-    "reason": "no real off-target dataset assembled (real e / S / measured join pending)"
+    "reason": "no real off-target dataset assembled (real e / S / measured join pending)",
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "n_seeds": 3,
+    "per_seed_flags": [
+      "PENDING",
+      "PENDING",
+      "PENDING"
+    ]
   },
-  "seed": 0,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
   "alpha": 0.5,
   "bound_formula": "||E - E_true|| <= ||P_a(S)|| ||e - e_true|| + ((1-a)/a) ||P_a(S)|| ||P_a(S')|| ||S - S'|| ||e||  (second resolvent identity for the GRN-edge term)",
   "per_dataset": {},
   "pending": {
-    "gse184929": "Schlegel_2022_Ttr_D1_30mkg not found at /home/shadi/ICLR2026/data/raw/offtarget/seedmatchr/Schlegel_2022_Ttr_D1_30mkg.csv. This is the REAL off-target ground truth. Fetch it: SeedMatchR R package example data (install.packages('SeedMatchR')); Schlegel et al. 2022, GEO GSE184929 (rat liver Ttr GalNAc-siRNA). Export with scripts/export_seedmatchr_data.R. REAL DATA ONLY: no values are generated.",
-    "jackson2006": "jackson2006 off-target table not found at /home/shadi/ICLR2026/data/raw/offtarget/jackson2006.csv. Place the parsed supplement table there; see docs/DATA_CARD.md.",
-    "birmingham2006": "birmingham2006 off-target table not found at /home/shadi/ICLR2026/data/raw/offtarget/birmingham2006.csv. Place the parsed supplement table there; see docs/DATA_CARD.md."
+    "gse184929": {
+      "assay": "rna_seq",
+      "source": "Schlegel_2022_Ttr_D1_30mkg not found at /home/shadi/ICLR2026/data/raw/offtarget/seedmatchr/Schlegel_2022_Ttr_D1_30mkg.csv. This is the REAL off-target ground truth. Fetch it: SeedMatchR R package example data (install.packages('SeedMatchR')); Schlegel et al. 2022, GEO GSE184929 (rat liver Ttr GalNAc-siRNA). Export with scripts/export_seedmatchr_data.R. REAL DATA ONLY: no values are generated."
+    },
+    "jackson2006": {
+      "assay": "microarray",
+      "source": "jackson2006 off-target table not found at /home/shadi/ICLR2026/data/raw/offtarget/jackson2006.csv. Place the parsed supplement table there; see docs/DATA_CARD.md."
+    },
+    "birmingham2006": {
+      "assay": "microarray",
+      "source": "birmingham2006 off-target table not found at /home/shadi/ICLR2026/data/raw/offtarget/birmingham2006.csv. Place the parsed supplement table there; see docs/DATA_CARD.md."
+    }
   },
   "cross_assay": {
     "rna_seq_mean_ks_D": null,

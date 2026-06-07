@@ -217,9 +217,61 @@ def _plot(per_dataset: dict, path: Path) -> None:
     print(f"[t4] wrote {path}")
 
 
+def assess_all(seed: int, string_links: str | None, alpha: float) -> tuple[dict, dict]:
+    """Assemble + assess every off-target dataset for one seed (raises -> pending)."""
+    per_dataset, pending = {}, {}
+    for name, assay in DATASETS:
+        try:
+            load_real_dataset(name, string_links, alpha)  # raises until the real join is wired
+            # When wired: assemble inputs and
+            #   per_dataset[name] = assess_dataset(name, assay, ..., p_prime_norm=...)
+            # with the resolvent norms computed at this seed.
+        except (FileNotFoundError, NotImplementedError) as exc:
+            pending[name] = {"assay": assay, "source": str(exc)}
+    return per_dataset, pending
+
+
+def aggregate_per_dataset(per_seed_pd: list[dict], seeds: list[int]) -> dict:
+    """Conservatively merge per-seed assessments: worst-case bound, holds on every seed."""
+    common = set(per_seed_pd[0]) if per_seed_pd else set()
+    for pd in per_seed_pd[1:]:
+        common &= set(pd)
+    merged = {}
+    for name in common:
+        runs = [pd[name] for pd in per_seed_pd]
+        merged[name] = {
+            "assay": runs[0]["assay"],
+            "bound_holds": all(r["bound_holds"] for r in runs),
+            "meaningful": all(r["meaningful"] for r in runs),
+            "vacuous": any(r["vacuous"] for r in runs),
+            "certified_bound": {"bound": max(r["certified_bound"]["bound"] for r in runs)},
+            "measured_deviation": max(r["measured_deviation"] for r in runs),
+            "rowwise_refinement": runs[0]["rowwise_refinement"],
+            "ks_measured": runs[0]["ks_measured"],
+            "ks_predicted": runs[0]["ks_predicted"],
+            "per_seed_bound": [r["certified_bound"]["bound"] for r in runs],
+        }
+    return merged
+
+
+def aggregate_acceptance(merged: dict, per_seed_pd: list[dict], seeds: list[int]) -> dict:
+    acc = acceptance(merged)
+    acc["seeds"] = list(seeds)
+    acc["n_seeds"] = len(seeds)
+    acc["per_seed_flags"] = [acceptance(pd)["flag"] for pd in per_seed_pd]
+    return acc
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--seed", type=int, default=0, help="RNG seed (logged)")
+    parser.add_argument("--seed", type=int, default=0, help="single RNG seed (logged)")
+    parser.add_argument(
+        "--seeds",
+        type=int,
+        nargs="+",
+        default=None,
+        help="multiple seeds; aggregated conservatively (bound holds / meaningful on every seed)",
+    )
     parser.add_argument("--alpha", type=float, default=0.5)
     parser.add_argument(
         "--string-links",
@@ -229,30 +281,26 @@ def main() -> int:
     )
     parser.add_argument("--out-dir", type=Path, default=OUT)
     args = parser.parse_args()
-    print(f"[t4] seed={args.seed} alpha={args.alpha}")
+    seeds = args.seeds if args.seeds else [args.seed]
+    print(f"[t4] seeds={seeds} alpha={args.alpha}")
 
-    per_dataset = {}
-    pending = {}
-    for name, assay in DATASETS:
-        try:
-            load_real_dataset(
-                name, args.string_links, args.alpha
-            )  # raises until the real join is wired
-            # When wired, assemble inputs and call assess_dataset(name, assay, ...).
-        except (FileNotFoundError, NotImplementedError) as exc:
-            pending[name] = str(exc)
-            print(f"[t4] {name} ({assay}) PENDING: {type(exc).__name__}")
+    per_seed = [assess_all(s, args.string_links, args.alpha) for s in seeds]
+    per_seed_pd = [p[0] for p in per_seed]
+    pending = per_seed[0][1]  # the pending set is seed-independent (loading raises identically)
+    for name in pending:
+        print(f"[t4] {name} PENDING")
+    merged = aggregate_per_dataset(per_seed_pd, seeds)
+    acc = aggregate_acceptance(merged, per_seed_pd, seeds)
 
-    acc = acceptance(per_dataset)
     numbers = {
         "acceptance": acc,
-        "seed": args.seed,
+        "seeds": seeds,
         "alpha": args.alpha,
         "bound_formula": "||E - E_true|| <= ||P_a(S)|| ||e - e_true|| + ((1-a)/a) ||P_a(S)|| "
         "||P_a(S')|| ||S - S'|| ||e||  (second resolvent identity for the GRN-edge term)",
-        "per_dataset": per_dataset,
+        "per_dataset": merged,
         "pending": pending,
-        "cross_assay": cross_assay(per_dataset),
+        "cross_assay": cross_assay(merged),
         "probabilistic_companion": {
             "status": "not_run",
             "note": "the matrix-Bernstein certificate (certification module) is included only with "
@@ -262,10 +310,11 @@ def main() -> int:
     args.out_dir.mkdir(parents=True, exist_ok=True)
     out_path = args.out_dir / "t4_bound.json"
     out_path.write_text(json.dumps(numbers, indent=2), encoding="utf-8")
-    if per_dataset:
-        _plot(per_dataset, args.out_dir / "t4_bound.png")
+    if merged:
+        _plot(merged, args.out_dir / "t4_bound.png")
     print(
-        f"[t4] ACCEPTANCE {acc['flag']}; assembled {len(per_dataset)} datasets, {len(pending)} pending"
+        f"[t4] ACCEPTANCE {acc['flag']} (seeds {seeds}); assembled {len(merged)} datasets, "
+        f"{len(pending)} pending"
     )
     print(f"[t4] wrote {out_path}")
     return 0
