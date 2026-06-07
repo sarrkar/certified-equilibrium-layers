@@ -1,0 +1,29 @@
+{
+  "go": true,
+  "beats_best_baseline": true,
+  "seed": 2,
+  "tie_band": 0.02,
+  "metric": "test_mse (lower is better)",
+  "cascade": {
+    "test_mse": 0.023458756506443024,
+    "test_pearson": -0.17770768702030182,
+    "alpha": 0.14873020350933075
+  },
+  "baselines": {
+    "mean": {
+      "mse": 0.02368954120575995,
+      "mae": 0.1242219116538763,
+      "pearson": null
+    },
+    "additive_linear": {
+      "mse": 114.17167177865545,
+      "mae": 8.061530952867615,
+      "pearson": 0.24560643861522907
+    }
+  },
+  "best_baseline": "mean",
+  "best_baseline_test_mse": 0.02368954120575995,
+  "dataset_provenance": "synthetic propagation proxy (real GSE184929/STRING join is a tracked gap)",
+  "num_nodes": 64,
+  "split_mode": "standard"
+}

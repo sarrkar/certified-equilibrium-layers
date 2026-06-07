@@ -1,0 +1,22 @@
+{
+  "seed": 2,
+  "epochs": 200,
+  "alpha": 0.14873020350933075,
+  "best_val_mse": 0.05063982680439949,
+  "test_mse": 0.023458756506443024,
+  "test_pearson": -0.17770768702030182,
+  "spectral_norm": 1.0,
+  "concept_norms": {
+    "seed_complementarity": 9.917515754699707,
+    "seed_match_count": 9.748440742492676,
+    "utr_site_context": 9.975492477416992,
+    "seed_pairing_stability": 9.927096366882324,
+    "target_accessibility": 10.063179016113281,
+    "on_target_potency": 10.04278564453125,
+    "position_bias": 10.03406047821045,
+    "gc_content": 9.969618797302246,
+    "thermo_asymmetry": 9.987991333007812
+  },
+  "split_mode": "standard",
+  "num_nodes": 64
+}

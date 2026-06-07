@@ -1,7 +1,7 @@
 """Reactome graph builder (TRACKED GAP, stubbed).
 
-The certification and identifiability projects use a regulatory / interaction
-graph as the propagation backbone. STRING is wired (see
+The certification project uses a regulatory / interaction graph as the
+propagation backbone. STRING is wired (see
 :func:`cascade.data.load_string_grn`); Reactome is the second backbone and is
 NOT implemented yet.
 

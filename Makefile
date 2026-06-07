@@ -1,5 +1,5 @@
 # CASCADE Makefile. Headline numbers reproduce via 'make repro'.
-.PHONY: help install dev lint fmt test train verify assert-no-synthetic repro repro-aaai clean
+.PHONY: help install dev lint fmt test verify assert-no-synthetic repro repro-aaai clean
 
 help:
 	@echo "Targets:"
@@ -8,7 +8,6 @@ help:
 	@echo "  lint               ruff check + ruff format --check + em-dash scan"
 	@echo "  fmt                ruff format + ruff check --fix"
 	@echo "  test               pytest"
-	@echo "  train              smoke-train CASCADE on the fixture graph (hydra)"
 	@echo "  verify             run all numerical verification scripts"
 	@echo "  assert-no-synthetic  fail if generated data sits on an AAAI reported-number path"
 	@echo "  repro              reproduce all headline numbers from cached data"
@@ -33,9 +32,6 @@ fmt:
 
 test:
 	pytest -q
-
-train:
-	python train.py
 
 # Each script under verify/ corresponds to a theorem and exits non-zero on
 # bound violation. Add new entries here as theorems are added.

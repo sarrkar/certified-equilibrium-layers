@@ -34,9 +34,6 @@ outputs/
 results/**/*.png
 results/**/*.svg
 
-# Transient GO/NO-GO training run artifacts (the gate JSON itself is tracked)
-results/_gonogo_run/
-
 # Real-data efficacy caches embed the OligoFormer dataset; fetch via scripts/download_efficacy.sh
 results/aaai/cache/efficacy_*/
 results/aaai/cache/seedmatchr_*/

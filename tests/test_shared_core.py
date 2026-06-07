@@ -1,7 +1,7 @@
 """Shared-core contract check (CLAUDE.md "Shared core contract").
 
-The two theory projects depend on these imports from ``cascade``. This module
-confirms the implemented pieces import and run, and marks each tracked gap with
+The AAAI certification project depends on these imports from ``cascade``. This
+module confirms the implemented pieces import and run, and marks each tracked gap with
 a visible xfail-strict test: the test stays XFAIL while the gap is open and
 flips to XPASS (a strict failure that forces marker removal) the moment the gap
 is implemented, so a gap cannot close silently.
@@ -63,30 +63,6 @@ def test_seedmatch_logic_importable() -> None:
 # --------------------------------------------------------------------------
 # Tracked gaps: visible xfail-strict markers (remove when implemented).
 # --------------------------------------------------------------------------
-@pytest.mark.xfail(
-    raises=NotImplementedError,
-    strict=True,
-    reason="GEARS-based Replogle 2022 loader not wired yet (cascade.data.load_replogle2022)",
-)
-def test_gap_gears_replogle2022() -> None:
-    from cascade.data import load_replogle2022
-
-    ds = load_replogle2022()
-    assert len(ds) > 0
-
-
-@pytest.mark.xfail(
-    raises=NotImplementedError,
-    strict=True,
-    reason="GEARS-based Norman 2019 loader not wired yet (cascade.data.load_norman2019)",
-)
-def test_gap_gears_norman2019() -> None:
-    from cascade.data import load_norman2019
-
-    ds = load_norman2019()
-    assert len(ds) > 0
-
-
 @pytest.mark.xfail(
     raises=NotImplementedError,
     strict=True,

@@ -58,11 +58,6 @@ from .offtarget import (
     seedmatch_ks_test,
 )
 from .paths import cache_dir, data_dir, raw_dir, repo_root
-from .perturbseq import (
-    PerturbSeqDataset,
-    load_norman2019,
-    load_replogle2022,
-)
 from .reactome import load_reactome_graph
 from .roles import (
     DATASET_ROLES,
@@ -150,8 +145,4 @@ __all__ = [
     "signed_spectral_norm",
     # Reactome GRN (tracked gap)
     "load_reactome_graph",
-    # Perturb-seq stubs (tracked gap)
-    "PerturbSeqDataset",
-    "load_replogle2022",
-    "load_norman2019",
 ]

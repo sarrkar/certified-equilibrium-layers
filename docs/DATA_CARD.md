@@ -1,6 +1,6 @@
 # DATA CARD
 
-This card documents every dataset used by CASCADE and the two theory projects.
+This card documents every dataset used by CASCADE and the AAAI certification work.
 Per the project contract (see [CLAUDE.md](../CLAUDE.md)), raw data is fetched
 into `data/raw/` and parsed objects are cached under `data/cache/`; neither is
 tracked in git. Tiny committed fixtures under `tests/fixtures/` exercise each
@@ -201,9 +201,8 @@ files with `scripts/download_grn.sh`; loaders RAISE with the exact URL if absent
   this is the undirected variant (`load_string_undirected`), NOT the
   signed/directed T2 network. `cascade.data.load_string_confidence` returns the
   raw confidence adjacency A_bar used by the random-subgraph noise model.
-- **Reactome** and the **GEARS Perturb-seq atlases** (Replogle 2022,
-  DOI 10.1016/j.cell.2022.05.013; Norman 2019, DOI 10.1126/science.aax4438) are
-  tracked gaps (stub loaders with visible xfail tests); see CLAUDE.md.
+- **Reactome** is a tracked gap (a stub graph builder with a visible xfail
+  test); see CLAUDE.md.
 
 ## Biophysical inputs (Theorems 3 and 4)
 

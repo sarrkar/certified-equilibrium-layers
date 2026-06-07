@@ -85,8 +85,8 @@ def dense_propagation_operator(S: sp.spmatrix, alpha: float) -> np.ndarray:
     This is the closed form whose power-iteration application is :func:`propagate`.
     It is invertible for alpha in (0, 1) and ||S||_2 <= 1 (the eigenvalues of
     I - (1-alpha) S lie in [alpha, 2-alpha] > 0), so it serves as the KNOWN
-    invertible mixing operator used by the identifiability project. Intended for
-    small graphs; for large graphs use :func:`propagate`.
+    invertible mixing operator P_alpha. Intended for small graphs; for large
+    graphs use :func:`propagate`.
     """
     if not 0.0 < alpha < 1.0:
         raise ValueError(f"alpha must be in (0, 1), got {alpha}")
