@@ -72,5 +72,110 @@
       }
     },
     "pending": {}
+  },
+  "grn_propagation_join": {
+    "status": "ok",
+    "grn": "TRRUST v2 (human); https://www.grnpedia.org/trrust/data/trrust_rawdata.human.tsv",
+    "n_nodes": 2072,
+    "alpha": 0.5,
+    "uncertainty_budget": {
+      "e_rel_err": 0.1,
+      "s_rel_err": 0.1
+    },
+    "bound_formula": "||E - E_true|| <= ||P_a(S)|| ||e - e_true|| + ((1-a)/a) ||P_a(S)||^2 ||S - S'|| ||e||  (T2 contraction constant + second-resolvent GRN-edge term)",
+    "cross_species_note": "TRRUST is human, GSE184929 is rat; aligned by orthologous gene symbol. e is the seed-match-derived direct repression of the ViennaRNA-confirmed Ttr seed.",
+    "per_contrast": {
+      "Schlegel_2022_Ttr_D1_30mkg": {
+        "assay": "rna_seq",
+        "n_aligned_to_trrust": 1908,
+        "n_seed_matched_aligned": 133,
+        "p_alpha_2norm": 2.3647084234986218,
+        "operator_2norm_S": 8.31298825078874,
+        "certified_bound": {
+          "bound": 74.4055822105,
+          "seed_error_term": 3.6018165629781294,
+          "grn_edge_term": 70.80376564752187,
+          "p_alpha_norm": 2.3647084234986218
+        },
+        "measured_deviation": 25.221563799285647,
+        "bound_holds": true,
+        "bound_over_measured": 3.144564039580452,
+        "vacuous": false,
+        "rowwise_refinement": {
+          "max_bound": 31.465013390706257,
+          "median_bound": 16.727114067140935,
+          "global_bound": 74.4055822105
+        },
+        "ks_measured": {
+          "D": 0.18170073069998938,
+          "p": 0.00028305574182581545
+        },
+        "ks_predicted": {
+          "D": 0.9949295774647887,
+          "p": 4.143768703241462e-107
+        }
+      },
+      "Schlegel_2022_Ttr_D4_30mkg": {
+        "assay": "rna_seq",
+        "n_aligned_to_trrust": 1908,
+        "n_seed_matched_aligned": 133,
+        "p_alpha_2norm": 2.3647084234986218,
+        "operator_2norm_S": 8.312988250788742,
+        "certified_bound": {
+          "bound": 74.40558221050001,
+          "seed_error_term": 3.6018165629781294,
+          "grn_edge_term": 70.80376564752189,
+          "p_alpha_norm": 2.3647084234986218
+        },
+        "measured_deviation": 11.545466743547227,
+        "bound_holds": true,
+        "bound_over_measured": 9.004221476998453,
+        "vacuous": false,
+        "rowwise_refinement": {
+          "max_bound": 31.465013390706265,
+          "median_bound": 16.72711406714094,
+          "global_bound": 74.40558221050001
+        },
+        "ks_measured": {
+          "D": 0.14512337180980617,
+          "p": 0.005452597236715007
+        },
+        "ks_predicted": {
+          "D": 0.9949295774647887,
+          "p": 4.143768703241462e-107
+        }
+      },
+      "Schlegel_2022_Ttr_D1_10mkg": {
+        "assay": "rna_seq",
+        "n_aligned_to_trrust": 1908,
+        "n_seed_matched_aligned": 133,
+        "p_alpha_2norm": 2.3647084234986218,
+        "operator_2norm_S": 8.312988250788742,
+        "certified_bound": {
+          "bound": 74.40558221050001,
+          "seed_error_term": 3.6018165629781294,
+          "grn_edge_term": 70.80376564752189,
+          "p_alpha_norm": 2.3647084234986218
+        },
+        "measured_deviation": 14.6949649099571,
+        "bound_holds": true,
+        "bound_over_measured": 6.202257725017541,
+        "vacuous": false,
+        "rowwise_refinement": {
+          "max_bound": 31.465013390706265,
+          "median_bound": 16.72711406714094,
+          "global_bound": 74.40558221050001
+        },
+        "ks_measured": {
+          "D": 0.02486497934978288,
+          "p": 0.8581338336629423
+        },
+        "ks_predicted": {
+          "D": 0.9949295774647887,
+          "p": 4.143768703241462e-107
+        }
+      }
+    },
+    "pending": {}
   }
 }

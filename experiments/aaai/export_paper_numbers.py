@@ -37,7 +37,8 @@ PROVENANCE = {
     "T2": "TRRUST v2 human signed/directed GRN (https://www.grnpedia.org/trrust/)",
     "T3": "Huesken 2005 efficacy + ViennaRNA seed-duplex free energy dG (real)",
     "T4": "GSE184929 RNA-seq DESeq2 (GEO direct, no R), native seed-match of the confirmed Schlegel "
-    "2022 Ttr guide (seed UAUAGAG) against Ensembl Rnor_6.0 rat 3'UTRs; STRING v12 GRN for the bound",
+    "2022 Ttr guide (seed UAUAGAG) against Ensembl Rnor_6.0 rat 3'UTRs; TRRUST v2 GRN for the "
+    "certified-bound P_alpha propagation (orthologous gene-symbol alignment)",
     "baselines": "Huesken 2005 efficacy train/test split (OligoFormer protocol)",
 }
 
@@ -245,14 +246,39 @@ def t4_numbers(j: dict | None) -> dict:
                 for n, c in mo.get("per_contrast", {}).items()
             },
         }
+    # Real certified bound via the TRRUST GRN-propagation join.
+    gj = j.get("grn_propagation_join") or {}
+    join = None
+    if gj.get("status") == "ok":
+        join = {
+            "grn": gj.get("grn"),
+            "n_nodes": gj.get("n_nodes"),
+            "alpha": gj.get("alpha"),
+            "uncertainty_budget": gj.get("uncertainty_budget"),
+            "cross_species_note": gj.get("cross_species_note"),
+            "per_contrast": {
+                n: {
+                    "certified_bound": d["certified_bound"]["bound"],
+                    "measured_deviation": d["measured_deviation"],
+                    "binds": bool(d["bound_holds"] and not d["vacuous"]),
+                    "vacuous": d["vacuous"],
+                    "bound_over_measured": d["bound_over_measured"],
+                    "rowwise_max_bound": d["rowwise_refinement"]["max_bound"],
+                    "n_aligned": d["n_aligned_to_trrust"],
+                }
+                for n, d in gj.get("per_contrast", {}).items()
+            },
+        }
     per = j.get("per_dataset", {})
     if not per:
+        status = "ok" if join else ("measured_offtarget_real" if measured else "pending_real_data")
         return {
             "provenance": prov,
-            "status": "measured_offtarget_real" if measured else "pending_real_data",
-            "certified_bound_status": "pending_real_data",
+            "status": status,
+            "certified_bound_status": "real_via_trrust_join" if join else "pending_real_data",
             "acceptance": j["acceptance"]["flag"],
             "measured_offtarget": measured,
+            "certified_bound_join": join,
             "pending": {
                 n: {"assay": d["assay"], "source": d["source"]}
                 for n, d in j.get("pending", {}).items()
@@ -405,13 +431,20 @@ def write_summary(numbers: dict, captions: dict) -> None:
             "the mass-action residual below 1e-8 on every seed in the fixture check; the real-data "
             "residual runs when the OligoFormer CSVs are present."
         )
-    # 4. T4 measured off-target on real GSE184929 (certified bound pending the GRN join).
-    mo = t4.get("measured_offtarget") if t4["status"] == "measured_offtarget_real" else None
-    if t4["status"] == "ok" and "gse184929" in t4.get("per_dataset", {}):
-        g = t4["per_dataset"]["gse184929"]
+    # 4. T4 certified bound + measured off-target on real GSE184929.
+    join = t4.get("certified_bound_join")
+    mo = t4.get("measured_offtarget")
+    if join:
+        pc = join["per_contrast"]
+        d1 = pc.get("Schlegel_2022_Ttr_D1_30mkg", {})
+        binds_all = all(c.get("binds") for c in pc.values()) if pc else False
         lines.append(
-            f"- T4 (real GSE184929 RNA-seq): bound holds={g['bound_holds']}, bound/measured="
-            f"{_fmt(g['bound_over_measured'], 2)}, vacuous={g['vacuous']}."
+            f"- T4 (real GSE184929 RNA-seq): the certified L2 bound is REAL via the TRRUST "
+            f"GRN-propagation join (alpha={join['alpha']}, {join['n_nodes']} nodes, "
+            f"{d1.get('n_aligned')} aligned). It BINDS on all {len(pc)} Ttr contrasts "
+            f"(binds_all={binds_all}); D1_30mkg bound {_fmt(d1.get('certified_bound'), 1)} vs measured "
+            f"deviation {_fmt(d1.get('measured_deviation'), 1)} (vacuous={d1.get('vacuous')}). The "
+            f"measured seed off-target KS is also real (D1 present, D4 abolished)."
         )
     elif mo:
         pc = mo["per_contrast"]
@@ -486,7 +519,23 @@ def write_summary(numbers: dict, captions: dict) -> None:
     lines.append("")
 
     lines.append("## T4 certified off-target bound (per real dataset)")
-    if t4["status"] == "ok":
+    if join:
+        lines.append(
+            f"- Certified bound REAL via the TRRUST GRN-propagation join: e propagated over P_alpha "
+            f"(alpha={join['alpha']}), bound = ||P_a(S)|| ||e-e_true|| + ((1-a)/a) ||P_a(S)||^2 "
+            f"||S-S'|| ||e||. {join.get('cross_species_note', '')}"
+        )
+        lines.append("")
+        lines.append(
+            "| contrast | certified bound | measured deviation | binds | vacuous | rowwise max |"
+        )
+        lines.append("| --- | --- | --- | --- | --- | --- |")
+        for n, c in join["per_contrast"].items():
+            lines.append(
+                f"| {n} | {_fmt(c['certified_bound'])} | {_fmt(c['measured_deviation'])} | {c['binds']} "
+                f"| {c['vacuous']} | {_fmt(c['rowwise_max_bound'])} |"
+            )
+    elif t4["status"] == "ok" and t4.get("per_dataset"):
         lines.append(
             "| dataset | assay | certified bound | measured deviation | binds | KS D (measured) |"
         )

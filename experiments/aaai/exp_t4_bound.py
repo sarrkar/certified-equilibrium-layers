@@ -262,6 +262,131 @@ def aggregate_acceptance(merged: dict, per_seed_pd: list[dict], seeds: list[int]
     return acc
 
 
+def _align_seed_input(grn, ds) -> tuple:
+    """Map a rat off-target contrast onto the human TRRUST nodes by uppercase symbol.
+
+    Returns (e, measured, seed_mask, aligned) over the n_nodes TRRUST vector: e is the
+    direct seed-mediated repression input (negative seed-site count, the
+    ViennaRNA-confirmed canonical seed of the Schlegel Ttr guide), measured is the
+    DESeq2 log2FC, seed_mask marks seed-matched nodes, aligned marks measured nodes.
+    Cross-species note: TRRUST is human and GSE184929 is rat, so the alignment is by
+    orthologous gene SYMBOL (rat Ttr -> human TTR); unmapped genes are dropped.
+    """
+    idx = {sym.upper(): i for i, sym in enumerate(grn.nodes)}
+    n = grn.n_nodes
+    e = np.zeros(n)
+    measured = np.zeros(n)
+    seed_mask = np.zeros(n, dtype=bool)
+    aligned = np.zeros(n, dtype=bool)
+    f = ds.frame
+    smc = (
+        f["seed_match_count"].to_numpy()
+        if "seed_match_count" in f.columns
+        else np.full(len(f), np.nan)
+    )
+    for sym, lfc, sc in zip(f["gene_name"].astype(str), f["log2fc"], smc, strict=True):
+        node = idx.get(sym.strip().upper())
+        if node is None:
+            continue
+        aligned[node] = True
+        measured[node] = float(lfc) if np.isfinite(lfc) else 0.0
+        if np.isfinite(sc):
+            e[node] = -float(sc)  # more canonical seed sites -> stronger direct repression
+            seed_mask[node] = sc > 0
+    return e, measured, seed_mask, aligned
+
+
+def assess_trrust_join(
+    grn, alpha: float, ds, name: str, e_rel_err: float, s_rel_err: float
+) -> dict:
+    """Propagate the seed input over the real TRRUST P_alpha and certify the deviation."""
+    from cascade.data.offtarget import seedmatch_ks_test
+    from cascade.verify.stability import operator_2norm
+
+    S = grn.S
+    e, measured, seed_mask, aligned = _align_seed_input(grn, ds)
+    e_pred_full = ob.propagate(S, e, alpha)  # E = P_alpha(S) e over the FULL TRRUST
+    a = aligned
+    e_pred, e_meas, m = e_pred_full[a], measured[a], seed_mask[a]
+
+    e_norm = float(np.linalg.norm(e))
+    s2 = operator_2norm(S)
+    p_norm = ob.p_alpha_norm(S, alpha)  # true ||P_alpha(S)||_2 (the T2 resolvent norm)
+    e_err = e_rel_err * e_norm  # seed-thermodynamic input uncertainty budget
+    s_err = s_rel_err * s2  # GRN-edge uncertainty budget ||S - S'||
+    cert = ob.certified_bound(S, alpha, e_norm, e_err, s_err, p_norm=p_norm, p_prime_norm=p_norm)
+    check = ob.verify_bound(e_pred, e_meas, cert["bound"])
+    vac = ob.is_vacuous(cert["bound"], e_meas)
+    rw = ob.rowwise_bound(S, alpha, e_norm, e_err, s_err)[a]  # per-transcript refinement
+
+    has_split = bool(m.any() and (~m).any())
+    ks_meas = seedmatch_ks_test(e_meas, m, alternative="greater") if has_split else None
+    ks_pred = seedmatch_ks_test(e_pred, m, alternative="greater") if has_split else None
+    return {
+        "assay": "rna_seq",
+        "n_aligned_to_trrust": int(a.sum()),
+        "n_seed_matched_aligned": int(m.sum()),
+        "p_alpha_2norm": p_norm,
+        "operator_2norm_S": s2,
+        "certified_bound": cert,
+        "measured_deviation": check["deviation"],
+        "bound_holds": check["holds"],
+        "bound_over_measured": vac["bound_over_measured"],
+        "vacuous": vac["vacuous"],
+        "rowwise_refinement": {
+            "max_bound": float(rw.max()) if rw.size else None,
+            "median_bound": float(np.median(rw)) if rw.size else None,
+            "global_bound": cert["bound"],
+        },
+        "ks_measured": {
+            "D": ks_meas.statistic if ks_meas else None,
+            "p": ks_meas.pvalue if ks_meas else None,
+        },
+        "ks_predicted": {
+            "D": ks_pred.statistic if ks_pred else None,
+            "p": ks_pred.pvalue if ks_pred else None,
+        },
+    }
+
+
+def grn_propagation_join(
+    alpha: float, seedmatchr_dir: Path, cache_root: Path, e_rel_err: float, s_rel_err: float
+) -> dict:
+    """T4 certified bound on the real TRRUST GRN, per Schlegel Ttr contrast."""
+    from cascade.data import SEEDMATCHR_DATASETS, load_schlegel2022
+
+    try:
+        from cascade.data import load_trrust
+
+        grn = load_trrust(species="human")
+    except (FileNotFoundError, NotImplementedError) as exc:
+        return {"status": "pending_real_data", "source": str(exc)}
+    per_contrast, pending = {}, {}
+    for name in SEEDMATCHR_DATASETS:
+        try:
+            ds = load_schlegel2022(name, raw_dir=seedmatchr_dir, cache_root=cache_root)
+        except FileNotFoundError as exc:
+            pending[name] = str(exc)
+            continue
+        if not ds.has_seed_annotation:
+            pending[name] = "loaded but no seed-match annotation; run scripts/annotate_seedmatch.py"
+            continue
+        per_contrast[name] = assess_trrust_join(grn, alpha, ds, name, e_rel_err, s_rel_err)
+    return {
+        "status": "ok" if per_contrast else "pending_real_data",
+        "grn": grn.source,
+        "n_nodes": int(grn.n_nodes),
+        "alpha": alpha,
+        "uncertainty_budget": {"e_rel_err": e_rel_err, "s_rel_err": s_rel_err},
+        "bound_formula": "||E - E_true|| <= ||P_a(S)|| ||e - e_true|| + ((1-a)/a) ||P_a(S)||^2 "
+        "||S - S'|| ||e||  (T2 contraction constant + second-resolvent GRN-edge term)",
+        "cross_species_note": "TRRUST is human, GSE184929 is rat; aligned by orthologous gene symbol. "
+        "e is the seed-match-derived direct repression of the ViennaRNA-confirmed Ttr seed.",
+        "per_contrast": per_contrast,
+        "pending": pending,
+    }
+
+
 def measured_offtarget(seedmatchr_dir: Path, cache_root: Path) -> dict:
     """Real SeedMatchR one-sided KS on the MEASURED GSE184929 DESeq2 log2FC, per Ttr contrast.
 
@@ -316,6 +441,12 @@ def main() -> int:
     )
     parser.add_argument("--alpha", type=float, default=0.5)
     parser.add_argument(
+        "--e-rel-err", type=float, default=0.1, help="seed-input uncertainty ||e-e_true||/||e||"
+    )
+    parser.add_argument(
+        "--s-rel-err", type=float, default=0.1, help="GRN-edge uncertainty ||S-S'||/||S||_2"
+    )
+    parser.add_argument(
         "--string-links",
         type=str,
         default=None,
@@ -357,6 +488,10 @@ def main() -> int:
         },
         # Real measured off-target signal, independent of the certified-bound GRN gap.
         "measured_offtarget": measured_offtarget(args.seedmatchr_dir, args.cache),
+        # Real T4 certified bound: seed input propagated over TRRUST P_alpha.
+        "grn_propagation_join": grn_propagation_join(
+            args.alpha, args.seedmatchr_dir, args.cache, args.e_rel_err, args.s_rel_err
+        ),
     }
     args.out_dir.mkdir(parents=True, exist_ok=True)
     out_path = args.out_dir / "t4_bound.json"
@@ -372,6 +507,16 @@ def main() -> int:
     for name, c in mo["per_contrast"].items():
         print(
             f"     {name}: KS D={c['ks_D']:.4f} p={c['ks_p']:.2e} (seed={c['n_seed_match']} bg={c['n_background']})"
+        )
+    gj = numbers["grn_propagation_join"]
+    print(f"[t4] GRN-propagation join over TRRUST ({gj['status']}, alpha={args.alpha}):")
+    for name, d in gj.get("per_contrast", {}).items():
+        binds = bool(d["bound_holds"] and not d["vacuous"])
+        print(
+            f"     {name}: bound={d['certified_bound']['bound']:.3f} vs measured-dev="
+            f"{d['measured_deviation']:.3f} | binds={binds} vacuous={d['vacuous']} "
+            f"(||P_a||={d['p_alpha_2norm']:.2f} rowwise-max={d['rowwise_refinement']['max_bound']:.3f} "
+            f"aligned={d['n_aligned_to_trrust']})"
         )
     print(f"[t4] wrote {out_path}")
     return 0
