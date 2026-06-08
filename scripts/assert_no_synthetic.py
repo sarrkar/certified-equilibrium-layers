@@ -67,17 +67,7 @@ def scan_file(path: Path) -> list[tuple[int, str]]:
     return hits
 
 
-def main() -> int:
-    all_hits: list[tuple[Path, int, str]] = []
-    for base in SCAN_DIRS:
-        if not base.exists():
-            continue
-        for path in sorted(base.rglob("*.py")):
-            if "__pycache__" in path.parts:
-                continue
-            for lineno, line in scan_file(path):
-                all_hits.append((path.relative_to(REPO), lineno, line))
-
+def _report(all_hits: list[tuple[Path, int, str]]) -> int:
     if all_hits:
         print("HARD DATA POLICY VIOLATION: synthetic-generation patterns on a reported-number path")
         for path, lineno, line in all_hits:
@@ -89,8 +79,65 @@ def main() -> int:
             "or load real data and RAISE FileNotFoundError / NotImplementedError when it is absent."
         )
         return 1
-    print("OK: no synthetic-generation patterns in src/cascade/data/ or experiments/aaai/")
     return 0
+
+
+def _scan_default() -> int:
+    """Scan the fixed reported-number code paths (src/cascade/data, experiments/aaai)."""
+    all_hits: list[tuple[Path, int, str]] = []
+    for base in SCAN_DIRS:
+        if not base.exists():
+            continue
+        for path in sorted(base.rglob("*.py")):
+            if "__pycache__" in path.parts:
+                continue
+            for lineno, line in scan_file(path):
+                all_hits.append((path.relative_to(REPO), lineno, line))
+    rc = _report(all_hits)
+    if rc == 0:
+        print("OK: no synthetic-generation patterns in src/cascade/data/ or experiments/aaai/")
+    return rc
+
+
+def _scan_paths(paths: list[str]) -> int:
+    """Validate explicit paths: each MUST exist; .py files are scanned for synthetic
+    -generation patterns; non-.py files are asserted to be real (present and non-empty).
+    A missing path or an empty data file is a failure (exit 1)."""
+    all_hits: list[tuple[Path, int, str]] = []
+    n_py = n_data = 0
+    for raw in paths:
+        target = Path(raw)
+        if not target.exists():
+            print(f"PATH NOT FOUND: {raw} (no synthetic check possible; real data is absent)")
+            return 1
+        if target.is_file():
+            py_files = [target] if target.suffix == ".py" else []
+            data_files = [] if target.suffix == ".py" else [target]
+        else:
+            py_files = [p for p in target.rglob("*.py") if "__pycache__" not in p.parts]
+            data_files = [p for p in target.rglob("*") if p.is_file() and p.suffix != ".py"]
+        for p in py_files:
+            n_py += 1
+            rel = p.relative_to(REPO) if REPO in p.resolve().parents else p
+            for lineno, line in scan_file(p):
+                all_hits.append((rel, lineno, line))
+        for d in data_files:
+            if d.stat().st_size == 0:
+                print(f"EMPTY DATA FILE: {d} (REAL DATA ONLY: a real file must be non-empty)")
+                return 1
+            n_data += 1
+    rc = _report(all_hits)
+    if rc == 0:
+        print(
+            f"OK: {n_data} real data file(s) present and non-empty, {n_py} .py file(s) scanned; "
+            "no synthetic-generation patterns."
+        )
+    return rc
+
+
+def main(argv: list[str] | None = None) -> int:
+    argv = sys.argv[1:] if argv is None else argv
+    return _scan_paths(argv) if argv else _scan_default()
 
 
 if __name__ == "__main__":

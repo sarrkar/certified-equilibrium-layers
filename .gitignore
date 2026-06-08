@@ -37,6 +37,9 @@ results/**/*.svg
 # Real-data efficacy caches embed the OligoFormer dataset; fetch via scripts/download_efficacy.sh
 results/aaai/cache/efficacy_*/
 results/aaai/cache/seedmatchr_*/
+# pyensembl-derived 3'UTR / seed-match caches (rebuilt from the pinned Ensembl release)
+results/aaai/cache/*_r104.json
+results/aaai/cache/huesken_rnafm_pooled.npy
 
 # Third-party model repos (cloned, not vendored)
 external/
