@@ -185,7 +185,22 @@
         "ratio": 0.8938374748670134
       }
     ],
-    "note": "rho-based L2 constant is exact for the symmetric variant and exceeded on the signed/directed GRN by non-normality; the inf-norm certificate holds for every alpha and the L2 ||S||_2 bound holds for alpha > alpha_min."
+    "note": "rho-based L2 constant is exact for the symmetric variant and exceeded on the signed/directed GRN by non-normality; the inf-norm certificate holds for every alpha and the L2 ||S||_2 bound holds for alpha > alpha_min.",
+    "magnetic_grid": {
+      "operator": "M(q,alpha) = (1-alpha)(I - L_q^sigma), magnetic signed Laplacian",
+      "q_grid": [
+        0.0,
+        0.1,
+        0.2,
+        0.25,
+        0.5
+      ],
+      "magnetic_2norm_le_1_where_palpha_exceeds_1": true,
+      "psd_spectrum_in_0_2_all_q": true,
+      "dominates_on_every_metric": false,
+      "outcome": "p_alpha_primary__magnetic_is_l2_repair_only",
+      "note": "the magnetic operator contracts in L2 (2-norm = 1-alpha, q-independent) but is a complex Hermitian surrogate; real-valued P_alpha stays primary, magnetic is the L2 repair."
+    }
   },
   "T3_mass_action_constraint": {
     "provenance": "Huesken 2005 efficacy + ViennaRNA seed-duplex free energy dG (real)",
@@ -208,6 +223,15 @@
       "dg_standardized_before_fit": false,
       "mass_action_raw_slope_b": 0.03295465909045832,
       "mass_action_raw_slope_sign": 1
+    },
+    "composed_bound": {
+      "forward_map_lipschitz_L": 0.1480915837617431,
+      "dist_y_star_to_P": 0.0031889488543979366,
+      "composed_bound_holds_all": true,
+      "admm_equality_residual_inf": 5.551115123125783e-17,
+      "admm_active_set_residual": 1.0061396160665481e-16,
+      "ift_grad_vs_fd_max_diff": 5.50673143528968e-07,
+      "ift_path_held": "ift"
     }
   },
   "T4_certified_offtarget_bound": {
@@ -312,7 +336,136 @@
         "birmingham2006": "Birmingham 2006 (Nat Methods 3:199, nmeth854) is NOT deposited in GEO; its seed-match off-target associations are supplementary-table only."
       },
       "note": "RNA-seq (GSE184929) and microarray (Jackson 2006, Birmingham 2006) are different assays; differences in KS separation and bound tightness are expected. The RNA-seq cross-assay KS is REAL; the microarray KS is PENDING (see microarray_pending for the exact public-source blocker: the GEO deposits lack the siRNA sequences and Birmingham is not in GEO)."
+    },
+    "thermodynamic_discrimination": {
+      "site_dg_d1_mean": -5.606296547054841,
+      "site_dg_d4_mean": -2.584427894380501,
+      "guides_differ": true,
+      "ks_separates_d1_from_d4": {
+        "dG": false,
+        "count": false
+      },
+      "magnitude_separates_d1_from_d4": {
+        "dG": true,
+        "count": false
+      },
+      "finding": "e_dG differs between guides and separates D1 from D4 by predicted magnitude (the count cannot); the rank-based KS is saturated for both inputs."
+    },
+    "human_crossspecies_ks": {
+      "genome_build": "hg38 = GRCh38, confirmed from each GEO Sample_data_processing (Genome_build: hg38); not assumed",
+      "ensembl_release": 104,
+      "datasets": {
+        "GSE164289": {
+          "cell_line": "HeyA8 ovarian",
+          "effect_table": "authors' DESeq2 differential expression (GEO supplementary)",
+          "contrasts": {
+            "siGGGGGC": {
+              "seed": "GGGGGC",
+              "ks_D": 0.0263643690063482,
+              "ks_p": 0.0007526196694136884
+            },
+            "siGGCAGU": {
+              "seed": "GGCAGU",
+              "ks_D": 0.03227852107190152,
+              "ks_p": 9.501500311247002e-06
+            }
+          }
+        },
+        "GSE196839": {
+          "cell_line": "PC3 prostate",
+          "effect_table": "count-derived: CPM-normalized log2((siGGGGGC+1)/(siNT1+1)), SINGLE replicate per condition (no authors' DESeq2 table in the GEO deposit)",
+          "contrasts": {
+            "siGGGGGC": {
+              "seed": "GGGGGC",
+              "ks_D": 0.1882449833492758,
+              "ks_p": 2.2296508725809885e-147
+            }
+          }
+        }
+      }
     }
+  },
+  "T5_crossspecies_transfer": {
+    "provenance": "rat GSE184929 (seed UAUAGAG) -> human Patel GSE164289 / GSE196839 (seed GGGGGC), ",
+    "status": "ok",
+    "t5_status": "numerical_observation",
+    "survives_as_theorem": false,
+    "best_cross_species_auroc": 0.5941026769818961,
+    "auroc_threshold": 0.6,
+    "auroc_by_q": {
+      "0.0": {
+        "GSE164289_siGGGGGC": {
+          "auroc": 0.48004980411444487,
+          "n_genes": 34346,
+          "n_down": 17815,
+          "n_seed_matched": 6346
+        },
+        "GSE196839_siGGGGGC": {
+          "auroc": 0.5792068149960007,
+          "n_genes": 23423,
+          "n_down": 8052,
+          "n_seed_matched": 6656
+        }
+      },
+      "0.1": {
+        "GSE164289_siGGGGGC": {
+          "auroc": 0.4802025495673995,
+          "n_genes": 34346,
+          "n_down": 17815,
+          "n_seed_matched": 6346
+        },
+        "GSE196839_siGGGGGC": {
+          "auroc": 0.5792810672467488,
+          "n_genes": 23423,
+          "n_down": 8052,
+          "n_seed_matched": 6656
+        }
+      },
+      "0.2": {
+        "GSE164289_siGGGGGC": {
+          "auroc": 0.4799977514413297,
+          "n_genes": 34346,
+          "n_down": 17815,
+          "n_seed_matched": 6346
+        },
+        "GSE196839_siGGGGGC": {
+          "auroc": 0.5790865004948158,
+          "n_genes": 23423,
+          "n_down": 8052,
+          "n_seed_matched": 6656
+        }
+      },
+      "0.25": {
+        "GSE164289_siGGGGGC": {
+          "auroc": 0.48004761395989565,
+          "n_genes": 34346,
+          "n_down": 17815,
+          "n_seed_matched": 6346
+        },
+        "GSE196839_siGGGGGC": {
+          "auroc": 0.5793107883462458,
+          "n_genes": 23423,
+          "n_down": 8052,
+          "n_seed_matched": 6656
+        }
+      },
+      "0.5": {
+        "GSE164289_siGGGGGC": {
+          "auroc": 0.48190627758225885,
+          "n_genes": 34346,
+          "n_down": 17815,
+          "n_seed_matched": 6346
+        },
+        "GSE196839_siGGGGGC": {
+          "auroc": 0.5941026769818961,
+          "n_genes": 23423,
+          "n_down": 8052,
+          "n_seed_matched": 6656
+        }
+      }
+    },
+    "wasserstein1_rat_vs_human_seedmatch_abundance": 0.3431884552448078,
+    "ruling": "Cross-species AUROC stays below 0.6: T5 is DEMOTED from a theorem to a NUMERICAL OBSERVATION; it must NOT be framed as a theorem."
   },
   "baselines_efficacy": {
     "provenance": "Huesken 2005 efficacy train/test split (OligoFormer protocol)",
@@ -398,8 +551,35 @@
   "source_files": [
     "t1_leakage.json",
     "t2_stability.json",
+    "t2_magnetic_grid.json",
     "t3_constraint.json",
+    "t3_composed_bound.json",
     "t4_bound.json",
+    "t4_discrimination.json",
+    "ks_human_patel.json",
+    "t5_crossspecies.json",
     "baselines.json"
-  ]
+  ],
+  "acceptance_status": {
+    "T1": {
+      "status": "PASS",
+      "reason": "disjoint CCMP per-concept embeddings change at machine zero on real Huesken; the shared-encoder CBM and the Concept Embedding Model leak."
+    },
+    "T2": {
+      "status": "RESTRICTED",
+      "reason": "on the real signed/directed TRRUST GRN the rho-based L2 contraction constant is exceeded by directedness non-normality (||S||_2 ~ 8.31 >> rho ~ 1); the inf-norm certificate is non-expansive for every alpha, and the magnetic operator (q-swept) repairs L2 contraction but stays secondary to the real-valued P_alpha."
+    },
+    "T3": {
+      "status": "PASS",
+      "reason": "KKT mass-action residual at machine precision on every seed with no accuracy regression; the composed-error bound holds and the IFT gradient through the equality+box ADMM matches finite differences below 1e-6."
+    },
+    "T4": {
+      "status": "RESTRICTED",
+      "reason": "the certified L2 bound is REAL and BINDS on GSE184929 via the TRRUST P_alpha join, and the measured seed off-target KS is real in rat (Schlegel) AND human (Patel GSE164289 / GSE196839); restricted by cross-species ortholog alignment, assumed uncertainty budgets, and the microarray cross-assay (Jackson 2006 / Birmingham 2006) which is PENDING (the GEO deposits lack the siRNA sequences and Birmingham is not in GEO)."
+    },
+    "T5": {
+      "status": "DEMOTED",
+      "reason": "Cross-species AUROC stays below 0.6: T5 is DEMOTED from a theorem to a NUMERICAL OBSERVATION; it must NOT be framed as a theorem."
+    }
+  }
 }
