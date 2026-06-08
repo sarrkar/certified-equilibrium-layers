@@ -1,0 +1,88 @@
+{
+  "status": "ok",
+  "seed": 0,
+  "design": "train off-target predictor on rat GSE184929 (seed UAUAGAG), zero-shot test on human Patel GSE164289 / GSE196839 (seed GGGGGC); features = [species-matched seed-match abundance, magnetic-PPR propagated seed signal over human TRRUST at charge q]; logistic regression, target log2FC < 0; AUROC for human log2FC direction.",
+  "magnetic_operator": "P_mag(q) = alpha (alpha I + (1-alpha) L_q^sigma)^(-1) on human TRRUST (2072 nodes), alpha=0.15; feature = |P_mag(q) e| at the gene's node",
+  "species_matched_3utr": "rat seed counts vs rat Rnor_6.0 3'UTRs; human seed counts vs GRCh38/104 3'UTRs (pyensembl)",
+  "auroc_by_q": {
+    "0.0": {
+      "GSE164289_siGGGGGC": {
+        "auroc": 0.48004980411444487,
+        "n_genes": 34346,
+        "n_down": 17815,
+        "n_seed_matched": 6346
+      },
+      "GSE196839_siGGGGGC": {
+        "auroc": 0.5792068149960007,
+        "n_genes": 23423,
+        "n_down": 8052,
+        "n_seed_matched": 6656
+      }
+    },
+    "0.1": {
+      "GSE164289_siGGGGGC": {
+        "auroc": 0.4802025495673995,
+        "n_genes": 34346,
+        "n_down": 17815,
+        "n_seed_matched": 6346
+      },
+      "GSE196839_siGGGGGC": {
+        "auroc": 0.5792810672467488,
+        "n_genes": 23423,
+        "n_down": 8052,
+        "n_seed_matched": 6656
+      }
+    },
+    "0.2": {
+      "GSE164289_siGGGGGC": {
+        "auroc": 0.4799977514413297,
+        "n_genes": 34346,
+        "n_down": 17815,
+        "n_seed_matched": 6346
+      },
+      "GSE196839_siGGGGGC": {
+        "auroc": 0.5790865004948158,
+        "n_genes": 23423,
+        "n_down": 8052,
+        "n_seed_matched": 6656
+      }
+    },
+    "0.25": {
+      "GSE164289_siGGGGGC": {
+        "auroc": 0.48004761395989565,
+        "n_genes": 34346,
+        "n_down": 17815,
+        "n_seed_matched": 6346
+      },
+      "GSE196839_siGGGGGC": {
+        "auroc": 0.5793107883462458,
+        "n_genes": 23423,
+        "n_down": 8052,
+        "n_seed_matched": 6656
+      }
+    },
+    "0.5": {
+      "GSE164289_siGGGGGC": {
+        "auroc": 0.48190627758225885,
+        "n_genes": 34346,
+        "n_down": 17815,
+        "n_seed_matched": 6346
+      },
+      "GSE196839_siGGGGGC": {
+        "auroc": 0.5941026769818961,
+        "n_genes": 23423,
+        "n_down": 8052,
+        "n_seed_matched": 6656
+      }
+    }
+  },
+  "wasserstein1_rat_vs_human_seedmatch_abundance": 0.3431884552448078,
+  "wasserstein_note": "rat abundance = UAUAGAG (7mer) site counts; human = GCCCCC (6mer) site counts; the gap includes the seed-length difference, not only the species 3'UTRs.",
+  "stop_condition": {
+    "auroc_threshold": 0.6,
+    "best_cross_species_auroc": 0.5941026769818961,
+    "t5_survives_as_theorem": false,
+    "t5_status": "numerical_observation",
+    "ruling": "Cross-species AUROC stays below 0.6: T5 is DEMOTED from a theorem to a NUMERICAL OBSERVATION; it must NOT be framed as a theorem."
+  }
+}
