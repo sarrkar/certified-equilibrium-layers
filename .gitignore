@@ -37,3 +37,6 @@ results/**/*.svg
 # Real-data efficacy caches embed the OligoFormer dataset; fetch via scripts/download_efficacy.sh
 results/aaai/cache/efficacy_*/
 results/aaai/cache/seedmatchr_*/
+
+# Third-party model repos (cloned, not vendored)
+external/
