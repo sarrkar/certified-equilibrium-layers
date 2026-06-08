@@ -1,0 +1,79 @@
+{
+  "status": "ok",
+  "seed": 0,
+  "alpha": 0.5,
+  "grn": "TRRUST v2 (mouse); https://www.grnpedia.org/trrust/data/trrust_rawdata.mouse.tsv",
+  "guide_d1": "UUAUAGAGCAAGAACACUGUUUU",
+  "seed_d1": "UAUAGAG",
+  "gna_model": "D4 position-7 (S)-GNA modeled as a disrupted Watson-Crick pair (g7 A->C in the seed, UAUAGAG->UAUAGCG); ViennaRNA has no GNA sugar parameters, so this is an explicit destabilization model (upper bound on the GNA penalty), applied to the SAME real Rnor_6.0 3'UTR sites used for D1.",
+  "input_definition": "e_dG[gene] = sum over canonical 3'UTR sites of min(dG_site, 0) (kcal/mol, negative = direct seed repression, parallel to -seed_match_count).",
+  "site_dg": {
+    "n_sites": 1477,
+    "d1_mean": -5.606296547054841,
+    "d1_median": -4.9,
+    "d4_mean": -2.584427894380501,
+    "d4_median": -2.5,
+    "guides_differ": true,
+    "mean_gna_penalty_kcal": 3.02186865267434
+  },
+  "per_gene_e_dg": {
+    "n_seed_genes": 1201,
+    "d1_mean": -6.894671107410491,
+    "d4_mean": -3.178351373855121
+  },
+  "per_contrast": {
+    "Schlegel_2022_Ttr_D1_30mkg": {
+      "guide": "D1",
+      "n_aligned": 1490,
+      "n_seed_aligned": 107,
+      "n_seed_full": 1201,
+      "measured_ks_full": 0.15868186146579627,
+      "measured_ks_aligned": 0.20360721984579094,
+      "predicted_ks_count": 0.9956616052060737,
+      "predicted_ks_dG": 0.9942154736080984,
+      "measured_mean_seed_effect": -0.005135755149932849,
+      "predicted_mean_seed_effect_count": -0.6508223338147513,
+      "predicted_mean_seed_effect_dG": -3.6096020564461466
+    },
+    "Schlegel_2022_Ttr_D4_30mkg": {
+      "guide": "D4",
+      "n_aligned": 1490,
+      "n_seed_aligned": 107,
+      "n_seed_full": 1201,
+      "measured_ks_full": 0.04815100128470301,
+      "measured_ks_aligned": 0.10620958095971778,
+      "predicted_ks_count": 0.9956616052060737,
+      "predicted_ks_dG": 0.9956616052060737,
+      "measured_mean_seed_effect": -0.005172095677840487,
+      "predicted_mean_seed_effect_count": -0.6508223338147513,
+      "predicted_mean_seed_effect_dG": -1.6683196532714335
+    },
+    "Schlegel_2022_Ttr_D1_10mkg": {
+      "guide": "D1",
+      "n_aligned": 1445,
+      "n_seed_aligned": 106,
+      "n_seed_full": 1201,
+      "measured_ks_full": 0.007651755516144446,
+      "measured_ks_aligned": 0.00837008750546031,
+      "predicted_ks_count": 0.9955190440627334,
+      "predicted_ks_dG": 0.9947722180731889,
+      "measured_mean_seed_effect": 0.03418450718931709,
+      "predicted_mean_seed_effect_count": -0.6510100604434259,
+      "predicted_mean_seed_effect_dG": -3.607417874057728
+    }
+  },
+  "discrimination": {
+    "ks_separates_d1_from_d4": {
+      "dG": false,
+      "count": false
+    },
+    "ks_finding": "The one-sided KS is RANK-based and saturates (~0.995) for BOTH the count and e_dG: every seed-matched gene keeps a nonzero propagated repression against an exactly-zero background, so the rank separation is near-complete regardless of magnitude. KS cannot discriminate the guides from the propagated signal.",
+    "magnitude_separates_d1_from_d4": {
+      "dG": true,
+      "count": false
+    },
+    "magnitude_finding": "The MAGNITUDE-sensitive readout (mean propagated repression on seed-matched nodes) carries the discrimination: e_dG gives the parent D1 a stronger predicted effect (-3.610) than the GNA variant D4 (-1.668), a 2.16x ratio, whereas the count gives D1 and D4 the IDENTICAL value (-0.651 vs -0.651). The thermodynamic input separates the chemistries; the rank-based KS metric is what hides it.",
+    "d1_10_pred_dg_ks": 0.9947722180731889,
+    "dose_blind_note": "e_dG depends only on the guide chemistry, so D1_10 == D1_30 predicted (same guide D1: pred_ks_dG 0.995 vs 0.994). The thermodynamic input separates the two CHEMISTRIES (D1 vs D4) but is dose-blind: it cannot reproduce the low-dose drop in the measured KS, which is a dose effect, not a seed-thermodynamic one."
+  }
+}
