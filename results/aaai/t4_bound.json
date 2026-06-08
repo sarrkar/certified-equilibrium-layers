@@ -90,21 +90,21 @@
         "n_aligned_to_trrust": 1908,
         "n_seed_matched_aligned": 133,
         "p_alpha_2norm": 2.3647084234986218,
-        "operator_2norm_S": 8.31298825078874,
+        "operator_2norm_S": 8.312988250788742,
         "certified_bound": {
-          "bound": 74.4055822105,
+          "bound": 74.40558221050001,
           "seed_error_term": 3.6018165629781294,
-          "grn_edge_term": 70.80376564752187,
+          "grn_edge_term": 70.80376564752189,
           "p_alpha_norm": 2.3647084234986218
         },
         "measured_deviation": 25.221563799285647,
         "bound_holds": true,
-        "bound_over_measured": 3.144564039580452,
+        "bound_over_measured": 3.1445640395804526,
         "vacuous": false,
         "rowwise_refinement": {
-          "max_bound": 31.465013390706257,
-          "median_bound": 16.727114067140935,
-          "global_bound": 74.4055822105
+          "max_bound": 31.465013390706265,
+          "median_bound": 16.72711406714094,
+          "global_bound": 74.40558221050001
         },
         "ks_measured": {
           "D": 0.18170073069998938,
@@ -120,21 +120,21 @@
         "n_aligned_to_trrust": 1908,
         "n_seed_matched_aligned": 133,
         "p_alpha_2norm": 2.3647084234986218,
-        "operator_2norm_S": 8.312988250788742,
+        "operator_2norm_S": 8.31298825078874,
         "certified_bound": {
-          "bound": 74.40558221050001,
+          "bound": 74.4055822105,
           "seed_error_term": 3.6018165629781294,
-          "grn_edge_term": 70.80376564752189,
+          "grn_edge_term": 70.80376564752187,
           "p_alpha_norm": 2.3647084234986218
         },
         "measured_deviation": 11.545466743547227,
         "bound_holds": true,
-        "bound_over_measured": 9.004221476998453,
+        "bound_over_measured": 9.00422147699845,
         "vacuous": false,
         "rowwise_refinement": {
-          "max_bound": 31.465013390706265,
-          "median_bound": 16.72711406714094,
-          "global_bound": 74.40558221050001
+          "max_bound": 31.465013390706257,
+          "median_bound": 16.727114067140935,
+          "global_bound": 74.4055822105
         },
         "ks_measured": {
           "D": 0.14512337180980617,
@@ -150,21 +150,21 @@
         "n_aligned_to_trrust": 1908,
         "n_seed_matched_aligned": 133,
         "p_alpha_2norm": 2.3647084234986218,
-        "operator_2norm_S": 8.312988250788742,
+        "operator_2norm_S": 8.31298825078874,
         "certified_bound": {
-          "bound": 74.40558221050001,
+          "bound": 74.4055822105,
           "seed_error_term": 3.6018165629781294,
-          "grn_edge_term": 70.80376564752189,
+          "grn_edge_term": 70.80376564752187,
           "p_alpha_norm": 2.3647084234986218
         },
         "measured_deviation": 14.6949649099571,
         "bound_holds": true,
-        "bound_over_measured": 6.202257725017541,
+        "bound_over_measured": 6.20225772501754,
         "vacuous": false,
         "rowwise_refinement": {
-          "max_bound": 31.465013390706265,
-          "median_bound": 16.72711406714094,
-          "global_bound": 74.40558221050001
+          "max_bound": 31.465013390706257,
+          "median_bound": 16.727114067140935,
+          "global_bound": 74.4055822105
         },
         "ks_measured": {
           "D": 0.02486497934978288,

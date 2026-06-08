@@ -387,6 +387,81 @@ def grn_propagation_join(
     }
 
 
+BUDGET_SWEEP = ((0.05, 0.05), (0.10, 0.10), (0.20, 0.20))  # (seed, edge) rel-err pairs
+
+
+def budget_sweep(
+    alpha: float, seedmatchr_dir: Path, cache_root: Path, budgets=BUDGET_SWEEP
+) -> dict:
+    """Sweep the (seed, edge) uncertainty budgets for the TRRUST certified bound.
+
+    The seed propagation E = P_alpha(S) e and its measured deviation are
+    budget-independent (computed once per contrast); only the certified bound, the
+    bound/deviation ratio, and the binds / vacuous flags move with the budget.
+    """
+    from cascade.data import SEEDMATCHR_DATASETS, load_schlegel2022
+    from cascade.verify.stability import operator_2norm
+
+    try:
+        from cascade.data import load_trrust
+
+        grn = load_trrust(species="human")
+    except (FileNotFoundError, NotImplementedError) as exc:
+        return {"status": "pending_real_data", "source": str(exc)}
+
+    S = grn.S
+    s2 = operator_2norm(S)
+    p_norm = ob.p_alpha_norm(S, alpha)  # ||P_alpha(S)||_2, budget-independent
+    rows: list = []
+    pending: dict = {}
+    for name in SEEDMATCHR_DATASETS:
+        try:
+            ds = load_schlegel2022(name, raw_dir=seedmatchr_dir, cache_root=cache_root)
+        except FileNotFoundError as exc:
+            pending[name] = str(exc)
+            continue
+        if not ds.has_seed_annotation:
+            pending[name] = "loaded but no seed-match annotation; run scripts/annotate_seedmatch.py"
+            continue
+        e, measured, _seed_mask, aligned = _align_seed_input(grn, ds)
+        e_pred = ob.propagate(S, e, alpha)[aligned]
+        e_meas = measured[aligned]
+        deviation = float(np.linalg.norm(e_pred - e_meas))
+        e_norm = float(np.linalg.norm(e))
+        meas_scale = float(np.linalg.norm(e_meas))
+        for e_rel, s_rel in budgets:
+            cert = ob.certified_bound(
+                S, alpha, e_norm, e_rel * e_norm, s_rel * s2, p_norm=p_norm, p_prime_norm=p_norm
+            )
+            bound = cert["bound"]
+            vacuous = bool(meas_scale > 0 and bound > VACUOUS_FACTOR * meas_scale)
+            binds = bool(deviation <= bound * (1.0 + 1e-9) and not vacuous)
+            rows.append(
+                {
+                    "budget": {"e_rel_err": e_rel, "s_rel_err": s_rel},
+                    "contrast": name,
+                    "certified_bound": bound,
+                    "measured_deviation": deviation,
+                    "bound_over_deviation": (bound / deviation if deviation > 0 else None),
+                    "binds": binds,
+                    "vacuous": vacuous,
+                }
+            )
+    return {
+        "status": "ok" if rows else "pending_real_data",
+        "grn": grn.source,
+        "n_nodes": int(grn.n_nodes),
+        "alpha": alpha,
+        "p_alpha_2norm": p_norm,
+        "operator_2norm_S": s2,
+        "budgets": [{"e_rel_err": e, "s_rel_err": s} for e, s in budgets],
+        "ratio_definition": "bound_over_deviation = certified_bound / measured_deviation; "
+        "vacuous = bound > 10 * ||measured||",
+        "rows": rows,
+        "pending": pending,
+    }
+
+
 def measured_offtarget(seedmatchr_dir: Path, cache_root: Path) -> dict:
     """Real SeedMatchR one-sided KS on the MEASURED GSE184929 DESeq2 log2FC, per Ttr contrast.
 
@@ -519,6 +594,32 @@ def main() -> int:
             f"aligned={d['n_aligned_to_trrust']})"
         )
     print(f"[t4] wrote {out_path}")
+
+    # Budget sweep (separate output; the single-budget result above is kept intact).
+    sweep = budget_sweep(args.alpha, args.seedmatchr_dir, args.cache)
+    sweep_path = args.out_dir / "t4_budget_sweep.json"
+    sweep_path.write_text(json.dumps(sweep, indent=2), encoding="utf-8")
+    print(
+        f"\n[t4] certified-bound budget sweep over TRRUST ({sweep['status']}, alpha={args.alpha}):"
+    )
+    if sweep.get("rows"):
+        short = {
+            "Schlegel_2022_Ttr_D1_30mkg": "D1_30mkg",
+            "Schlegel_2022_Ttr_D4_30mkg": "D4_30mkg",
+            "Schlegel_2022_Ttr_D1_10mkg": "D1_10mkg",
+        }
+        print(
+            f"  {'budget':>9}  {'contrast':<9} {'bound':>9} {'meas-dev':>9} {'ratio':>7} {'binds':>6} {'vacuous':>8}"
+        )
+        for r in sweep["rows"]:
+            bud = f"{int(r['budget']['e_rel_err'] * 100)}/{int(r['budget']['s_rel_err'] * 100)}%"
+            ratio = r["bound_over_deviation"]
+            print(
+                f"  {bud:>9}  {short.get(r['contrast'], r['contrast']):<9} {r['certified_bound']:>9.3f} "
+                f"{r['measured_deviation']:>9.3f} {('n/a' if ratio is None else f'{ratio:>7.2f}')} "
+                f"{r['binds']!s:>6} {r['vacuous']!s:>8}"
+            )
+    print(f"[t4] wrote {sweep_path}")
     return 0
 
 

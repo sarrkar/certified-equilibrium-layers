@@ -1,0 +1,134 @@
+{
+  "status": "ok",
+  "grn": "TRRUST v2 (human); https://www.grnpedia.org/trrust/data/trrust_rawdata.human.tsv",
+  "n_nodes": 2072,
+  "alpha": 0.5,
+  "p_alpha_2norm": 2.3647084234986218,
+  "operator_2norm_S": 8.31298825078874,
+  "budgets": [
+    {
+      "e_rel_err": 0.05,
+      "s_rel_err": 0.05
+    },
+    {
+      "e_rel_err": 0.1,
+      "s_rel_err": 0.1
+    },
+    {
+      "e_rel_err": 0.2,
+      "s_rel_err": 0.2
+    }
+  ],
+  "ratio_definition": "bound_over_deviation = certified_bound / measured_deviation; vacuous = bound > 10 * ||measured||",
+  "rows": [
+    {
+      "budget": {
+        "e_rel_err": 0.05,
+        "s_rel_err": 0.05
+      },
+      "contrast": "Schlegel_2022_Ttr_D1_30mkg",
+      "certified_bound": 37.20279110525,
+      "measured_deviation": 25.221563799285647,
+      "bound_over_deviation": 1.4750390341103155,
+      "binds": true,
+      "vacuous": false
+    },
+    {
+      "budget": {
+        "e_rel_err": 0.1,
+        "s_rel_err": 0.1
+      },
+      "contrast": "Schlegel_2022_Ttr_D1_30mkg",
+      "certified_bound": 74.4055822105,
+      "measured_deviation": 25.221563799285647,
+      "bound_over_deviation": 2.950078068220631,
+      "binds": true,
+      "vacuous": false
+    },
+    {
+      "budget": {
+        "e_rel_err": 0.2,
+        "s_rel_err": 0.2
+      },
+      "contrast": "Schlegel_2022_Ttr_D1_30mkg",
+      "certified_bound": 148.811164421,
+      "measured_deviation": 25.221563799285647,
+      "bound_over_deviation": 5.900156136441262,
+      "binds": true,
+      "vacuous": false
+    },
+    {
+      "budget": {
+        "e_rel_err": 0.05,
+        "s_rel_err": 0.05
+      },
+      "contrast": "Schlegel_2022_Ttr_D4_30mkg",
+      "certified_bound": 37.20279110525,
+      "measured_deviation": 11.545466743547227,
+      "bound_over_deviation": 3.222285588934088,
+      "binds": true,
+      "vacuous": false
+    },
+    {
+      "budget": {
+        "e_rel_err": 0.1,
+        "s_rel_err": 0.1
+      },
+      "contrast": "Schlegel_2022_Ttr_D4_30mkg",
+      "certified_bound": 74.4055822105,
+      "measured_deviation": 11.545466743547227,
+      "bound_over_deviation": 6.444571177868176,
+      "binds": true,
+      "vacuous": false
+    },
+    {
+      "budget": {
+        "e_rel_err": 0.2,
+        "s_rel_err": 0.2
+      },
+      "contrast": "Schlegel_2022_Ttr_D4_30mkg",
+      "certified_bound": 148.811164421,
+      "measured_deviation": 11.545466743547227,
+      "bound_over_deviation": 12.889142355736352,
+      "binds": false,
+      "vacuous": true
+    },
+    {
+      "budget": {
+        "e_rel_err": 0.05,
+        "s_rel_err": 0.05
+      },
+      "contrast": "Schlegel_2022_Ttr_D1_10mkg",
+      "certified_bound": 37.20279110525,
+      "measured_deviation": 14.6949649099571,
+      "bound_over_deviation": 2.5316692712918227,
+      "binds": true,
+      "vacuous": false
+    },
+    {
+      "budget": {
+        "e_rel_err": 0.1,
+        "s_rel_err": 0.1
+      },
+      "contrast": "Schlegel_2022_Ttr_D1_10mkg",
+      "certified_bound": 74.4055822105,
+      "measured_deviation": 14.6949649099571,
+      "bound_over_deviation": 5.0633385425836455,
+      "binds": true,
+      "vacuous": false
+    },
+    {
+      "budget": {
+        "e_rel_err": 0.2,
+        "s_rel_err": 0.2
+      },
+      "contrast": "Schlegel_2022_Ttr_D1_10mkg",
+      "certified_bound": 148.811164421,
+      "measured_deviation": 14.6949649099571,
+      "bound_over_deviation": 10.126677085167291,
+      "binds": false,
+      "vacuous": true
+    }
+  ],
+  "pending": {}
+}
