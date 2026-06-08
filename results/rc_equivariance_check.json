@@ -1,0 +1,15 @@
+{
+  "reference": "Mallet and Vert 2021, reverse-complement equivariant networks for DNA",
+  "n_guides": 64,
+  "guide_len": 19,
+  "c_in": 4,
+  "c_out": 8,
+  "dtype": "float64",
+  "tolerance": 1e-10,
+  "max_equivariance_error": 0.0,
+  "equivariant": true,
+  "weight_tying_residual": 0.0,
+  "rc_involution_error": 0.0,
+  "nonequivariant_control_error": 0.7497001886367798,
+  "control_breaks_equivariance": true
+}

@@ -82,12 +82,17 @@ OFFTARGET_SOURCES: dict[str, dict] = {
     "jackson2006": {
         "cell_line": "HeLa",
         "assay": "microarray",
-        "provenance": "Jackson 2006 (RNA); supplement tables",
+        "provenance": "Jackson 2006 (RNA 12:1179) + companion (RNA 12:1197); microarray data in GEO "
+        "GSE5814 / GSE5769 (Homo sapiens), but the siRNA ANTISENSE SEQUENCES needed to derive the "
+        "seed are NOT in the GEO deposit (samples carry only target-gene and seed-mutant labels); "
+        "the sequences are only in the paper supplement (PMC1484447, not in the PMC Open Access "
+        "subset). Native seed-match KS not reproducible from public data.",
     },
     "birmingham2006": {
         "cell_line": "various",
         "assay": "microarray",
-        "provenance": "Birmingham 2006 (Nat Methods); seed-match off-target associations",
+        "provenance": "Birmingham 2006 (Nat Methods 3:199, nmeth854); seed-match off-target "
+        "associations; NOT deposited in GEO; supplementary-table only.",
     },
     "seedseq": {
         "cell_line": "various",

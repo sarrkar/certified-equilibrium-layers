@@ -354,6 +354,158 @@ def baselines_numbers(j: dict | None) -> dict:
     }
 
 
+def t2_magnetic_summary(j: dict | None) -> dict | None:
+    """Fold in the T2 magnetic-operator contraction grid (exp_t2_magnetic_grid)."""
+    if j is None or j.get("status") != "ok":
+        return None
+    sc = j["stop_condition"]
+    return {
+        "operator": "M(q,alpha) = (1-alpha)(I - L_q^sigma), magnetic signed Laplacian",
+        "q_grid": j["q_grid"],
+        "magnetic_2norm_le_1_where_palpha_exceeds_1": sc["magnetic_2norm_le_1_where_palpha_exceeds_1"],
+        "psd_spectrum_in_0_2_all_q": sc["magnetic_psd_spectrum_in_0_2_all_q"],
+        "dominates_on_every_metric": sc["dominates_on_every_metric"],
+        "outcome": sc["outcome"],
+        "note": "the magnetic operator contracts in L2 (2-norm = 1-alpha, q-independent) but is a "
+        "complex Hermitian surrogate; real-valued P_alpha stays primary, magnetic is the L2 repair.",
+    }
+
+
+def t3_composed_summary(j: dict | None) -> dict | None:
+    """Fold in the T3 composed-error bound + ADMM (exp_t3_composed / pinet_t3_composed)."""
+    if j is None or j.get("status") != "ok":
+        return None
+    return {
+        "forward_map_lipschitz_L": j["lipschitz"]["L_operator_norm_w"],
+        "dist_y_star_to_P": j["composed_bound"]["dist_y_star_to_P"],
+        "composed_bound_holds_all": j["composed_bound"]["bound_holds_all"],
+        "admm_equality_residual_inf": j["admm_active_set"]["equality_residual_inf"],
+        "admm_active_set_residual": j["admm_active_set"]["active_set_residual"],
+        "ift_grad_vs_fd_max_diff": j["stop_condition"]["ift_max_grad_fd_diff"],
+        "ift_path_held": j["stop_condition"]["path_held"],
+    }
+
+
+def t4_discrimination_summary(j: dict | None) -> dict | None:
+    """Fold in the T4 thermodynamic-input discrimination (exp_t4_discrimination)."""
+    if j is None or j.get("status") != "ok":
+        return None
+    disc = j["discrimination"]
+    return {
+        "site_dg_d1_mean": j["site_dg"]["d1_mean"],
+        "site_dg_d4_mean": j["site_dg"]["d4_mean"],
+        "guides_differ": j["site_dg"]["guides_differ"],
+        "ks_separates_d1_from_d4": disc["ks_separates_d1_from_d4"],
+        "magnitude_separates_d1_from_d4": disc["magnitude_separates_d1_from_d4"],
+        "finding": "e_dG differs between guides and separates D1 from D4 by predicted magnitude "
+        "(the count cannot); the rank-based KS is saturated for both inputs.",
+    }
+
+
+def t4_human_ks_summary(j: dict | None) -> dict | None:
+    """Fold in the real human cross-species off-target KS (exp_ks_human_patel)."""
+    if j is None or j.get("status") != "ok":
+        return None
+    out = {"genome_build": j["genome_build"], "ensembl_release": j["ensembl_release_pinned"], "datasets": {}}
+    for gse in ("GSE164289", "GSE196839"):
+        block = j.get(gse, {})
+        out["datasets"][gse] = {
+            "cell_line": block.get("cell_line"),
+            "effect_table": block.get("effect_table"),
+            "contrasts": {
+                n: {"seed": c.get("seed"), "ks_D": c.get("ks_D"), "ks_p": c.get("ks_p")}
+                for n, c in block.get("contrasts", {}).items()
+                if c.get("ks_D") is not None
+            },
+        }
+    return out
+
+
+def t5_numbers(j: dict | None) -> dict:
+    """T5 cross-species transfer (exp_t5_crossspecies): theorem or numerical observation."""
+    prov = "rat GSE184929 (seed UAUAGAG) -> human Patel GSE164289 / GSE196839 (seed GGGGGC), "
+    "species-matched 3'UTRs, magnetic operator over human TRRUST"
+    if j is None:
+        return {"provenance": prov, "status": "absent"}
+    if j.get("status", "").startswith("pending"):
+        return {"provenance": prov, "status": "pending_real_data", "source": j.get("source")}
+    sc = j["stop_condition"]
+    return {
+        "provenance": prov,
+        "status": "ok",
+        "t5_status": sc["t5_status"],
+        "survives_as_theorem": sc["t5_survives_as_theorem"],
+        "best_cross_species_auroc": sc["best_cross_species_auroc"],
+        "auroc_threshold": sc["auroc_threshold"],
+        "auroc_by_q": j["auroc_by_q"],
+        "wasserstein1_rat_vs_human_seedmatch_abundance": j[
+            "wasserstein1_rat_vs_human_seedmatch_abundance"
+        ],
+        "ruling": sc["ruling"],
+    }
+
+
+def acceptance_status(numbers: dict) -> dict:
+    """Per-theorem PASS / RESTRICTED / PENDING / DEMOTED, derived from the real results."""
+    t1 = numbers["T1_leakage_free_identifiability"]
+    t2 = numbers["T2_contraction_stability"]
+    t3 = numbers["T3_mass_action_constraint"]
+    t4 = numbers["T4_certified_offtarget_bound"]
+    t5 = numbers["T5_crossspecies_transfer"]
+    status: dict = {}
+
+    status["T1"] = (
+        {"status": "PASS", "reason": "disjoint CCMP per-concept embeddings change at machine zero "
+         "on real Huesken; the shared-encoder CBM and the Concept Embedding Model leak."}
+        if t1.get("status") == "ok" and t1.get("acceptance") == "PASS"
+        else {"status": "PENDING", "reason": f"real data absent ({t1.get('status')})"}
+    )
+
+    if t2.get("status") == "ok":
+        flag = t2.get("acceptance", "RESTRICTED")
+        status["T2"] = {
+            "status": flag,
+            "reason": "on the real signed/directed TRRUST GRN the rho-based L2 contraction constant "
+            "is exceeded by directedness non-normality (||S||_2 ~ 8.31 >> rho ~ 1); the inf-norm "
+            "certificate is non-expansive for every alpha, and the magnetic operator (q-swept) "
+            "repairs L2 contraction but stays secondary to the real-valued P_alpha.",
+        }
+    else:
+        status["T2"] = {"status": "PENDING", "reason": "real GRN absent"}
+
+    status["T3"] = (
+        {"status": "PASS", "reason": "KKT mass-action residual at machine precision on every seed "
+         "with no accuracy regression; the composed-error bound holds and the IFT gradient through "
+         "the equality+box ADMM matches finite differences below 1e-6."}
+        if t3.get("status") == "ok" and t3.get("acceptance") == "PASS"
+        else {"status": t3.get("acceptance", "PENDING"), "reason": f"see T3 section ({t3.get('status')})"}
+    )
+
+    if t4.get("certified_bound_status") == "real_via_trrust_join":
+        status["T4"] = {
+            "status": "RESTRICTED",
+            "reason": "the certified L2 bound is REAL and BINDS on GSE184929 via the TRRUST P_alpha "
+            "join, and the measured seed off-target KS is real in rat (Schlegel) AND human (Patel "
+            "GSE164289 / GSE196839); restricted by cross-species ortholog alignment, assumed "
+            "uncertainty budgets, and the microarray cross-assay (Jackson 2006 / Birmingham 2006) "
+            "which is PENDING (the GEO deposits lack the siRNA sequences and Birmingham is not in GEO).",
+        }
+    elif t4.get("status") in ("ok", "measured_offtarget_real"):
+        status["T4"] = {"status": "RESTRICTED", "reason": "measured off-target real; certified join partial"}
+    else:
+        status["T4"] = {"status": "PENDING", "reason": "real off-target join absent"}
+
+    if t5.get("status") == "ok":
+        demoted = not t5.get("survives_as_theorem")
+        status["T5"] = {
+            "status": "DEMOTED" if demoted else "PASS",
+            "reason": t5.get("ruling"),
+        }
+    else:
+        status["T5"] = {"status": "PENDING", "reason": "real cross-species data absent"}
+    return status
+
+
 def copy_figures() -> dict:
     fig_dir = AAAI / "figures"
     fig_dir.mkdir(parents=True, exist_ok=True)
@@ -384,7 +536,28 @@ def write_summary(numbers: dict, captions: dict) -> None:
     t4 = numbers["T4_certified_offtarget_bound"]
     bl = numbers["baselines_efficacy"]
 
-    lines = ["# AAAI four-theorem results summary", ""]
+    status = numbers["acceptance_status"]
+    lines = ["# AAAI results summary", ""]
+    lines.append("## Acceptance status per theorem (real data only)")
+    lines.append("")
+    lines.append("| theorem | status | one-line basis |")
+    lines.append("| --- | --- | --- |")
+    titles = {
+        "T1": "leakage-free per-concept identifiability",
+        "T2": "P_alpha contraction / stability on the signed/directed GRN",
+        "T3": "KKT mass-action / thermodynamic constraint",
+        "T4": "certified off-target bound",
+        "T5": "cross-species transfer",
+    }
+    for th in ("T1", "T2", "T3", "T4", "T5"):
+        st = status[th]
+        lines.append(f"| {th} ({titles[th]}) | **{st['status']}** | {st['reason']} |")
+    lines.append("")
+    lines.append(
+        "Legend: PASS = holds on real data; RESTRICTED = holds with a documented restriction; "
+        "PENDING = real data not yet available; DEMOTED = an empirical observation, not a theorem."
+    )
+    lines.append("")
     lines.append("## Headline (real data only)")
 
     # 1. Baselines: beats linear / mean on real efficacy.
@@ -488,6 +661,15 @@ def write_summary(numbers: dict, captions: dict) -> None:
             f"{_fmt(t2['signed_spectral_gap']['min_real_eig'])})."
         )
         lines.append(f"- {t2['note']}")
+        mag = t2.get("magnetic_grid")
+        if mag:
+            lines.append(
+                f"- Magnetic-operator grid (q in {mag['q_grid']}): the magnetic signed-Laplacian "
+                f"operator has a PSD spectrum in [0,2] for every q ({mag['psd_spectrum_in_0_2_all_q']}) "
+                f"so its 2-norm is 1-alpha (q-independent) and <= 1 wherever ||P_alpha||_2 > 1. It does "
+                f"NOT dominate on every metric ({mag['dominates_on_every_metric']}); outcome: "
+                f"{mag['outcome']} (real P_alpha primary, magnetic = L2 repair)."
+            )
     else:
         lines.append("- PENDING real GRN.")
     lines.append("")
@@ -513,6 +695,18 @@ def write_summary(numbers: dict, captions: dict) -> None:
                 f"mass-action fit (raw slope b={_fmt(dgd['mass_action_raw_slope_b'])}, sign "
                 f"{dgd['mass_action_raw_slope_sign']:+d}), so the positive b is a real property of "
                 f"on-target efficacy, not a feature-scaling artifact."
+            )
+        comp = t3.get("composed_bound")
+        if comp:
+            lines.append(
+                f"- Composed-error bound (real Huesken): forward-map Lipschitz L="
+                f"{_fmt(comp['forward_map_lipschitz_L'])}, dist(y_*,P)={_fmt(comp['dist_y_star_to_P'], 4)}; "
+                f"the bound ||Pi_P(f(x))-y_*|| <= L||x-x_*|| + dist(y_*,P) holds across all probes="
+                f"{comp['composed_bound_holds_all']}. The genuine ADMM (equality + occupancy box) holds "
+                f"equality residual {_sci(comp['admm_equality_residual_inf'])} / active-set residual "
+                f"{_sci(comp['admm_active_set_residual'])}; the IFT gradient through the eq+box "
+                f"projection matches finite differences at {_sci(comp['ift_grad_vs_fd_max_diff'])} "
+                f"(path held: {comp['ift_path_held']})."
             )
     else:
         lines.append("- PENDING real data.")
@@ -562,6 +756,58 @@ def write_summary(numbers: dict, captions: dict) -> None:
         lines.append(
             "- PENDING real data for: " + ", ".join(f"{n} ({d['assay']})" for n, d in pend.items())
         )
+    ca = t4.get("cross_assay")
+    if ca:
+        lines.append("")
+        lines.append(
+            f"- Cross-assay: RNA-seq (GSE184929) mean KS D={_fmt(ca.get('rna_seq_mean_ks_D'), 4)} "
+            f"(REAL); microarray mean KS D={_fmt(ca.get('microarray_mean_ks_D'))} "
+            f"({ca.get('microarray_status')}: Jackson 2006 / Birmingham 2006 lack public per-gene "
+            f"fold-changes / siRNA sequences)."
+        )
+    disc = t4.get("thermodynamic_discrimination")
+    if disc:
+        lines.append(
+            f"- Thermodynamic-input discrimination: per-site seed dG D1 {_fmt(disc['site_dg_d1_mean'])} "
+            f"vs D4 {_fmt(disc['site_dg_d4_mean'])} (guides differ={disc['guides_differ']}); e_dG "
+            f"separates D1 from D4 by predicted magnitude="
+            f"{disc['magnitude_separates_d1_from_d4'].get('dG')} where the count cannot, and the "
+            f"rank-based KS is saturated for both."
+        )
+    hks = t4.get("human_crossspecies_ks")
+    if hks:
+        lines.append(f"- Real HUMAN off-target KS (Patel 2022, {hks['genome_build']}, Ensembl release "
+                     f"{hks['ensembl_release']}):")
+        lines.append("")
+        lines.append("| dataset | contrast | seed | KS D | p |")
+        lines.append("| --- | --- | --- | --- | --- |")
+        for gse, blk in hks["datasets"].items():
+            for n, c in blk["contrasts"].items():
+                lines.append(
+                    f"| {gse} | {n} | {c['seed']} | {_fmt(c['ks_D'], 4)} | {_sci(c['ks_p'])} |"
+                )
+    lines.append("")
+
+    lines.append("## T5 cross-species transfer (rat -> human zero-shot)")
+    t5 = numbers["T5_crossspecies_transfer"]
+    if t5.get("status") == "ok":
+        lines.append(
+            f"- Status **{status['T5']['status']}**: best cross-species AUROC "
+            f"{_fmt(t5['best_cross_species_auroc'], 4)} (threshold {t5['auroc_threshold']}); "
+            f"survives as theorem={t5['survives_as_theorem']}. {t5['ruling']}"
+        )
+        lines.append(
+            f"- 1-Wasserstein(rat vs human 3'UTR seed-match abundance) = "
+            f"{_fmt(t5['wasserstein1_rat_vs_human_seedmatch_abundance'], 4)}."
+        )
+        lines.append("")
+        lines.append("| q | " + " | ".join(sorted(next(iter(t5["auroc_by_q"].values())))) + " |")
+        lines.append("| --- | " + " | ".join("---" for _ in next(iter(t5["auroc_by_q"].values()))) + " |")
+        for q, row in t5["auroc_by_q"].items():
+            cells = " | ".join(_fmt(row[k]["auroc"], 4) for k in sorted(row))
+            lines.append(f"| {q} | {cells} |")
+    else:
+        lines.append(f"- PENDING real data ({t5.get('status')}).")
     lines.append("")
 
     lines.append("## Figures (results/aaai/figures/)")
@@ -588,15 +834,37 @@ def main() -> int:
         "T2_contraction_stability": t2_numbers(_load("t2_stability")),
         "T3_mass_action_constraint": t3_numbers(_load("t3_constraint")),
         "T4_certified_offtarget_bound": t4_numbers(_load("t4_bound")),
+        "T5_crossspecies_transfer": t5_numbers(_load("t5_crossspecies")),
         "baselines_efficacy": baselines_numbers(_load("baselines")),
         "source_files": [
             "t1_leakage.json",
             "t2_stability.json",
+            "t2_magnetic_grid.json",
             "t3_constraint.json",
+            "t3_composed_bound.json",
             "t4_bound.json",
+            "t4_discrimination.json",
+            "ks_human_patel.json",
+            "t5_crossspecies.json",
             "baselines.json",
         ],
     }
+    # Fold the new real results into their theorem sections.
+    mag = t2_magnetic_summary(_load("t2_magnetic_grid"))
+    if mag is not None and numbers["T2_contraction_stability"].get("status") == "ok":
+        numbers["T2_contraction_stability"]["magnetic_grid"] = mag
+    comp = t3_composed_summary(_load("t3_composed_bound"))
+    if comp is not None and numbers["T3_mass_action_constraint"].get("status") == "ok":
+        numbers["T3_mass_action_constraint"]["composed_bound"] = comp
+    disc = t4_discrimination_summary(_load("t4_discrimination"))
+    if disc is not None:
+        numbers["T4_certified_offtarget_bound"]["thermodynamic_discrimination"] = disc
+    hks = t4_human_ks_summary(_load("ks_human_patel"))
+    if hks is not None:
+        numbers["T4_certified_offtarget_bound"]["human_crossspecies_ks"] = hks
+
+    numbers["acceptance_status"] = acceptance_status(numbers)
+
     out_path = args.out_dir / "paper_numbers.json"
     out_path.write_text(json.dumps(numbers, indent=2), encoding="utf-8")
     print(f"[export] wrote {out_path}")
@@ -606,6 +874,11 @@ def main() -> int:
 
     write_summary(numbers, captions)
     print(f"[export] wrote {AAAI / 'SUMMARY.md'}")
+
+    print("\n[export] FINAL ACCEPTANCE STATUS PER THEOREM:")
+    for th in ("T1", "T2", "T3", "T4", "T5"):
+        st = numbers["acceptance_status"][th]
+        print(f"  {th}: {st['status']}")
     return 0
 
 

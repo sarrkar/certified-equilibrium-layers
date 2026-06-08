@@ -1,0 +1,785 @@
+{
+  "status": "ok",
+  "alpha": 0.5,
+  "default_budget": {
+    "e_rel_err": 0.1,
+    "s_rel_err": 0.1
+  },
+  "budgets": [
+    {
+      "e_rel_err": 0.05,
+      "s_rel_err": 0.05
+    },
+    {
+      "e_rel_err": 0.1,
+      "s_rel_err": 0.1
+    },
+    {
+      "e_rel_err": 0.2,
+      "s_rel_err": 0.2
+    }
+  ],
+  "rat_gene_set": "GSE184929 Schlegel Ttr DESeq2 contrasts (rat symbols, uppercased for alignment)",
+  "purpose": "T4 robustness across GRN source and species: human TRRUST (ortholog) vs mouse TRRUST and CollecTRI mouse (species-matched to the rat data).",
+  "grns": {
+    "human_trrust": {
+      "grn": "TRRUST v2 (human); https://www.grnpedia.org/trrust/data/trrust_rawdata.human.tsv",
+      "n_nodes": 2072,
+      "n_edges": 4652,
+      "join": {
+        "status": "ok",
+        "grn": "TRRUST v2 (human); https://www.grnpedia.org/trrust/data/trrust_rawdata.human.tsv",
+        "n_nodes": 2072,
+        "alpha": 0.5,
+        "uncertainty_budget": {
+          "e_rel_err": 0.1,
+          "s_rel_err": 0.1
+        },
+        "bound_formula": "||E - E_true|| <= ||P_a(S)|| ||e - e_true|| + ((1-a)/a) ||P_a(S)||^2 ||S - S'|| ||e||  (T2 contraction constant + second-resolvent GRN-edge term)",
+        "cross_species_note": "TRRUST is human, GSE184929 is rat; aligned by orthologous gene symbol. e is the seed-match-derived direct repression of the ViennaRNA-confirmed Ttr seed.",
+        "per_contrast": {
+          "Schlegel_2022_Ttr_D1_30mkg": {
+            "assay": "rna_seq",
+            "n_aligned_to_trrust": 1908,
+            "n_seed_matched_aligned": 133,
+            "p_alpha_2norm": 2.3647084234986218,
+            "operator_2norm_S": 8.312988250788742,
+            "certified_bound": {
+              "bound": 74.40558221050001,
+              "seed_error_term": 3.6018165629781294,
+              "grn_edge_term": 70.80376564752189,
+              "p_alpha_norm": 2.3647084234986218
+            },
+            "measured_deviation": 25.221563799285647,
+            "bound_holds": true,
+            "bound_over_measured": 3.1445640395804526,
+            "vacuous": false,
+            "rowwise_refinement": {
+              "max_bound": 31.465013390706265,
+              "median_bound": 16.72711406714094,
+              "global_bound": 74.40558221050001
+            },
+            "ks_measured": {
+              "D": 0.18170073069998938,
+              "p": 0.00028305574182581545
+            },
+            "ks_predicted": {
+              "D": 0.9949295774647887,
+              "p": 4.143768703241462e-107
+            }
+          },
+          "Schlegel_2022_Ttr_D4_30mkg": {
+            "assay": "rna_seq",
+            "n_aligned_to_trrust": 1908,
+            "n_seed_matched_aligned": 133,
+            "p_alpha_2norm": 2.3647084234986218,
+            "operator_2norm_S": 8.312988250788742,
+            "certified_bound": {
+              "bound": 74.40558221050001,
+              "seed_error_term": 3.6018165629781294,
+              "grn_edge_term": 70.80376564752189,
+              "p_alpha_norm": 2.3647084234986218
+            },
+            "measured_deviation": 11.545466743547227,
+            "bound_holds": true,
+            "bound_over_measured": 9.004221476998453,
+            "vacuous": false,
+            "rowwise_refinement": {
+              "max_bound": 31.465013390706265,
+              "median_bound": 16.72711406714094,
+              "global_bound": 74.40558221050001
+            },
+            "ks_measured": {
+              "D": 0.14512337180980617,
+              "p": 0.005452597236715007
+            },
+            "ks_predicted": {
+              "D": 0.9949295774647887,
+              "p": 4.143768703241462e-107
+            }
+          },
+          "Schlegel_2022_Ttr_D1_10mkg": {
+            "assay": "rna_seq",
+            "n_aligned_to_trrust": 1908,
+            "n_seed_matched_aligned": 133,
+            "p_alpha_2norm": 2.3647084234986218,
+            "operator_2norm_S": 8.31298825078874,
+            "certified_bound": {
+              "bound": 74.4055822105,
+              "seed_error_term": 3.6018165629781294,
+              "grn_edge_term": 70.80376564752187,
+              "p_alpha_norm": 2.3647084234986218
+            },
+            "measured_deviation": 14.6949649099571,
+            "bound_holds": true,
+            "bound_over_measured": 6.20225772501754,
+            "vacuous": false,
+            "rowwise_refinement": {
+              "max_bound": 31.465013390706257,
+              "median_bound": 16.727114067140935,
+              "global_bound": 74.4055822105
+            },
+            "ks_measured": {
+              "D": 0.02486497934978288,
+              "p": 0.8581338336629423
+            },
+            "ks_predicted": {
+              "D": 0.9949295774647887,
+              "p": 4.143768703241462e-107
+            }
+          }
+        },
+        "pending": {}
+      },
+      "sweep": {
+        "status": "ok",
+        "grn": "TRRUST v2 (human); https://www.grnpedia.org/trrust/data/trrust_rawdata.human.tsv",
+        "n_nodes": 2072,
+        "alpha": 0.5,
+        "p_alpha_2norm": 2.3647084234986218,
+        "operator_2norm_S": 8.31298825078874,
+        "budgets": [
+          {
+            "e_rel_err": 0.05,
+            "s_rel_err": 0.05
+          },
+          {
+            "e_rel_err": 0.1,
+            "s_rel_err": 0.1
+          },
+          {
+            "e_rel_err": 0.2,
+            "s_rel_err": 0.2
+          }
+        ],
+        "ratio_definition": "bound_over_deviation = certified_bound / measured_deviation; vacuous = bound > 10 * ||measured||",
+        "rows": [
+          {
+            "budget": {
+              "e_rel_err": 0.05,
+              "s_rel_err": 0.05
+            },
+            "contrast": "Schlegel_2022_Ttr_D1_30mkg",
+            "certified_bound": 37.20279110525,
+            "measured_deviation": 25.221563799285647,
+            "bound_over_deviation": 1.4750390341103155,
+            "binds": true,
+            "vacuous": false,
+            "n_aligned": 1908
+          },
+          {
+            "budget": {
+              "e_rel_err": 0.1,
+              "s_rel_err": 0.1
+            },
+            "contrast": "Schlegel_2022_Ttr_D1_30mkg",
+            "certified_bound": 74.4055822105,
+            "measured_deviation": 25.221563799285647,
+            "bound_over_deviation": 2.950078068220631,
+            "binds": true,
+            "vacuous": false,
+            "n_aligned": 1908
+          },
+          {
+            "budget": {
+              "e_rel_err": 0.2,
+              "s_rel_err": 0.2
+            },
+            "contrast": "Schlegel_2022_Ttr_D1_30mkg",
+            "certified_bound": 148.811164421,
+            "measured_deviation": 25.221563799285647,
+            "bound_over_deviation": 5.900156136441262,
+            "binds": true,
+            "vacuous": false,
+            "n_aligned": 1908
+          },
+          {
+            "budget": {
+              "e_rel_err": 0.05,
+              "s_rel_err": 0.05
+            },
+            "contrast": "Schlegel_2022_Ttr_D4_30mkg",
+            "certified_bound": 37.20279110525,
+            "measured_deviation": 11.545466743547227,
+            "bound_over_deviation": 3.222285588934088,
+            "binds": true,
+            "vacuous": false,
+            "n_aligned": 1908
+          },
+          {
+            "budget": {
+              "e_rel_err": 0.1,
+              "s_rel_err": 0.1
+            },
+            "contrast": "Schlegel_2022_Ttr_D4_30mkg",
+            "certified_bound": 74.4055822105,
+            "measured_deviation": 11.545466743547227,
+            "bound_over_deviation": 6.444571177868176,
+            "binds": true,
+            "vacuous": false,
+            "n_aligned": 1908
+          },
+          {
+            "budget": {
+              "e_rel_err": 0.2,
+              "s_rel_err": 0.2
+            },
+            "contrast": "Schlegel_2022_Ttr_D4_30mkg",
+            "certified_bound": 148.811164421,
+            "measured_deviation": 11.545466743547227,
+            "bound_over_deviation": 12.889142355736352,
+            "binds": false,
+            "vacuous": true,
+            "n_aligned": 1908
+          },
+          {
+            "budget": {
+              "e_rel_err": 0.05,
+              "s_rel_err": 0.05
+            },
+            "contrast": "Schlegel_2022_Ttr_D1_10mkg",
+            "certified_bound": 37.20279110525,
+            "measured_deviation": 14.6949649099571,
+            "bound_over_deviation": 2.5316692712918227,
+            "binds": true,
+            "vacuous": false,
+            "n_aligned": 1908
+          },
+          {
+            "budget": {
+              "e_rel_err": 0.1,
+              "s_rel_err": 0.1
+            },
+            "contrast": "Schlegel_2022_Ttr_D1_10mkg",
+            "certified_bound": 74.4055822105,
+            "measured_deviation": 14.6949649099571,
+            "bound_over_deviation": 5.0633385425836455,
+            "binds": true,
+            "vacuous": false,
+            "n_aligned": 1908
+          },
+          {
+            "budget": {
+              "e_rel_err": 0.2,
+              "s_rel_err": 0.2
+            },
+            "contrast": "Schlegel_2022_Ttr_D1_10mkg",
+            "certified_bound": 148.811164421,
+            "measured_deviation": 14.6949649099571,
+            "bound_over_deviation": 10.126677085167291,
+            "binds": false,
+            "vacuous": true,
+            "n_aligned": 1908
+          }
+        ],
+        "pending": {}
+      }
+    },
+    "mouse_trrust": {
+      "grn": "TRRUST v2 (mouse); https://www.grnpedia.org/trrust/data/trrust_rawdata.mouse.tsv",
+      "n_nodes": 1858,
+      "n_edges": 3967,
+      "join": {
+        "status": "ok",
+        "grn": "TRRUST v2 (mouse); https://www.grnpedia.org/trrust/data/trrust_rawdata.mouse.tsv",
+        "n_nodes": 1858,
+        "alpha": 0.5,
+        "uncertainty_budget": {
+          "e_rel_err": 0.1,
+          "s_rel_err": 0.1
+        },
+        "bound_formula": "||E - E_true|| <= ||P_a(S)|| ||e - e_true|| + ((1-a)/a) ||P_a(S)||^2 ||S - S'|| ||e||  (T2 contraction constant + second-resolvent GRN-edge term)",
+        "cross_species_note": "GRN is mouse, GSE184929 is rat; aligned by orthologous gene symbol (uppercased). e is the seed-match-derived direct repression of the ViennaRNA-confirmed Ttr seed. Mouse<->rat orthology is near 1:1 same-symbol, a closer species match than human.",
+        "per_contrast": {
+          "Schlegel_2022_Ttr_D1_30mkg": {
+            "assay": "rna_seq",
+            "n_aligned_to_trrust": 1729,
+            "n_seed_matched_aligned": 118,
+            "p_alpha_2norm": 1.9654992980274644,
+            "operator_2norm_S": 6.900029767472761,
+            "certified_bound": {
+              "bound": 41.47665043217538,
+              "seed_error_term": 2.8482790822086863,
+              "grn_edge_term": 38.6283713499667,
+              "p_alpha_norm": 1.9654992980274644
+            },
+            "measured_deviation": 20.96838355486219,
+            "bound_holds": true,
+            "bound_over_measured": 2.1601524936876726,
+            "vacuous": false,
+            "rowwise_refinement": {
+              "max_bound": 13.062639455374397,
+              "median_bound": 11.215746062078157,
+              "global_bound": 41.47665043217538
+            },
+            "ks_measured": {
+              "D": 0.20161706067396812,
+              "p": 0.0001312310949982847
+            },
+            "ks_predicted": {
+              "D": 0.9950341402855369,
+              "p": 2.8024738602917943e-95
+            }
+          },
+          "Schlegel_2022_Ttr_D4_30mkg": {
+            "assay": "rna_seq",
+            "n_aligned_to_trrust": 1729,
+            "n_seed_matched_aligned": 118,
+            "p_alpha_2norm": 1.9654992980274644,
+            "operator_2norm_S": 6.90002976747276,
+            "certified_bound": {
+              "bound": 41.476650432175376,
+              "seed_error_term": 2.8482790822086863,
+              "grn_edge_term": 38.62837134996669,
+              "p_alpha_norm": 1.9654992980274644
+            },
+            "measured_deviation": 11.114393157760398,
+            "bound_holds": true,
+            "bound_over_measured": 5.563907351530154,
+            "vacuous": false,
+            "rowwise_refinement": {
+              "max_bound": 13.062639455374395,
+              "median_bound": 11.215746062078157,
+              "global_bound": 41.476650432175376
+            },
+            "ks_measured": {
+              "D": 0.11600858504560801,
+              "p": 0.05185385495492421
+            },
+            "ks_predicted": {
+              "D": 0.9950341402855369,
+              "p": 2.8024738602917943e-95
+            }
+          },
+          "Schlegel_2022_Ttr_D1_10mkg": {
+            "assay": "rna_seq",
+            "n_aligned_to_trrust": 1729,
+            "n_seed_matched_aligned": 118,
+            "p_alpha_2norm": 1.9654992980274644,
+            "operator_2norm_S": 6.90002976747276,
+            "certified_bound": {
+              "bound": 41.476650432175376,
+              "seed_error_term": 2.8482790822086863,
+              "grn_edge_term": 38.62837134996669,
+              "p_alpha_norm": 1.9654992980274644
+            },
+            "measured_deviation": 13.677848689518848,
+            "bound_holds": true,
+            "bound_over_measured": 3.9300036891123282,
+            "vacuous": false,
+            "rowwise_refinement": {
+              "max_bound": 13.062639455374395,
+              "median_bound": 11.215746062078157,
+              "global_bound": 41.476650432175376
+            },
+            "ks_measured": {
+              "D": 0.0031562667676672262,
+              "p": 0.9978118133558116
+            },
+            "ks_predicted": {
+              "D": 0.9950341402855369,
+              "p": 2.8024738602917943e-95
+            }
+          }
+        },
+        "pending": {}
+      },
+      "sweep": {
+        "status": "ok",
+        "grn": "TRRUST v2 (mouse); https://www.grnpedia.org/trrust/data/trrust_rawdata.mouse.tsv",
+        "n_nodes": 1858,
+        "alpha": 0.5,
+        "p_alpha_2norm": 1.9654992980274644,
+        "operator_2norm_S": 6.900029767472761,
+        "budgets": [
+          {
+            "e_rel_err": 0.05,
+            "s_rel_err": 0.05
+          },
+          {
+            "e_rel_err": 0.1,
+            "s_rel_err": 0.1
+          },
+          {
+            "e_rel_err": 0.2,
+            "s_rel_err": 0.2
+          }
+        ],
+        "ratio_definition": "bound_over_deviation = certified_bound / measured_deviation; vacuous = bound > 10 * ||measured||",
+        "rows": [
+          {
+            "budget": {
+              "e_rel_err": 0.05,
+              "s_rel_err": 0.05
+            },
+            "contrast": "Schlegel_2022_Ttr_D1_30mkg",
+            "certified_bound": 20.73832521608769,
+            "measured_deviation": 20.96838355486219,
+            "bound_over_deviation": 0.9890283226567004,
+            "binds": false,
+            "vacuous": false,
+            "n_aligned": 1729
+          },
+          {
+            "budget": {
+              "e_rel_err": 0.1,
+              "s_rel_err": 0.1
+            },
+            "contrast": "Schlegel_2022_Ttr_D1_30mkg",
+            "certified_bound": 41.47665043217538,
+            "measured_deviation": 20.96838355486219,
+            "bound_over_deviation": 1.9780566453134008,
+            "binds": true,
+            "vacuous": false,
+            "n_aligned": 1729
+          },
+          {
+            "budget": {
+              "e_rel_err": 0.2,
+              "s_rel_err": 0.2
+            },
+            "contrast": "Schlegel_2022_Ttr_D1_30mkg",
+            "certified_bound": 82.95330086435077,
+            "measured_deviation": 20.96838355486219,
+            "bound_over_deviation": 3.9561132906268015,
+            "binds": true,
+            "vacuous": false,
+            "n_aligned": 1729
+          },
+          {
+            "budget": {
+              "e_rel_err": 0.05,
+              "s_rel_err": 0.05
+            },
+            "contrast": "Schlegel_2022_Ttr_D4_30mkg",
+            "certified_bound": 20.73832521608769,
+            "measured_deviation": 11.114393157760398,
+            "bound_over_deviation": 1.8658981126295302,
+            "binds": true,
+            "vacuous": false,
+            "n_aligned": 1729
+          },
+          {
+            "budget": {
+              "e_rel_err": 0.1,
+              "s_rel_err": 0.1
+            },
+            "contrast": "Schlegel_2022_Ttr_D4_30mkg",
+            "certified_bound": 41.47665043217538,
+            "measured_deviation": 11.114393157760398,
+            "bound_over_deviation": 3.7317962252590604,
+            "binds": true,
+            "vacuous": false,
+            "n_aligned": 1729
+          },
+          {
+            "budget": {
+              "e_rel_err": 0.2,
+              "s_rel_err": 0.2
+            },
+            "contrast": "Schlegel_2022_Ttr_D4_30mkg",
+            "certified_bound": 82.95330086435077,
+            "measured_deviation": 11.114393157760398,
+            "bound_over_deviation": 7.463592450518121,
+            "binds": false,
+            "vacuous": true,
+            "n_aligned": 1729
+          },
+          {
+            "budget": {
+              "e_rel_err": 0.05,
+              "s_rel_err": 0.05
+            },
+            "contrast": "Schlegel_2022_Ttr_D1_10mkg",
+            "certified_bound": 20.73832521608769,
+            "measured_deviation": 13.677848689518848,
+            "bound_over_deviation": 1.5161978821990618,
+            "binds": true,
+            "vacuous": false,
+            "n_aligned": 1729
+          },
+          {
+            "budget": {
+              "e_rel_err": 0.1,
+              "s_rel_err": 0.1
+            },
+            "contrast": "Schlegel_2022_Ttr_D1_10mkg",
+            "certified_bound": 41.47665043217538,
+            "measured_deviation": 13.677848689518848,
+            "bound_over_deviation": 3.0323957643981236,
+            "binds": true,
+            "vacuous": false,
+            "n_aligned": 1729
+          },
+          {
+            "budget": {
+              "e_rel_err": 0.2,
+              "s_rel_err": 0.2
+            },
+            "contrast": "Schlegel_2022_Ttr_D1_10mkg",
+            "certified_bound": 82.95330086435077,
+            "measured_deviation": 13.677848689518848,
+            "bound_over_deviation": 6.064791528796247,
+            "binds": true,
+            "vacuous": false,
+            "n_aligned": 1729
+          }
+        ],
+        "pending": {}
+      }
+    },
+    "collectri_mouse": {
+      "grn": "CollecTRI (mouse) via OmniPath; https://omnipathdb.org/interactions?datasets=collectri&organisms=10090&genesymbols=yes&fields=sources,references",
+      "n_nodes": 6363,
+      "n_edges": 39521,
+      "join": {
+        "status": "ok",
+        "grn": "CollecTRI (mouse) via OmniPath; https://omnipathdb.org/interactions?datasets=collectri&organisms=10090&genesymbols=yes&fields=sources,references",
+        "n_nodes": 6363,
+        "alpha": 0.5,
+        "uncertainty_budget": {
+          "e_rel_err": 0.1,
+          "s_rel_err": 0.1
+        },
+        "bound_formula": "||E - E_true|| <= ||P_a(S)|| ||e - e_true|| + ((1-a)/a) ||P_a(S)||^2 ||S - S'|| ||e||  (T2 contraction constant + second-resolvent GRN-edge term)",
+        "cross_species_note": "GRN is mouse, GSE184929 is rat; aligned by orthologous gene symbol (uppercased). e is the seed-match-derived direct repression of the ViennaRNA-confirmed Ttr seed. Mouse<->rat orthology is near 1:1 same-symbol, a closer species match than human.",
+        "per_contrast": {
+          "Schlegel_2022_Ttr_D1_30mkg": {
+            "assay": "rna_seq",
+            "n_aligned_to_trrust": 4899,
+            "n_seed_matched_aligned": 347,
+            "p_alpha_2norm": 3.7900208716905444,
+            "operator_2norm_S": 14.68168425232759,
+            "certified_bound": {
+              "bound": 552.778871128453,
+              "seed_error_term": 9.75884377977459,
+              "grn_edge_term": 543.0200273486785,
+              "p_alpha_norm": 3.7900208716905444
+            },
+            "measured_deviation": 37.40884564036158,
+            "bound_holds": true,
+            "bound_over_measured": 16.383025397631386,
+            "vacuous": true,
+            "rowwise_refinement": {
+              "max_bound": 108.71102246441696,
+              "median_bound": 76.16582481181938,
+              "global_bound": 552.778871128453
+            },
+            "ks_measured": {
+              "D": 0.1482434170874632,
+              "p": 7.007246860991076e-07
+            },
+            "ks_predicted": {
+              "D": 0.9841308630845358,
+              "p": 5.8330198394859946e-272
+            }
+          },
+          "Schlegel_2022_Ttr_D4_30mkg": {
+            "assay": "rna_seq",
+            "n_aligned_to_trrust": 4899,
+            "n_seed_matched_aligned": 347,
+            "p_alpha_2norm": 3.7900208716905444,
+            "operator_2norm_S": 14.68168425232759,
+            "certified_bound": {
+              "bound": 552.778871128453,
+              "seed_error_term": 9.75884377977459,
+              "grn_edge_term": 543.0200273486785,
+              "p_alpha_norm": 3.7900208716905444
+            },
+            "measured_deviation": 21.69916007986774,
+            "bound_holds": true,
+            "bound_over_measured": 37.4194746335715,
+            "vacuous": true,
+            "rowwise_refinement": {
+              "max_bound": 108.71102246441696,
+              "median_bound": 76.16582481181938,
+              "global_bound": 552.778871128453
+            },
+            "ks_measured": {
+              "D": 0.05297098403083417,
+              "p": 0.16375523780293172
+            },
+            "ks_predicted": {
+              "D": 0.9841308630845358,
+              "p": 5.8330198394859946e-272
+            }
+          },
+          "Schlegel_2022_Ttr_D1_10mkg": {
+            "assay": "rna_seq",
+            "n_aligned_to_trrust": 4899,
+            "n_seed_matched_aligned": 348,
+            "p_alpha_2norm": 3.7900208716905444,
+            "operator_2norm_S": 14.681684252327589,
+            "certified_bound": {
+              "bound": 553.1955910301766,
+              "seed_error_term": 9.766200617441958,
+              "grn_edge_term": 543.4293904127346,
+              "p_alpha_norm": 3.7900208716905444
+            },
+            "measured_deviation": 26.370278353505185,
+            "bound_holds": true,
+            "bound_over_measured": 26.945066106400837,
+            "vacuous": true,
+            "rowwise_refinement": {
+              "max_bound": 108.79297575345127,
+              "median_bound": 76.22324345910862,
+              "global_bound": 553.1955910301766
+            },
+            "ks_measured": {
+              "D": 0.007961493874025413,
+              "p": 0.9598459888185532
+            },
+            "ks_predicted": {
+              "D": 0.9841452049189643,
+              "p": 1.086600359669973e-272
+            }
+          }
+        },
+        "pending": {}
+      },
+      "sweep": {
+        "status": "ok",
+        "grn": "CollecTRI (mouse) via OmniPath; https://omnipathdb.org/interactions?datasets=collectri&organisms=10090&genesymbols=yes&fields=sources,references",
+        "n_nodes": 6363,
+        "alpha": 0.5,
+        "p_alpha_2norm": 3.7900208716905444,
+        "operator_2norm_S": 14.681684252327592,
+        "budgets": [
+          {
+            "e_rel_err": 0.05,
+            "s_rel_err": 0.05
+          },
+          {
+            "e_rel_err": 0.1,
+            "s_rel_err": 0.1
+          },
+          {
+            "e_rel_err": 0.2,
+            "s_rel_err": 0.2
+          }
+        ],
+        "ratio_definition": "bound_over_deviation = certified_bound / measured_deviation; vacuous = bound > 10 * ||measured||",
+        "rows": [
+          {
+            "budget": {
+              "e_rel_err": 0.05,
+              "s_rel_err": 0.05
+            },
+            "contrast": "Schlegel_2022_Ttr_D1_30mkg",
+            "certified_bound": 276.3894355642265,
+            "measured_deviation": 37.40884564036158,
+            "bound_over_deviation": 7.388344409805078,
+            "binds": true,
+            "vacuous": false,
+            "n_aligned": 4899
+          },
+          {
+            "budget": {
+              "e_rel_err": 0.1,
+              "s_rel_err": 0.1
+            },
+            "contrast": "Schlegel_2022_Ttr_D1_30mkg",
+            "certified_bound": 552.778871128453,
+            "measured_deviation": 37.40884564036158,
+            "bound_over_deviation": 14.776688819610156,
+            "binds": false,
+            "vacuous": true,
+            "n_aligned": 4899
+          },
+          {
+            "budget": {
+              "e_rel_err": 0.2,
+              "s_rel_err": 0.2
+            },
+            "contrast": "Schlegel_2022_Ttr_D1_30mkg",
+            "certified_bound": 1105.557742256906,
+            "measured_deviation": 37.40884564036158,
+            "bound_over_deviation": 29.55337763922031,
+            "binds": false,
+            "vacuous": true,
+            "n_aligned": 4899
+          },
+          {
+            "budget": {
+              "e_rel_err": 0.05,
+              "s_rel_err": 0.05
+            },
+            "contrast": "Schlegel_2022_Ttr_D4_30mkg",
+            "certified_bound": 276.3894355642265,
+            "measured_deviation": 21.69916007986774,
+            "bound_over_deviation": 12.737333359767128,
+            "binds": false,
+            "vacuous": true,
+            "n_aligned": 4899
+          },
+          {
+            "budget": {
+              "e_rel_err": 0.1,
+              "s_rel_err": 0.1
+            },
+            "contrast": "Schlegel_2022_Ttr_D4_30mkg",
+            "certified_bound": 552.778871128453,
+            "measured_deviation": 21.69916007986774,
+            "bound_over_deviation": 25.474666719534255,
+            "binds": false,
+            "vacuous": true,
+            "n_aligned": 4899
+          },
+          {
+            "budget": {
+              "e_rel_err": 0.2,
+              "s_rel_err": 0.2
+            },
+            "contrast": "Schlegel_2022_Ttr_D4_30mkg",
+            "certified_bound": 1105.557742256906,
+            "measured_deviation": 21.69916007986774,
+            "bound_over_deviation": 50.94933343906851,
+            "binds": false,
+            "vacuous": true,
+            "n_aligned": 4899
+          },
+          {
+            "budget": {
+              "e_rel_err": 0.05,
+              "s_rel_err": 0.05
+            },
+            "contrast": "Schlegel_2022_Ttr_D1_10mkg",
+            "certified_bound": 276.59779551508836,
+            "measured_deviation": 26.370278353505185,
+            "bound_over_deviation": 10.488997947127187,
+            "binds": false,
+            "vacuous": true,
+            "n_aligned": 4899
+          },
+          {
+            "budget": {
+              "e_rel_err": 0.1,
+              "s_rel_err": 0.1
+            },
+            "contrast": "Schlegel_2022_Ttr_D1_10mkg",
+            "certified_bound": 553.1955910301767,
+            "measured_deviation": 26.370278353505185,
+            "bound_over_deviation": 20.977995894254374,
+            "binds": false,
+            "vacuous": true,
+            "n_aligned": 4899
+          },
+          {
+            "budget": {
+              "e_rel_err": 0.2,
+              "s_rel_err": 0.2
+            },
+            "contrast": "Schlegel_2022_Ttr_D1_10mkg",
+            "certified_bound": 1106.3911820603535,
+            "measured_deviation": 26.370278353505185,
+            "bound_over_deviation": 41.95599178850875,
+            "binds": false,
+            "vacuous": true,
+            "n_aligned": 4899
+          }
+        ],
+        "pending": {}
+      }
+    }
+  }
+}

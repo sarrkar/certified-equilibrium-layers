@@ -80,15 +80,23 @@ def test_pending_sections_name_their_source() -> None:
         assert d1["ks_D"] is not None and d1["ks_p"] is not None and d1["n_seed_match"] > 0
 
 
-def test_summary_headline_leads_with_the_four_items() -> None:
+def test_summary_leads_with_acceptance_status_and_keeps_headline() -> None:
     captions = json.loads((AAAI / "figures" / "captions.json").read_text())
     assert all(isinstance(v, str) and v for v in captions.values())
 
     summary = (AAAI / "SUMMARY.md").read_text()
     assert summary.startswith("# AAAI")
-    head = "\n".join(summary.splitlines()[:8])
-    # The four required headline items: baselines, T2 constant, T3 residual, T4 binds.
-    assert "Baselines (real Huesken efficacy)" in head
-    assert "T2 (real TRRUST GRN)" in head
-    assert "T3 (real Huesken + ViennaRNA)" in head
-    assert "T4 (real GSE184929 RNA-seq)" in head
+    # The summary now LEADS with the per-theorem acceptance status table (T1..T5),
+    # each tagged PASS / RESTRICTED / PENDING / DEMOTED.
+    lead = summary.split("## Headline")[0]
+    assert "## Acceptance status per theorem" in lead
+    for th in ("T1", "T2", "T3", "T4", "T5"):
+        assert th in lead
+    assert any(s in lead for s in ("PASS", "RESTRICTED", "PENDING", "DEMOTED"))
+    # The four real headline items are still present in the document.
+    assert "Baselines (real Huesken efficacy)" in summary
+    assert "T2 (real TRRUST GRN)" in summary
+    assert "T3 (real Huesken + ViennaRNA)" in summary
+    assert "T4 (real GSE184929 RNA-seq)" in summary
+    # The T5 cross-species section is present (recorded as a demoted observation).
+    assert "## T5 cross-species transfer" in summary

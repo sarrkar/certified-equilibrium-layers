@@ -1,0 +1,252 @@
+{
+  "status": "ok",
+  "seed": 0,
+  "grn": "TRRUST v2 (human); https://www.grnpedia.org/trrust/data/trrust_rawdata.human.tsv",
+  "n_nodes": 2072,
+  "n_edges": 4652,
+  "q_grid": [
+    0.0,
+    0.1,
+    0.2,
+    0.25,
+    0.5
+  ],
+  "alpha_grid": [
+    0.05,
+    0.1,
+    0.15,
+    0.2,
+    0.5
+  ],
+  "operator": "M(q,alpha) = (1-alpha)(I - L_q^sigma); L_q^sigma = normalized magnetic signed Laplacian (MSGNN), the MagneticPPR propagation primitive. Hermitian => normal => 2-norm == spectral radius.",
+  "p_alpha": {
+    "0.05": {
+      "two_norm": 0.9999999999999991,
+      "spectral_radius": 0.9999999999999991,
+      "exceeds_1": false
+    },
+    "0.1": {
+      "two_norm": 0.9998506767119306,
+      "spectral_radius": 1.0000000000000002,
+      "exceeds_1": false
+    },
+    "0.15": {
+      "two_norm": 1.3560764672866077,
+      "spectral_radius": 0.9999999999999999,
+      "exceeds_1": true
+    },
+    "0.2": {
+      "two_norm": 1.6571786886915003,
+      "spectral_radius": 1.0000000000000002,
+      "exceeds_1": true
+    },
+    "0.5": {
+      "two_norm": 2.3647084234986218,
+      "spectral_radius": 1.0,
+      "exceeds_1": true
+    }
+  },
+  "magnetic": {
+    "0.0": {
+      "hermitian": true,
+      "lambda_min": 1.7114265560280728e-08,
+      "lambda_max": 2.0,
+      "psd_spectrum_in_0_2": true,
+      "by_alpha": {
+        "0.05": {
+          "two_norm": 0.949999988079071,
+          "spectral_radius": 0.949999988079071,
+          "non_normality_gap": 0.0,
+          "contracts_le_1": true
+        },
+        "0.1": {
+          "two_norm": 0.8999999761581421,
+          "spectral_radius": 0.8999999761581421,
+          "non_normality_gap": 0.0,
+          "contracts_le_1": true
+        },
+        "0.15": {
+          "two_norm": 0.8500000238418579,
+          "spectral_radius": 0.8500000238418579,
+          "non_normality_gap": 0.0,
+          "contracts_le_1": true
+        },
+        "0.2": {
+          "two_norm": 0.800000011920929,
+          "spectral_radius": 0.800000011920929,
+          "non_normality_gap": 0.0,
+          "contracts_le_1": true
+        },
+        "0.5": {
+          "two_norm": 0.5,
+          "spectral_radius": 0.5,
+          "non_normality_gap": 0.0,
+          "contracts_le_1": true
+        }
+      }
+    },
+    "0.1": {
+      "hermitian": true,
+      "lambda_min": 1.2676690808177682e-09,
+      "lambda_max": 2.0,
+      "psd_spectrum_in_0_2": true,
+      "by_alpha": {
+        "0.05": {
+          "two_norm": 0.949999988079071,
+          "spectral_radius": 0.949999988079071,
+          "non_normality_gap": 0.0,
+          "contracts_le_1": true
+        },
+        "0.1": {
+          "two_norm": 0.8999999761581421,
+          "spectral_radius": 0.8999999761581421,
+          "non_normality_gap": 0.0,
+          "contracts_le_1": true
+        },
+        "0.15": {
+          "two_norm": 0.8500000238418579,
+          "spectral_radius": 0.8500000238418579,
+          "non_normality_gap": 0.0,
+          "contracts_le_1": true
+        },
+        "0.2": {
+          "two_norm": 0.800000011920929,
+          "spectral_radius": 0.800000011920929,
+          "non_normality_gap": 0.0,
+          "contracts_le_1": true
+        },
+        "0.5": {
+          "two_norm": 0.5,
+          "spectral_radius": 0.5,
+          "non_normality_gap": 0.0,
+          "contracts_le_1": true
+        }
+      }
+    },
+    "0.2": {
+      "hermitian": true,
+      "lambda_min": -6.835560117934847e-09,
+      "lambda_max": 2.0,
+      "psd_spectrum_in_0_2": true,
+      "by_alpha": {
+        "0.05": {
+          "two_norm": 0.949999988079071,
+          "spectral_radius": 0.949999988079071,
+          "non_normality_gap": 0.0,
+          "contracts_le_1": true
+        },
+        "0.1": {
+          "two_norm": 0.8999999761581421,
+          "spectral_radius": 0.8999999761581421,
+          "non_normality_gap": 0.0,
+          "contracts_le_1": true
+        },
+        "0.15": {
+          "two_norm": 0.8500000238418579,
+          "spectral_radius": 0.8500000238418579,
+          "non_normality_gap": 0.0,
+          "contracts_le_1": true
+        },
+        "0.2": {
+          "two_norm": 0.800000011920929,
+          "spectral_radius": 0.800000011920929,
+          "non_normality_gap": 0.0,
+          "contracts_le_1": true
+        },
+        "0.5": {
+          "two_norm": 0.5,
+          "spectral_radius": 0.5,
+          "non_normality_gap": 0.0,
+          "contracts_le_1": true
+        }
+      }
+    },
+    "0.25": {
+      "hermitian": true,
+      "lambda_min": 1.7114269112994407e-08,
+      "lambda_max": 2.0,
+      "psd_spectrum_in_0_2": true,
+      "by_alpha": {
+        "0.05": {
+          "two_norm": 0.949999988079071,
+          "spectral_radius": 0.949999988079071,
+          "non_normality_gap": 0.0,
+          "contracts_le_1": true
+        },
+        "0.1": {
+          "two_norm": 0.8999999761581421,
+          "spectral_radius": 0.8999999761581421,
+          "non_normality_gap": 0.0,
+          "contracts_le_1": true
+        },
+        "0.15": {
+          "two_norm": 0.8500000238418579,
+          "spectral_radius": 0.8500000238418579,
+          "non_normality_gap": 0.0,
+          "contracts_le_1": true
+        },
+        "0.2": {
+          "two_norm": 0.800000011920929,
+          "spectral_radius": 0.800000011920929,
+          "non_normality_gap": 0.0,
+          "contracts_le_1": true
+        },
+        "0.5": {
+          "two_norm": 0.5,
+          "spectral_radius": 0.5,
+          "non_normality_gap": 0.0,
+          "contracts_le_1": true
+        }
+      }
+    },
+    "0.5": {
+      "hermitian": true,
+      "lambda_min": 1.711426378392389e-08,
+      "lambda_max": 2.0,
+      "psd_spectrum_in_0_2": true,
+      "by_alpha": {
+        "0.05": {
+          "two_norm": 0.949999988079071,
+          "spectral_radius": 0.949999988079071,
+          "non_normality_gap": 0.0,
+          "contracts_le_1": true
+        },
+        "0.1": {
+          "two_norm": 0.8999999761581421,
+          "spectral_radius": 0.8999999761581421,
+          "non_normality_gap": 0.0,
+          "contracts_le_1": true
+        },
+        "0.15": {
+          "two_norm": 0.8500000238418579,
+          "spectral_radius": 0.8500000238418579,
+          "non_normality_gap": 0.0,
+          "contracts_le_1": true
+        },
+        "0.2": {
+          "two_norm": 0.800000011920929,
+          "spectral_radius": 0.800000011920929,
+          "non_normality_gap": 0.0,
+          "contracts_le_1": true
+        },
+        "0.5": {
+          "two_norm": 0.5,
+          "spectral_radius": 0.5,
+          "non_normality_gap": 0.0,
+          "contracts_le_1": true
+        }
+      }
+    }
+  },
+  "stop_condition": {
+    "criterion": "magnetic operator becomes PRIMARY only if it beats P_alpha on EVERY metric (2-norm <= 1 wherever ||P_alpha||_2 > 1, across the grid, AND it is a faithful replacement for the directed propagation). Else P_alpha stays primary; magnetic = L2 repair only.",
+    "magnetic_2norm_le_1_everywhere": true,
+    "magnetic_2norm_le_1_where_palpha_exceeds_1": true,
+    "magnetic_psd_spectrum_in_0_2_all_q": true,
+    "magnetic_realizes_real_directed_propagation": false,
+    "magnetic_preserves_pagerank_rho1": false,
+    "dominates_on_every_metric": false,
+    "outcome": "p_alpha_primary__magnetic_is_l2_repair_only",
+    "rationale": "Across the entire grid the magnetic operator's 2-norm is <= 1 - alpha < 1 (Hermitian PSD spectrum in [0,2]), so it MEETS the narrow 2-norm contraction criterion at every (q, alpha) where ||P_alpha||_2 > 1. But that L2 contraction is structural (any normalized Hermitian Laplacian contracts) and does NOT make it a dominating replacement: M(q,alpha) is a complex Hermitian operator that does not realize the real directed off-target propagation E = P_alpha e the Theorem-4 certified bound is built on, it discards the directed mass-action flow (at q=0 it discards direction entirely), and its spectral radius < 1 does not preserve P_alpha's rho ~ 1 PageRank fixed point. It therefore does NOT dominate on every metric. Real-valued P_alpha remains PRIMARY; the magnetic operator is the L2 repair only (it removes the non-normality / restores L2 contraction by changing the operator)."
+  }
+}

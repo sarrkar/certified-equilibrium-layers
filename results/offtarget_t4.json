@@ -1,0 +1,60 @@
+{
+  "status": "ok",
+  "reference_source": "native cascade.features.seedmatch annotation (build-matched Rnor_6.0 3'UTRs)",
+  "grn": "TRRUST v2 (human); https://www.grnpedia.org/trrust/data/trrust_rawdata.human.tsv",
+  "alpha": 0.5,
+  "p_alpha_2norm": 2.3647084234986218,
+  "uncertainty_budget": {
+    "e_rel_err": 0.1,
+    "s_rel_err": 0.1
+  },
+  "metric_note": "seedmatchr_ks_D is the measured ECDF shift (seed-matched vs background log2FC); cascade_predicted_ks_D is the same KS on the propagated off-target E; certified_U is the T4 upper bound (global and per-gene rowwise).",
+  "per_contrast": {
+    "Schlegel_2022_Ttr_D1_30mkg": {
+      "n_aligned": 1725,
+      "n_seed_matched_aligned": 125,
+      "seedmatchr_ks_D": 0.17912499999999998,
+      "seedmatchr_ks_p": 0.0005871809423997847,
+      "cascade_predicted_ks_D": 0.995625,
+      "cascade_rank_spearman_pred_vs_measured": 0.038372134140070874,
+      "certified_U_global": 73.11147336592094,
+      "certified_U_rowwise_max": 30.917754019648406,
+      "certified_U_rowwise_median": 16.43618554248631,
+      "predicted_vs_measured_deviation": 25.147076954447314,
+      "bound_binds": true,
+      "bound_vacuous": false
+    },
+    "Schlegel_2022_Ttr_D4_30mkg": {
+      "n_aligned": 1725,
+      "n_seed_matched_aligned": 125,
+      "seedmatchr_ks_D": 0.13574999999999998,
+      "seedmatchr_ks_p": 0.013937476539281363,
+      "cascade_predicted_ks_D": 0.995625,
+      "cascade_rank_spearman_pred_vs_measured": 0.044666280732208616,
+      "certified_U_global": 73.11147336592094,
+      "certified_U_rowwise_max": 30.917754019648406,
+      "certified_U_rowwise_median": 16.43618554248631,
+      "predicted_vs_measured_deviation": 11.358133021175682,
+      "bound_binds": true,
+      "bound_vacuous": false
+    },
+    "Schlegel_2022_Ttr_D1_10mkg": {
+      "n_aligned": 1687,
+      "n_seed_matched_aligned": 121,
+      "seedmatchr_ks_D": 0.01947901164202115,
+      "seedmatchr_ks_p": 0.9182950337895507,
+      "cascade_predicted_ks_D": 0.9980842911877394,
+      "cascade_rank_spearman_pred_vs_measured": 0.015495655177259341,
+      "certified_U_global": 71.96003962048329,
+      "certified_U_rowwise_max": 30.430829824683983,
+      "certified_U_rowwise_median": 16.177331797532027,
+      "predicted_vs_measured_deviation": 14.454862847980404,
+      "bound_binds": true,
+      "bound_vacuous": false
+    }
+  },
+  "summary": {
+    "cascade_ranking_concordant_with_seedmatchr": true,
+    "t4_bound_binds_all_contrasts": true
+  }
+}

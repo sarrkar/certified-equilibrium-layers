@@ -169,19 +169,91 @@ def acceptance(per_dataset: dict) -> dict:
     }
 
 
-def cross_assay(per_dataset: dict) -> dict:
-    rna = [d for d in per_dataset.values() if d["assay"] == "rna_seq"]
-    micro = [d for d in per_dataset.values() if d["assay"] == "microarray"]
+def microarray_offtarget(seedmatchr_dir: Path, cache_root: Path) -> dict:
+    """Attempt the native seed-match KS on the real microarray off-target datasets.
 
-    def _mean_d(items):
-        vals = [d["ks_measured"]["D"] for d in items if d["ks_measured"]["D"] is not None]
-        return float(np.mean(vals)) if vals else None
+    Jackson 2006 (RNA 12:1179 and companion 12:1197) microarray data ARE in GEO
+    (GSE5814, GSE5769; HeLa, Homo sapiens), but the siRNA ANTISENSE SEQUENCES needed
+    to derive the seed and run the native seed-match annotation are NOT in the GEO
+    deposit: the samples carry only target-gene and seed-mutant labels (for example
+    "193-MAPK14, pos 2 mut"), and the sequences are only in the paper supplement
+    (PMC1484447), which is not in the PMC Open Access subset and is not
+    programmatically retrievable. Birmingham 2006 (Nat Methods 3:199, nmeth854) is
+    not deposited in GEO at all. So the cross-assay microarray KS cannot be
+    reproduced from a real public source; it is recorded PENDING with the exact
+    sources rather than fabricated. The loaders RAISE until a real parsed table with
+    siRNA sequences is placed on disk.
+    """
+    from cascade.data import load_birmingham2006, load_jackson2006
 
+    blockers = {
+        "jackson2006": "Jackson 2006 (RNA 12:1179 / companion 12:1197) microarray = GEO GSE5814 "
+        "and GSE5769 (Homo sapiens, HeLa); the GEO deposit has the expression arrays but NOT the "
+        "siRNA antisense sequences (samples carry only target-gene and seed-mutant labels), which "
+        "are required to derive the seed. The sequences are only in the paper supplement "
+        "(PMC1484447), not in the PMC Open Access subset. Native seed-match KS not reproducible "
+        "from public data.",
+        "birmingham2006": "Birmingham 2006 (Nat Methods 3:199, nmeth854) is NOT deposited in GEO; "
+        "its seed-match off-target associations are supplementary-table only.",
+    }
+    per_dataset: dict = {}
+    pending: dict = {}
+    for name, loader in (("jackson2006", load_jackson2006), ("birmingham2006", load_birmingham2006)):
+        try:
+            ds = loader()
+        except (FileNotFoundError, NotImplementedError):
+            pending[name] = blockers[name]
+            continue
+        # A real parsed table with siRNA sequences IS present: run the same native
+        # seed-match KS as GSE184929 (seed-matched vs background measured effect size).
+        from cascade.data.offtarget import seedmatch_ks_test
+
+        frame = ds.frame
+        seeds = frame["seed"].astype(str).str.upper()
+        effect = frame["effect_size"].to_numpy(dtype=float)
+        seed_mask = seeds.str.len().ge(6).to_numpy()  # has a derivable seed
+        res = seedmatch_ks_test(effect, seed_mask, alternative="greater")
+        per_dataset[name] = {
+            "assay": "microarray",
+            "provenance": ds.provenance,
+            "n_rows": int(len(frame)),
+            "ks_measured": {"D": res.statistic, "p": res.pvalue},
+            "n_seed_match": res.n_seed_match,
+            "n_background": res.n_background,
+        }
     return {
-        "rna_seq_mean_ks_D": _mean_d(rna),
-        "microarray_mean_ks_D": _mean_d(micro),
-        "note": "RNA-seq (GSE184929) and microarray (Jackson, Birmingham) are different assays; "
-        "differences in the KS separation and the bound tightness are expected and reported.",
+        "status": "ok" if per_dataset else "pending_real_data",
+        "per_dataset": per_dataset,
+        "pending": pending,
+    }
+
+
+def cross_assay(measured: dict, microarray: dict) -> dict:
+    """Cross-assay KS summary: real RNA-seq (GSE184929) vs microarray (Jackson, Birmingham)."""
+    rna_vals = [
+        c["ks_D"]
+        for c in measured.get("per_contrast", {}).values()
+        if c.get("ks_D") is not None
+    ]
+    micro_vals = [
+        d["ks_measured"]["D"]
+        for d in microarray.get("per_dataset", {}).values()
+        if d.get("ks_measured", {}).get("D") is not None
+    ]
+    return {
+        "rna_seq_mean_ks_D": float(np.mean(rna_vals)) if rna_vals else None,
+        "rna_seq_datasets": sorted(measured.get("per_contrast", {})),
+        "rna_seq_per_contrast_ks_D": {
+            k: c["ks_D"] for k, c in measured.get("per_contrast", {}).items()
+        },
+        "microarray_mean_ks_D": float(np.mean(micro_vals)) if micro_vals else None,
+        "microarray_status": microarray.get("status"),
+        "microarray_pending": microarray.get("pending"),
+        "note": "RNA-seq (GSE184929) and microarray (Jackson 2006, Birmingham 2006) are different "
+        "assays; differences in KS separation and bound tightness are expected. The RNA-seq "
+        "cross-assay KS is REAL; the microarray KS is PENDING (see microarray_pending for the "
+        "exact public-source blocker: the GEO deposits lack the siRNA sequences and Birmingham "
+        "is not in GEO).",
     }
 
 
@@ -349,18 +421,49 @@ def assess_trrust_join(
     }
 
 
+def _species_note(grn) -> str:
+    """Cross-species alignment note tailored to the propagation GRN."""
+    src = grn.source.lower()
+    if "human" in src:
+        # Exact original wording, so the standalone human t4_bound.json is unchanged.
+        return (
+            "TRRUST is human, GSE184929 is rat; aligned by orthologous gene symbol. "
+            "e is the seed-match-derived direct repression of the ViennaRNA-confirmed Ttr seed."
+        )
+    sp = "mouse" if "mouse" in src else ("rat (native)" if "rat" in src else "the GRN species")
+    base = (
+        f"GRN is {sp}, GSE184929 is rat; aligned by orthologous gene symbol "
+        "(uppercased). e is the seed-match-derived direct repression of the "
+        "ViennaRNA-confirmed Ttr seed."
+    )
+    if sp == "mouse":
+        base += " Mouse<->rat orthology is near 1:1 same-symbol, a closer species match than human."
+    return base
+
+
 def grn_propagation_join(
-    alpha: float, seedmatchr_dir: Path, cache_root: Path, e_rel_err: float, s_rel_err: float
+    alpha: float,
+    seedmatchr_dir: Path,
+    cache_root: Path,
+    e_rel_err: float,
+    s_rel_err: float,
+    grn=None,
 ) -> dict:
-    """T4 certified bound on the real TRRUST GRN, per Schlegel Ttr contrast."""
+    """T4 certified bound on a real signed/directed GRN, per Schlegel Ttr contrast.
+
+    ``grn`` defaults to human TRRUST (the original behavior); pass a preloaded
+    SignedDirectedGRN (mouse TRRUST, CollecTRI mouse) to run the same join on a
+    species-matched network.
+    """
     from cascade.data import SEEDMATCHR_DATASETS, load_schlegel2022
 
-    try:
-        from cascade.data import load_trrust
+    if grn is None:
+        try:
+            from cascade.data import load_trrust
 
-        grn = load_trrust(species="human")
-    except (FileNotFoundError, NotImplementedError) as exc:
-        return {"status": "pending_real_data", "source": str(exc)}
+            grn = load_trrust(species="human")
+        except (FileNotFoundError, NotImplementedError) as exc:
+            return {"status": "pending_real_data", "source": str(exc)}
     per_contrast, pending = {}, {}
     for name in SEEDMATCHR_DATASETS:
         try:
@@ -380,8 +483,7 @@ def grn_propagation_join(
         "uncertainty_budget": {"e_rel_err": e_rel_err, "s_rel_err": s_rel_err},
         "bound_formula": "||E - E_true|| <= ||P_a(S)|| ||e - e_true|| + ((1-a)/a) ||P_a(S)||^2 "
         "||S - S'|| ||e||  (T2 contraction constant + second-resolvent GRN-edge term)",
-        "cross_species_note": "TRRUST is human, GSE184929 is rat; aligned by orthologous gene symbol. "
-        "e is the seed-match-derived direct repression of the ViennaRNA-confirmed Ttr seed.",
+        "cross_species_note": _species_note(grn),
         "per_contrast": per_contrast,
         "pending": pending,
     }
@@ -391,23 +493,31 @@ BUDGET_SWEEP = ((0.05, 0.05), (0.10, 0.10), (0.20, 0.20))  # (seed, edge) rel-er
 
 
 def budget_sweep(
-    alpha: float, seedmatchr_dir: Path, cache_root: Path, budgets=BUDGET_SWEEP
+    alpha: float,
+    seedmatchr_dir: Path,
+    cache_root: Path,
+    budgets=BUDGET_SWEEP,
+    grn=None,
+    include_alignment: bool = False,
 ) -> dict:
-    """Sweep the (seed, edge) uncertainty budgets for the TRRUST certified bound.
+    """Sweep the (seed, edge) uncertainty budgets for the certified bound on a GRN.
 
     The seed propagation E = P_alpha(S) e and its measured deviation are
     budget-independent (computed once per contrast); only the certified bound, the
     bound/deviation ratio, and the binds / vacuous flags move with the budget.
+    ``grn`` defaults to human TRRUST; pass a preloaded GRN to sweep a species-matched
+    network. With ``include_alignment`` each row carries the per-contrast n_aligned.
     """
     from cascade.data import SEEDMATCHR_DATASETS, load_schlegel2022
     from cascade.verify.stability import operator_2norm
 
-    try:
-        from cascade.data import load_trrust
+    if grn is None:
+        try:
+            from cascade.data import load_trrust
 
-        grn = load_trrust(species="human")
-    except (FileNotFoundError, NotImplementedError) as exc:
-        return {"status": "pending_real_data", "source": str(exc)}
+            grn = load_trrust(species="human")
+        except (FileNotFoundError, NotImplementedError) as exc:
+            return {"status": "pending_real_data", "source": str(exc)}
 
     S = grn.S
     s2 = operator_2norm(S)
@@ -436,17 +546,18 @@ def budget_sweep(
             bound = cert["bound"]
             vacuous = bool(meas_scale > 0 and bound > VACUOUS_FACTOR * meas_scale)
             binds = bool(deviation <= bound * (1.0 + 1e-9) and not vacuous)
-            rows.append(
-                {
-                    "budget": {"e_rel_err": e_rel, "s_rel_err": s_rel},
-                    "contrast": name,
-                    "certified_bound": bound,
-                    "measured_deviation": deviation,
-                    "bound_over_deviation": (bound / deviation if deviation > 0 else None),
-                    "binds": binds,
-                    "vacuous": vacuous,
-                }
-            )
+            row = {
+                "budget": {"e_rel_err": e_rel, "s_rel_err": s_rel},
+                "contrast": name,
+                "certified_bound": bound,
+                "measured_deviation": deviation,
+                "bound_over_deviation": (bound / deviation if deviation > 0 else None),
+                "binds": binds,
+                "vacuous": vacuous,
+            }
+            if include_alignment:
+                row["n_aligned"] = int(aligned.sum())
+            rows.append(row)
     return {
         "status": "ok" if rows else "pending_real_data",
         "grn": grn.source,
@@ -459,6 +570,59 @@ def budget_sweep(
         "vacuous = bound > 10 * ||measured||",
         "rows": rows,
         "pending": pending,
+    }
+
+
+def grn_robustness(
+    alpha: float,
+    seedmatchr_dir: Path,
+    cache_root: Path,
+    e_rel_err: float,
+    s_rel_err: float,
+    budgets=BUDGET_SWEEP,
+) -> dict:
+    """Run the GRN-propagation join + budget sweep across real GRNs of three species.
+
+    Compares the human TRRUST baseline (ortholog-mapped to rat) against the
+    species-closer mouse TRRUST and the larger CollecTRI mouse network, so T4 can be
+    judged robust across GRN source AND matched to the rat GSE184929 data species.
+    Each GRN that fails to load (real data absent) is reported as pending, not faked.
+    """
+    from cascade.data import load_collectri, load_trrust
+
+    specs = (
+        ("human_trrust", lambda: load_trrust(species="human")),
+        ("mouse_trrust", lambda: load_trrust(species="mouse")),
+        ("collectri_mouse", lambda: load_collectri(species="mouse")),
+    )
+    blocks: dict = {}
+    for label, loader in specs:
+        try:
+            grn = loader()
+        except (FileNotFoundError, NotImplementedError) as exc:
+            blocks[label] = {"status": "pending_real_data", "source": str(exc)}
+            continue
+        blocks[label] = {
+            "grn": grn.source,
+            "n_nodes": int(grn.n_nodes),
+            "n_edges": int(grn.n_edges),
+            "join": grn_propagation_join(
+                alpha, seedmatchr_dir, cache_root, e_rel_err, s_rel_err, grn=grn
+            ),
+            "sweep": budget_sweep(
+                alpha, seedmatchr_dir, cache_root, budgets, grn=grn, include_alignment=True
+            ),
+        }
+    ok = any(b.get("sweep", {}).get("status") == "ok" for b in blocks.values())
+    return {
+        "status": "ok" if ok else "pending_real_data",
+        "alpha": alpha,
+        "default_budget": {"e_rel_err": e_rel_err, "s_rel_err": s_rel_err},
+        "budgets": [{"e_rel_err": e, "s_rel_err": s} for e, s in budgets],
+        "rat_gene_set": "GSE184929 Schlegel Ttr DESeq2 contrasts (rat symbols, uppercased for alignment)",
+        "purpose": "T4 robustness across GRN source and species: human TRRUST (ortholog) vs "
+        "mouse TRRUST and CollecTRI mouse (species-matched to the rat data).",
+        "grns": blocks,
     }
 
 
@@ -547,6 +711,10 @@ def main() -> int:
     merged = aggregate_per_dataset(per_seed_pd, seeds)
     acc = aggregate_acceptance(merged, per_seed_pd, seeds)
 
+    # Real measured off-target signal (RNA-seq) and the microarray cross-assay attempt.
+    measured = measured_offtarget(args.seedmatchr_dir, args.cache)
+    microarray = microarray_offtarget(args.seedmatchr_dir, args.cache)
+
     numbers = {
         "acceptance": acc,
         "seeds": seeds,
@@ -555,14 +723,16 @@ def main() -> int:
         "||P_a(S')|| ||S - S'|| ||e||  (second resolvent identity for the GRN-edge term)",
         "per_dataset": merged,
         "pending": pending,
-        "cross_assay": cross_assay(merged),
+        "cross_assay": cross_assay(measured, microarray),
         "probabilistic_companion": {
             "status": "not_run",
             "note": "the matrix-Bernstein certificate (certification module) is included only with "
             "real STRING confidences; supply --string-links and the real measured join to enable it.",
         },
         # Real measured off-target signal, independent of the certified-bound GRN gap.
-        "measured_offtarget": measured_offtarget(args.seedmatchr_dir, args.cache),
+        "measured_offtarget": measured,
+        # Cross-assay microarray attempt (Jackson 2006, Birmingham 2006): pending with sources.
+        "microarray_offtarget": microarray,
         # Real T4 certified bound: seed input propagated over TRRUST P_alpha.
         "grn_propagation_join": grn_propagation_join(
             args.alpha, args.seedmatchr_dir, args.cache, args.e_rel_err, args.s_rel_err
@@ -583,6 +753,13 @@ def main() -> int:
         print(
             f"     {name}: KS D={c['ks_D']:.4f} p={c['ks_p']:.2e} (seed={c['n_seed_match']} bg={c['n_background']})"
         )
+    ca = numbers["cross_assay"]
+    print(
+        f"[t4] cross-assay: RNA-seq (GSE184929) mean KS D={ca['rna_seq_mean_ks_D']} | "
+        f"microarray mean KS D={ca['microarray_mean_ks_D']} ({numbers['microarray_offtarget']['status']})"
+    )
+    for name, why in numbers["microarray_offtarget"].get("pending", {}).items():
+        print(f"     microarray {name} PENDING: {why[:96]}...")
     gj = numbers["grn_propagation_join"]
     print(f"[t4] GRN-propagation join over TRRUST ({gj['status']}, alpha={args.alpha}):")
     for name, d in gj.get("per_contrast", {}).items():
@@ -620,6 +797,40 @@ def main() -> int:
                 f"{r['binds']!s:>6} {r['vacuous']!s:>8}"
             )
     print(f"[t4] wrote {sweep_path}")
+
+    # Cross-GRN robustness: join + budget sweep on human TRRUST, mouse TRRUST, and
+    # CollecTRI mouse (species-matched to the rat data). Separate output; the human
+    # results above are kept intact.
+    rob = grn_robustness(
+        args.alpha, args.seedmatchr_dir, args.cache, args.e_rel_err, args.s_rel_err
+    )
+    rob_path = args.out_dir / "t4_grn_robustness.json"
+    rob_path.write_text(json.dumps(rob, indent=2), encoding="utf-8")
+    short = {
+        "Schlegel_2022_Ttr_D1_30mkg": "D1_30mkg",
+        "Schlegel_2022_Ttr_D4_30mkg": "D4_30mkg",
+        "Schlegel_2022_Ttr_D1_10mkg": "D1_10mkg",
+    }
+    print(f"\n[t4] cross-GRN robustness ({rob['status']}, alpha={args.alpha}):")
+    print(
+        f"  {'GRN':<16} {'contrast':<9} {'budget':>7} {'||P_a||':>8} {'aligned':>8} "
+        f"{'bound':>9} {'meas-dev':>9} {'ratio':>7} {'binds':>6} {'vacuous':>8}"
+    )
+    for label, block in rob["grns"].items():
+        sweep_b = block.get("sweep", {})
+        if sweep_b.get("status") != "ok":
+            print(f"  {label:<16} pending: {block.get('source', sweep_b.get('source', ''))[:70]}")
+            continue
+        pa = sweep_b["p_alpha_2norm"]
+        for r in sweep_b["rows"]:
+            bud = f"{int(r['budget']['e_rel_err'] * 100)}/{int(r['budget']['s_rel_err'] * 100)}%"
+            ratio = r["bound_over_deviation"]
+            print(
+                f"  {label:<16} {short.get(r['contrast'], r['contrast']):<9} {bud:>7} {pa:>8.2f} "
+                f"{r.get('n_aligned', 0):>8} {r['certified_bound']:>9.3f} {r['measured_deviation']:>9.3f} "
+                f"{('n/a' if ratio is None else f'{ratio:>7.2f}')} {r['binds']!s:>6} {r['vacuous']!s:>8}"
+            )
+    print(f"[t4] wrote {rob_path}")
     return 0
 
 

@@ -31,9 +31,24 @@
     }
   },
   "cross_assay": {
-    "rna_seq_mean_ks_D": null,
+    "rna_seq_mean_ks_D": 0.0714948727555479,
+    "rna_seq_datasets": [
+      "Schlegel_2022_Ttr_D1_10mkg",
+      "Schlegel_2022_Ttr_D1_30mkg",
+      "Schlegel_2022_Ttr_D4_30mkg"
+    ],
+    "rna_seq_per_contrast_ks_D": {
+      "Schlegel_2022_Ttr_D1_30mkg": 0.15868186146579627,
+      "Schlegel_2022_Ttr_D4_30mkg": 0.04815100128470301,
+      "Schlegel_2022_Ttr_D1_10mkg": 0.007651755516144446
+    },
     "microarray_mean_ks_D": null,
-    "note": "RNA-seq (GSE184929) and microarray (Jackson, Birmingham) are different assays; differences in the KS separation and the bound tightness are expected and reported."
+    "microarray_status": "pending_real_data",
+    "microarray_pending": {
+      "jackson2006": "Jackson 2006 (RNA 12:1179 / companion 12:1197) microarray = GEO GSE5814 and GSE5769 (Homo sapiens, HeLa); the GEO deposit has the expression arrays but NOT the siRNA antisense sequences (samples carry only target-gene and seed-mutant labels), which are required to derive the seed. The sequences are only in the paper supplement (PMC1484447), not in the PMC Open Access subset. Native seed-match KS not reproducible from public data.",
+      "birmingham2006": "Birmingham 2006 (Nat Methods 3:199, nmeth854) is NOT deposited in GEO; its seed-match off-target associations are supplementary-table only."
+    },
+    "note": "RNA-seq (GSE184929) and microarray (Jackson 2006, Birmingham 2006) are different assays; differences in KS separation and bound tightness are expected. The RNA-seq cross-assay KS is REAL; the microarray KS is PENDING (see microarray_pending for the exact public-source blocker: the GEO deposits lack the siRNA sequences and Birmingham is not in GEO)."
   },
   "probabilistic_companion": {
     "status": "not_run",
@@ -73,6 +88,14 @@
     },
     "pending": {}
   },
+  "microarray_offtarget": {
+    "status": "pending_real_data",
+    "per_dataset": {},
+    "pending": {
+      "jackson2006": "Jackson 2006 (RNA 12:1179 / companion 12:1197) microarray = GEO GSE5814 and GSE5769 (Homo sapiens, HeLa); the GEO deposit has the expression arrays but NOT the siRNA antisense sequences (samples carry only target-gene and seed-mutant labels), which are required to derive the seed. The sequences are only in the paper supplement (PMC1484447), not in the PMC Open Access subset. Native seed-match KS not reproducible from public data.",
+      "birmingham2006": "Birmingham 2006 (Nat Methods 3:199, nmeth854) is NOT deposited in GEO; its seed-match off-target associations are supplementary-table only."
+    }
+  },
   "grn_propagation_join": {
     "status": "ok",
     "grn": "TRRUST v2 (human); https://www.grnpedia.org/trrust/data/trrust_rawdata.human.tsv",
@@ -90,21 +113,21 @@
         "n_aligned_to_trrust": 1908,
         "n_seed_matched_aligned": 133,
         "p_alpha_2norm": 2.3647084234986218,
-        "operator_2norm_S": 8.312988250788742,
+        "operator_2norm_S": 8.31298825078874,
         "certified_bound": {
-          "bound": 74.40558221050001,
+          "bound": 74.4055822105,
           "seed_error_term": 3.6018165629781294,
-          "grn_edge_term": 70.80376564752189,
+          "grn_edge_term": 70.80376564752187,
           "p_alpha_norm": 2.3647084234986218
         },
         "measured_deviation": 25.221563799285647,
         "bound_holds": true,
-        "bound_over_measured": 3.1445640395804526,
+        "bound_over_measured": 3.144564039580452,
         "vacuous": false,
         "rowwise_refinement": {
-          "max_bound": 31.465013390706265,
-          "median_bound": 16.72711406714094,
-          "global_bound": 74.40558221050001
+          "max_bound": 31.465013390706257,
+          "median_bound": 16.727114067140935,
+          "global_bound": 74.4055822105
         },
         "ks_measured": {
           "D": 0.18170073069998938,
@@ -150,21 +173,21 @@
         "n_aligned_to_trrust": 1908,
         "n_seed_matched_aligned": 133,
         "p_alpha_2norm": 2.3647084234986218,
-        "operator_2norm_S": 8.31298825078874,
+        "operator_2norm_S": 8.312988250788742,
         "certified_bound": {
-          "bound": 74.4055822105,
+          "bound": 74.40558221050001,
           "seed_error_term": 3.6018165629781294,
-          "grn_edge_term": 70.80376564752187,
+          "grn_edge_term": 70.80376564752189,
           "p_alpha_norm": 2.3647084234986218
         },
         "measured_deviation": 14.6949649099571,
         "bound_holds": true,
-        "bound_over_measured": 6.20225772501754,
+        "bound_over_measured": 6.202257725017541,
         "vacuous": false,
         "rowwise_refinement": {
-          "max_bound": 31.465013390706257,
-          "median_bound": 16.727114067140935,
-          "global_bound": 74.4055822105
+          "max_bound": 31.465013390706265,
+          "median_bound": 16.72711406714094,
+          "global_bound": 74.40558221050001
         },
         "ks_measured": {
           "D": 0.02486497934978288,

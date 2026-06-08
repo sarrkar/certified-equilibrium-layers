@@ -11,6 +11,7 @@
 #
 # Sources:
 #   TRRUST v2 (curated, signed, directed TF-target): https://www.grnpedia.org/trrust/
+#   CollecTRI (signed, directed TF-target) via OmniPath REST: https://omnipathdb.org/
 #   DoRothEA regulons (confidence A-E, mode of regulation): https://saezlab.github.io/dorothea/
 # STRING v12 (undirected, unsigned) is handled by scripts/download_data.sh.
 
@@ -32,10 +33,13 @@ TRRUST="https://www.grnpedia.org/trrust/data"
 
 mkdir -p "$RAW"
 
+OMNIPATH="https://omnipathdb.org/interactions?datasets=collectri&genesymbols=yes&fields=sources,references"
+
 # name | local filename | URL | source page
 FILES=(
     "trrust_human|trrust_rawdata.human.tsv|${TRRUST_HUMAN_URL:-$TRRUST/trrust_rawdata.human.tsv}|https://www.grnpedia.org/trrust/"
     "trrust_mouse|trrust_rawdata.mouse.tsv|${TRRUST_MOUSE_URL:-$TRRUST/trrust_rawdata.mouse.tsv}|https://www.grnpedia.org/trrust/"
+    "collectri_mouse|collectri_mouse.tsv|${COLLECTRI_MOUSE_URL:-$OMNIPATH&organisms=10090}|https://omnipathdb.org/CollecTRI"
 )
 
 sha() { if command -v sha256sum >/dev/null 2>&1; then sha256sum "$1" | awk '{print $1}'; else shasum -a 256 "$1" | awk '{print $1}'; fi; }

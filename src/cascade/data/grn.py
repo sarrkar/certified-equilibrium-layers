@@ -52,6 +52,13 @@ DOROTHEA_SOURCE = (
     "See https://saezlab.github.io/dorothea/"
 )
 
+# CollecTRI signed, directed TF-target network, served by the OmniPath REST API.
+COLLECTRI_ORGANISMS: dict[str, int] = {"human": 9606, "mouse": 10090, "rat": 10116}
+COLLECTRI_URL = (
+    "https://omnipathdb.org/interactions?datasets=collectri&organisms={organism}"
+    "&genesymbols=yes&fields=sources,references"
+)
+
 # TF-target regulation mode -> sign.
 _MODE_SIGN = {"activation": 1.0, "repression": -1.0}
 
@@ -271,6 +278,71 @@ def load_trrust(
         )
 
     return _cached_grn(f"trrust_{species}", raw_path, build, cache_root, rebuild)
+
+
+def load_collectri(
+    raw_path: str | Path | None = None,
+    species: str = "mouse",
+    cache_root: str | Path | None = None,
+    rebuild: bool = False,
+) -> SignedDirectedGRN:
+    """Load CollecTRI (signed, directed TF-target) from an OmniPath REST export.
+
+    CollecTRI (Mueller-Dott 2023) is a curated meta-resource of signed, directed
+    TF-target interactions. The OmniPath interactions endpoint serves it as a TSV
+    with ``source_genesymbol`` / ``target_genesymbol``, ``is_directed`` and the
+    signed flags ``is_stimulation`` (activation, +1) / ``is_inhibition``
+    (repression, -1). Only directed edges enter S; the sign is -1 for a pure
+    inhibition and +1 otherwise (activation or unsigned-default, matching the
+    CollecTRI convention).
+
+    Args:
+        raw_path: TSV path. Default ``data/raw/grn/collectri_<species>.tsv``.
+        species: ``"human"``, ``"mouse"`` (rat for GSE184929), or ``"rat"``.
+        cache_root: cache root. Default ``data/cache``.
+        rebuild: reparse and overwrite the cache.
+    """
+    if species not in COLLECTRI_ORGANISMS:
+        raise ValueError(f"species must be one of {sorted(COLLECTRI_ORGANISMS)}; got {species!r}")
+    raw_path = (
+        Path(raw_path)
+        if raw_path is not None
+        else default_grn_dir() / f"collectri_{species}.tsv"
+    )
+    url = COLLECTRI_URL.format(organism=COLLECTRI_ORGANISMS[species])
+    if not raw_path.exists():
+        raise FileNotFoundError(
+            f"CollecTRI {species} table not found at {raw_path}. Fetch the real file: "
+            f"{url} (run scripts/download_grn.sh). REAL DATA ONLY."
+        )
+    cache_root = Path(cache_root) if cache_root is not None else default_cache_dir()
+
+    def build() -> SignedDirectedGRN:
+        df = pd.read_csv(raw_path, sep="\t", dtype=str)
+        need = {"source_genesymbol", "target_genesymbol", "is_directed", "is_stimulation", "is_inhibition"}
+        missing = need - set(df.columns)
+        if missing:
+            raise ValueError(f"{raw_path}: CollecTRI export missing columns {sorted(missing)}")
+        df = df[df["source_genesymbol"].notna() & df["target_genesymbol"].notna()]
+
+        def _flag(col: str) -> np.ndarray:
+            return df[col].astype(str).str.strip().isin(["True", "1", "true"]).to_numpy()
+
+        df = df[_flag("is_directed")].reset_index(drop=True)  # directed edges only
+        stim, inhib = _flag("is_stimulation"), _flag("is_inhibition")
+        signs = np.where(inhib & ~stim, -1.0, 1.0).tolist()  # pure inhibition -> -1, else +1
+        tfs = df["source_genesymbol"].astype(str).str.strip().tolist()
+        targets = df["target_genesymbol"].astype(str).str.strip().tolist()
+        nodes, S, sign_pattern = _build_signed_transition(tfs, targets, signs)
+        return SignedDirectedGRN(
+            nodes=nodes,
+            S=S,
+            signs=sign_pattern,
+            source=f"CollecTRI ({species}) via OmniPath; {url}",
+            n_edges=int(S.nnz),
+        )
+
+    return _cached_grn(f"collectri_{species}", raw_path, build, cache_root, rebuild)
 
 
 _DORO_TF = ("tf", "source", "regulator")

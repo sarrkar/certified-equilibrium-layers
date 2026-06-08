@@ -1,0 +1,86 @@
+{
+  "status": "ok",
+  "data": "real Huesken features + ViennaRNA seed dG (standardized); knockdown fraction",
+  "n_examples": 64,
+  "n_features": 37,
+  "forward_map": "ridge f(x) = x w + c (lambda=1) predicting knockdown fraction",
+  "lipschitz": {
+    "L_operator_norm_w": 0.1480915837617431,
+    "L_empirical_pairwise_max": 0.07919556725920274,
+    "empirical_le_operator": true
+  },
+  "polytope": {
+    "equality": "Z^+ y = (a, b), Z = [1, dG]; (a,b) = OLS(knockdown on [1,dG])",
+    "a": 0.39950102619291344,
+    "b": -0.015240298975034669,
+    "box": "0 <= theta <= 1 (thermodynamic occupancy), all 64 coordinates",
+    "solver": "Pinet Douglas-Rachford / ADMM (eq + box), sigma=0.1 omega=1.7 n_iter=2000"
+  },
+  "composed_bound": {
+    "formula": "||Pi_P(f(x)) - y_*|| <= L ||x - x_*|| + dist(y_*, P), y_* = f(x_*)",
+    "L": 0.1480915837617431,
+    "dist_y_star_to_P": 0.0031889488543979366,
+    "x_star": "the real Huesken feature matrix X (perturbations are seeded probes)",
+    "rows": [
+      {
+        "perturb_rel": 0.0,
+        "x_minus_xstar_2norm": 0.0,
+        "lhs": 0.0031889488543979366,
+        "rhs": 0.0031889488543979366,
+        "holds": true,
+        "slack": 0.0
+      },
+      {
+        "perturb_rel": 0.02,
+        "x_minus_xstar_2norm": 0.5988838970440558,
+        "lhs": 0.052368743384193804,
+        "rhs": 0.09187861365705687,
+        "holds": true,
+        "slack": 0.03950987027286306
+      },
+      {
+        "perturb_rel": 0.05,
+        "x_minus_xstar_2norm": 1.4972097426101398,
+        "lhs": 0.1307178017718645,
+        "rhs": 0.22491311086104532,
+        "holds": true,
+        "slack": 0.0941953090891808
+      },
+      {
+        "perturb_rel": 0.1,
+        "x_minus_xstar_2norm": 2.9944194852202797,
+        "lhs": 0.26137724961420444,
+        "rhs": 0.44663727286769267,
+        "holds": true,
+        "slack": 0.18526002325348823
+      },
+      {
+        "perturb_rel": 0.2,
+        "x_minus_xstar_2norm": 5.988838970440559,
+        "lhs": 0.5227253181922197,
+        "rhs": 0.8900855968809874,
+        "holds": true,
+        "slack": 0.36736027868876775
+      }
+    ],
+    "bound_holds_all": true
+  },
+  "admm_active_set": {
+    "natural_projection_box_active_count": 0,
+    "occupancy_box_naturally_slack": true,
+    "note": "Real Huesken knockdowns are moderate (~0.27-0.69), so the occupancy box 0<=theta<=1 is naturally SLACK (f(X)'s projection has 0 active box coords). The active-set and gradient tests below use a box-activating 4x affine spread of the real forward output (10 of 64 coordinates fall outside [0,1] before projection) so the eq+box ADMM active set and the IFT stop condition are genuinely exercised.",
+    "equality_residual_inf": 5.551115123125783e-17,
+    "box_violation": 1.0061396160665481e-16,
+    "n_active_lower_theta_eq_0": 4,
+    "n_active_upper_theta_eq_1": 2,
+    "pinet_constraint_violation": 1.0061396160665481e-16,
+    "active_set_residual": 1.0061396160665481e-16
+  },
+  "stop_condition": {
+    "criterion": "IFT gradient through (equality + box) projection vs central FD < 1e-6; else fall back to the unrolled augmented-Lagrangian (ADMM) differentiable layer.",
+    "ift_max_grad_fd_diff": 5.50673143528968e-07,
+    "ift_below_tol": true,
+    "fallback": null,
+    "path_held": "ift"
+  }
+}
