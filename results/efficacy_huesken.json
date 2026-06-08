@@ -1,0 +1,28 @@
+{
+  "status": "ok",
+  "dataset": "Huesken 2005 (OligoFormer Hu subset)",
+  "n_sirnas": 2361,
+  "readout": "ridge (alpha=1) on the K=9 CASCADE features; the RNA-FM arm concatenates the 640-d RNA-FM mean-pooled guide embedding",
+  "split": {
+    "method": "conventional train/test split from cascade.data.load_huesken_efficacy",
+    "n_train": 2182,
+    "n_test_conventional": 179,
+    "n_test_after_anti_leakage": 179
+  },
+  "anti_leakage": {
+    "methodology": "siRNADiscovery anti-leakage at the guide-sequence level: any test siRNA whose guide also appears in train is removed (no shared guide across the split)",
+    "n_test_guides_removed": 0,
+    "transcript_grouped_note": "the canonical Huesken 2005 set is 2431 siRNAs across 34 transcripts with a 2182/249 split; the OligoFormer Hu CSV used here carries 2361 siRNAs with a 2182/179 split and a placeholder mrna_id, so the transcript-grouped split is not reproducible from this source."
+  },
+  "without_rnafm": {
+    "spearman": 0.6277898642341648,
+    "pcc": 0.6275136589399191,
+    "n_train": 2182,
+    "n_test": 179,
+    "n_features": 37
+  },
+  "with_rnafm": {
+    "status": "pending_real_data",
+    "source": "RNA-FM embeddings unavailable (need the 'fm' package or a precomputed cache at huesken_rnafm_pooled.npy): RNA-FM embeddings need torch and the 'fm' (rna-fm) package, which are not installed. pip install rna-fm torch  (the 'fm' package; see github.com/ml4bio/RNA-FM)"
+  }
+}
