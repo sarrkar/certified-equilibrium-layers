@@ -1,0 +1,54 @@
+{
+  "status": "ok",
+  "seed": 0,
+  "study": "Patel et al. 2022 (PMID 35332222), human 6mer-seed off-target",
+  "genome_build": "hg38 = GRCh38, confirmed from each GEO Sample_data_processing (Genome_build: hg38); not assumed",
+  "ensembl_release_pinned": 104,
+  "ensembl_release_note": "GEO records confirm the hg38 (GRCh38) genome build but do not state the Ensembl annotation release, so pyensembl is pinned to release 104 (GRCh38, May 2021), contemporaneous with the GSE processing.",
+  "metric": "SeedMatchR one-sided KS (D, p): seed-matched vs background log2FC over GRCh38/104 3'UTR-bearing genes; seed-match = any 3'UTR contains the site word",
+  "GSE164289": {
+    "build": "hg38 = GRCh38 (GEO Genome_build: hg38)",
+    "cell_line": "HeyA8 ovarian",
+    "effect_table": "authors' DESeq2 differential expression (GEO supplementary)",
+    "contrasts": {
+      "siGGGGGC": {
+        "seed": "GGGGGC",
+        "utr_seed_match_site": "GCCCCC",
+        "n_genes_table": 58395,
+        "ks_D": 0.0263643690063482,
+        "ks_p": 0.0007526196694136884,
+        "n_seed_match": 6346,
+        "n_background": 28000,
+        "n_with_3utr": 34346
+      },
+      "siGGCAGU": {
+        "seed": "GGCAGU",
+        "utr_seed_match_site": "ACTGCC",
+        "n_genes_table": 58395,
+        "ks_D": 0.03227852107190152,
+        "ks_p": 9.501500311247002e-06,
+        "n_seed_match": 7002,
+        "n_background": 26752,
+        "n_with_3utr": 33754
+      }
+    }
+  },
+  "GSE196839": {
+    "build": "hg38 = GRCh38 (GEO Genome_build: hg38)",
+    "cell_line": "PC3 prostate",
+    "effect_table": "count-derived: CPM-normalized log2((siGGGGGC+1)/(siNT1+1)), SINGLE replicate per condition (no authors' DESeq2 table in the GEO deposit)",
+    "contrasts": {
+      "siGGGGGC": {
+        "seed": "GGGGGC",
+        "utr_seed_match_site": "GCCCCC",
+        "n_genes_table": 26485,
+        "note": "siCAG (the other treated arm) is not run: its characteristics say 'siCAG', not explicitly 'siGGCAGU', so the seed is not confirmed from the GEO record.",
+        "ks_D": 0.1882449833492758,
+        "ks_p": 2.2296508725809885e-147,
+        "n_seed_match": 6656,
+        "n_background": 16767,
+        "n_with_3utr": 23423
+      }
+    }
+  }
+}
