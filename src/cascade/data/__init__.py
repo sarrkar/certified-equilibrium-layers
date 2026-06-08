@@ -32,6 +32,7 @@ from .geo import (
 from .grn import (
     TRRUST_URLS,
     SignedDirectedGRN,
+    load_collectri,
     load_dorothea,
     load_string_undirected,
     load_trrust,
@@ -138,6 +139,7 @@ __all__ = [
     # Signed/directed GRN (T2) + undirected STRING variant
     "SignedDirectedGRN",
     "load_trrust",
+    "load_collectri",
     "load_dorothea",
     "load_string_undirected",
     "TRRUST_URLS",
