@@ -1,0 +1,97 @@
+{
+  "status": "ok",
+  "seed": 0,
+  "claim": "Theorem 5 (certified-feasibility guide generation): enumerate the 4^7 guide seeds and report the certified-feasible yield (U <= tau and predicted efficacy >= eta).",
+  "n_seeds": 16384,
+  "alpha": 0.5,
+  "grn": "TRRUST v2 (mouse); https://www.grnpedia.org/trrust/data/trrust_rawdata.mouse.tsv",
+  "p_alpha_2norm_mouse_trrust": 1.9654992980274644,
+  "n_node_3utrs": 1809,
+  "assumptions": {
+    "tau": "certified off-target threshold, swept as multiples of the parent D1's U ((0.5, 0.75, 1.0)); U(D1)=144.3450",
+    "eta": "predicted on-target efficacy threshold, swept over (0.6, 0.7, 0.8)",
+    "dg_input": "RESPONSIVE seed-duplex dG input: e_seed[g] = (count of the seed's cognate 3'UTR site in gene g) * occupancy(seed), occupancy = -min(dG,0) from ViennaRNA duplexfold; NOT a site count.",
+    "certified_U": "U = ||P_alpha(S)||_2 * ||e_seed||_2, a certified upper bound on the GRN-propagated off-target ||P_alpha(S) e_seed|| over mouse TRRUST.",
+    "gna_caveat": "ViennaRNA has no GNA sugar parameters, so the position-7 (S)-GNA of D4 is modeled as a g7 Watson-Crick mismatch (A->C) against the D1 site; this is an explicit destabilization model (an upper bound on the true GNA penalty).",
+    "efficacy_model": "Huesken-trained ridge on the K=9 CASCADE features; sequence-based, so it cannot distinguish D1 from D4 (same base sequence). Train R2=0.347."
+  },
+  "parent_Ttr": {
+    "D1": {
+      "seed": "UAUAGAG",
+      "occupancy": 5.7,
+      "certified_U": 144.34501591764027,
+      "predicted_efficacy": 0.6647148952032771
+    },
+    "D4": {
+      "seed_base": "UAUAGAG",
+      "gna_model": "g7 A->C mismatch vs the D1 site",
+      "occupancy": 1.7,
+      "certified_U": 43.05026790526113,
+      "predicted_efficacy": 0.6647148952032771
+    },
+    "D4_lower_certified_U_than_D1": true,
+    "efficacy_comparable": true
+  },
+  "certified_yield": {
+    "u_d1": 144.34501591764027,
+    "table": {
+      "tau_0.5xU_D1": {
+        "eta_0.6": 0.05633544921875,
+        "eta_0.7": 0.0009765625,
+        "eta_0.8": 0.0
+      },
+      "tau_0.75xU_D1": {
+        "eta_0.6": 0.174072265625,
+        "eta_0.7": 0.00531005859375,
+        "eta_0.8": 0.0
+      },
+      "tau_1.0xU_D1": {
+        "eta_0.6": 0.3121337890625,
+        "eta_0.7": 0.01141357421875,
+        "eta_0.8": 0.0
+      }
+    }
+  },
+  "generation": {
+    "eta_0.6": {
+      "exists": true,
+      "n_seeds_below_parent_U_and_eff_ge_eta": 5113,
+      "best_seed": {
+        "seed": "UAUCGCG",
+        "certified_U": 16.510194103430702,
+        "predicted_efficacy": 0.6353867985924182
+      }
+    },
+    "eta_0.7": {
+      "exists": true,
+      "n_seeds_below_parent_U_and_eff_ge_eta": 187,
+      "best_seed": {
+        "seed": "CGCAAUU",
+        "certified_U": 45.59619479641344,
+        "predicted_efficacy": 0.7075435639176213
+      }
+    },
+    "eta_0.8": {
+      "exists": false,
+      "n_seeds_below_parent_U_and_eff_ge_eta": 0,
+      "best_seed": null
+    }
+  },
+  "huesken_targets": {
+    "Huesken_0": {
+      "scaffold": "AAAUCAAUUAACAUAUUAG",
+      "yield_tau_1xU_D1_eta_0.7": 0.0001220703125,
+      "n_below_parentU_eff_ge_0.7": 2
+    },
+    "Huesken_1": {
+      "scaffold": "AUAAAUCAAUUAACAUAUU",
+      "yield_tau_1xU_D1_eta_0.7": 0.0087890625,
+      "n_below_parentU_eff_ge_0.7": 144
+    },
+    "Huesken_2": {
+      "scaffold": "GAAAGGAAUUGUAUAAAUC",
+      "yield_tau_1xU_D1_eta_0.7": 0.00048828125,
+      "n_below_parentU_eff_ge_0.7": 8
+    }
+  }
+}
