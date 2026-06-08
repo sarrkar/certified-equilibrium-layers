@@ -260,12 +260,12 @@
           "n_aligned": 1908
         },
         "Schlegel_2022_Ttr_D4_30mkg": {
-          "certified_bound": 74.40558221050001,
+          "certified_bound": 74.4055822105,
           "measured_deviation": 11.545466743547227,
           "binds": true,
           "vacuous": false,
-          "bound_over_measured": 9.004221476998453,
-          "rowwise_max_bound": 31.465013390706265,
+          "bound_over_measured": 9.00422147699845,
+          "rowwise_max_bound": 31.465013390706257,
           "n_aligned": 1908
         },
         "Schlegel_2022_Ttr_D1_10mkg": {
@@ -294,9 +294,24 @@
       }
     },
     "cross_assay": {
-      "rna_seq_mean_ks_D": null,
+      "rna_seq_mean_ks_D": 0.0714948727555479,
+      "rna_seq_datasets": [
+        "Schlegel_2022_Ttr_D1_10mkg",
+        "Schlegel_2022_Ttr_D1_30mkg",
+        "Schlegel_2022_Ttr_D4_30mkg"
+      ],
+      "rna_seq_per_contrast_ks_D": {
+        "Schlegel_2022_Ttr_D1_30mkg": 0.15868186146579627,
+        "Schlegel_2022_Ttr_D4_30mkg": 0.04815100128470301,
+        "Schlegel_2022_Ttr_D1_10mkg": 0.007651755516144446
+      },
       "microarray_mean_ks_D": null,
-      "note": "RNA-seq (GSE184929) and microarray (Jackson, Birmingham) are different assays; differences in the KS separation and the bound tightness are expected and reported."
+      "microarray_status": "pending_real_data",
+      "microarray_pending": {
+        "jackson2006": "Jackson 2006 (RNA 12:1179 / companion 12:1197) microarray = GEO GSE5814 and GSE5769 (Homo sapiens, HeLa); the GEO deposit has the expression arrays but NOT the siRNA antisense sequences (samples carry only target-gene and seed-mutant labels), which are required to derive the seed. The sequences are only in the paper supplement (PMC1484447), not in the PMC Open Access subset. Native seed-match KS not reproducible from public data.",
+        "birmingham2006": "Birmingham 2006 (Nat Methods 3:199, nmeth854) is NOT deposited in GEO; its seed-match off-target associations are supplementary-table only."
+      },
+      "note": "RNA-seq (GSE184929) and microarray (Jackson 2006, Birmingham 2006) are different assays; differences in KS separation and bound tightness are expected. The RNA-seq cross-assay KS is REAL; the microarray KS is PENDING (see microarray_pending for the exact public-source blocker: the GEO deposits lack the siRNA sequences and Birmingham is not in GEO)."
     }
   },
   "baselines_efficacy": {

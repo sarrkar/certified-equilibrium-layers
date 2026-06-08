@@ -64,14 +64,31 @@ def test_acceptance_logic() -> None:
 
 
 def test_cross_assay_reports_both_assays() -> None:
-    per = {
-        "g": {"assay": "rna_seq", "ks_measured": {"D": 0.8}},
-        "j": {"assay": "microarray", "ks_measured": {"D": 0.5}},
-        "b": {"assay": "microarray", "ks_measured": {"D": 0.6}},
+    measured = {
+        "per_contrast": {
+            "g1": {"ks_D": 0.8},
+            "g2": {"ks_D": 0.4},
+        }
     }
-    ca = ex.cross_assay(per)
-    assert ca["rna_seq_mean_ks_D"] == 0.8
+    microarray = {
+        "status": "ok",
+        "per_dataset": {
+            "j": {"ks_measured": {"D": 0.5}},
+            "b": {"ks_measured": {"D": 0.6}},
+        },
+    }
+    ca = ex.cross_assay(measured, microarray)
+    assert abs(ca["rna_seq_mean_ks_D"] - 0.6) < 1e-9
     assert abs(ca["microarray_mean_ks_D"] - 0.55) < 1e-9
+
+
+def test_cross_assay_microarray_pending_is_null_not_faked() -> None:
+    measured = {"per_contrast": {"g": {"ks_D": 0.16}}}
+    microarray = {"status": "pending_real_data", "per_dataset": {}, "pending": {"jackson2006": "..."}}
+    ca = ex.cross_assay(measured, microarray)
+    assert ca["rna_seq_mean_ks_D"] == 0.16
+    assert ca["microarray_mean_ks_D"] is None
+    assert ca["microarray_status"] == "pending_real_data"
 
 
 def test_load_real_dataset_raises_without_real_data() -> None:
