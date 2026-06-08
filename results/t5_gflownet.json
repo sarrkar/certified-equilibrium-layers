@@ -1,0 +1,35 @@
+{
+  "status": "ok",
+  "scaffold": "UUAUAGAGCAAGAACACUGUUUU",
+  "guide_len": 19,
+  "reward": "CASCADE predicted efficacy gated by the T4 certificate: 0 if U(g) > tau",
+  "assumptions": {
+    "tau": 144.34501591764027,
+    "tau_note": "parent Ttr guide certified U",
+    "eta": 0.7,
+    "U_definition": "U(g) = ||P_alpha(mouse TRRUST)||_2 ||e_seed||_2, exact upper bound"
+  },
+  "enumeration_baseline": {
+    "n_candidates": 16384,
+    "n_within_certified_bound": 5150,
+    "n_certified_feasible": 42,
+    "diversity_within_bound": {
+      "n_guides": 5150,
+      "n_unique": 5150,
+      "n_distinct_seeds": 5150,
+      "mean_pairwise_hamming": 5.2572
+    },
+    "diversity_certified_feasible": {
+      "n_guides": 42,
+      "n_unique": 42,
+      "n_distinct_seeds": 42,
+      "mean_pairwise_hamming": 3.7235772357723578
+    },
+    "note": "scaffold-locked (Ttr D1): guides differ only in the 7nt seed, so the maximum pairwise Hamming distance is 7 (the seed positions)."
+  },
+  "gflownet": {
+    "status": "pending_real_data",
+    "source": "BioSeq-GFN-AL not found at /home/shadi/ICLR2026/external/BioSeq-GFN-AL; clone it (git clone https://github.com/MJ10/BioSeq-GFN-AL.git) into external/"
+  },
+  "comparison_diversity_at_fixed_bound": null
+}
