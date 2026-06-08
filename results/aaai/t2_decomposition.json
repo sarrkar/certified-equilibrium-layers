@@ -1,0 +1,25 @@
+{
+  "status": "ok",
+  "seed": 0,
+  "grn": "TRRUST v2 (human); https://www.grnpedia.org/trrust/data/trrust_rawdata.human.tsv",
+  "n_nodes": 2072,
+  "n_edges": 4652,
+  "operators": {
+    "signed_directed_S": {
+      "operator_2norm": 8.31298825078874,
+      "spectral_radius": 0.9999999999999997,
+      "non_normality_gap": 7.31298825078874
+    },
+    "unsigned_directed_absS": {
+      "operator_2norm": 8.321411835707814,
+      "spectral_radius": 0.9999999999999994,
+      "non_normality_gap": 7.321411835707814
+    },
+    "symmetrized_half_S_plus_ST": {
+      "operator_2norm": 4.184053152702865,
+      "spectral_radius": 4.1840531527028695,
+      "non_normality_gap": -4.440892098500626e-15
+    }
+  },
+  "attribution": "The signed S has ||S||_2 = 8.31 >> rho(S) = 1 (non-normality gap 7.31). The unsigned |S| is nearly identical (||.||_2 = 8.32, rho = 1), so on the FULL graph the SIGNS barely move either quantity. The symmetrized (S+S^T)/2 is normal, so its 2-norm equals its spectral radius (gap 0): removing the DIRECTEDNESS removes the non-normality entirely. The 8.31-vs-1 phenomenon is therefore directedness-driven non-normality, not a sign effect. (The signed spectral radius only drops below 1 on small frustrated SUBGRAPHS, see tests/test_propagation.py; on the full graph it stays 1. The symmetrized rho = 4.18 exceeds 1 because (S+S^T)/2 is no longer a row-stochastic transition.)"
+}
