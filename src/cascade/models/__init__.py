@@ -11,6 +11,7 @@ try:
     from .ccmp_backbone import CCMPBackbone, ConceptStream
     from .concept_gnn import RNAFM_CONCEPT, ConceptGNN
     from .propagation_head import PropagationHead
+    from .rc_equivariant import RCEquivariantLinear
 
     __all__ = [
         "CASCADE",
@@ -18,6 +19,7 @@ try:
         "ConceptGNN",
         "ConceptStream",
         "PropagationHead",
+        "RCEquivariantLinear",
         "RNAFM_CONCEPT",
     ]
 except ImportError:  # torch not installed
