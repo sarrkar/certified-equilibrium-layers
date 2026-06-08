@@ -19,7 +19,11 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "src"))
 
 from cascade.embeddings import RNAFM_DIM, extract_embeddings, write_embeddings  # noqa: E402
-from cascade.embeddings.rnafm_extract import _clean_sequences  # noqa: E402
+from cascade.embeddings.rnafm_extract import (  # noqa: E402
+    _clean_sequences,
+    confirm_checkpoint,
+    resolve_device,
+)
 
 HUESKEN_CSV = REPO / "data" / "huesken2005.csv"
 
@@ -69,3 +73,32 @@ def test_rnafm_embeddings_on_real_huesken_guides(tmp_path: Path) -> None:
     loaded = np.load(tmp_path / "huesken_rnafm.npy", allow_pickle=True)
     assert loaded.shape == (3,) and loaded[0].shape == (len(guides[0]), RNAFM_DIM)
     assert np.allclose(np.array(side["mean_pooled"], dtype=np.float32), pooled2, atol=1e-5)
+
+
+def test_resolve_device() -> None:
+    torch = pytest.importorskip("torch")
+    assert resolve_device("cpu") == torch.device("cpu")
+    auto = resolve_device(None)
+    assert auto.type == ("cuda" if torch.cuda.is_available() else "cpu")
+
+
+def test_confirm_checkpoint_missing_raises(tmp_path: Path) -> None:
+    pytest.importorskip("fm")  # needs the rna-fm package; the checkpoint dir is empty here
+    with pytest.raises(FileNotFoundError):
+        confirm_checkpoint(checkpoint_dir=tmp_path)
+
+
+def test_cpu_cuda_mean_pooled_agree() -> None:
+    torch = pytest.importorskip("torch")
+    pytest.importorskip("fm")
+    guides = _three_real_guides()
+
+    per_nt_cpu, pooled_cpu = extract_embeddings(guides, device="cpu")
+    assert pooled_cpu.dtype == np.float32 and per_nt_cpu[0].dtype == np.float32
+
+    if not torch.cuda.is_available():
+        pytest.skip("CUDA unavailable; CPU path validated, CUDA half skipped cleanly")
+    _per_nt_gpu, pooled_gpu = extract_embeddings(guides, device="cuda")
+    assert pooled_gpu.dtype == np.float32  # stays float32 on GPU, no fp16 autocast
+    # The device move must not change the embeddings beyond ULP-level float noise.
+    assert float(np.max(np.abs(pooled_cpu - pooled_gpu))) < 1e-4

@@ -20,12 +20,47 @@ from pathlib import Path
 
 import numpy as np
 
+REPO = Path(__file__).resolve().parents[3]
 RNAFM_DIM = 640  # RNA-FM rna_fm_t12 hidden dimension
 RNAFM_MAX_SEQ_LEN = 1022  # 1024-token limit minus the BOS and EOS tokens
 RNAFM_INSTALL = "pip install rna-fm torch  (the 'fm' package; see github.com/ml4bio/RNA-FM)"
+RNAFM_CHECKPOINT_DIR = REPO / "external" / "RNA-FM" / "pretrained"  # cuhkaih/rnafm weights
 _REPR_LAYER = 12  # final layer of rna_fm_t12
 
 _MODEL_CACHE: dict = {}
+
+
+def confirm_checkpoint(checkpoint_dir: str | Path = RNAFM_CHECKPOINT_DIR) -> str:
+    """Confirm the RNA-FM checkpoint is present and loads via fm.pretrained.rna_fm_t12().
+
+    Returns the resolved checkpoint path. RAISES (hard failure, not a silent pending) when
+    the weights are missing or fail to load, PRINTING the expected path so it can be placed
+    correctly. Requires the 'fm' package (ImportError if absent).
+    """
+    require_rnafm()
+    import fm
+
+    cdir = Path(checkpoint_dir)
+    pths = sorted(cdir.glob("*.pth")) if cdir.exists() else []
+    if not pths:
+        expected = cdir / "RNA-FM_pretrained.pth"
+        print(
+            f"[rnafm] RNA-FM checkpoint MISSING. Place the cuhkaih/rnafm weights at: {expected}\n"
+            f"[rnafm]   huggingface-cli download cuhkaih/rnafm --local-dir {cdir}"
+        )
+        raise FileNotFoundError(
+            f"RNA-FM checkpoint not found under {cdir}; expected a .pth (e.g. {expected}). "
+            "No silent fallback: place the cuhkaih/rnafm weights there."
+        )
+    try:
+        fm.pretrained.rna_fm_t12()
+    except Exception as exc:  # checkpoint present but unreadable / wrong: hard fail with the path
+        print(f"[rnafm] RNA-FM checkpoint at {pths[0]} failed to load via fm.pretrained.rna_fm_t12()")
+        raise FileNotFoundError(
+            f"RNA-FM checkpoint under {cdir} did not load via fm.pretrained.rna_fm_t12() ({exc}); "
+            f"confirm the cuhkaih/rnafm weights at {pths[0]} are the rna_fm_t12 checkpoint."
+        ) from exc
+    return str(pths[0])
 
 
 def require_rnafm() -> None:
@@ -61,25 +96,45 @@ def _clean_sequences(sequences: list[str]) -> list[str]:
 
 
 def load_model():
-    """Load (and cache) RNA-FM rna_fm_t12: returns (model, alphabet, batch_converter)."""
+    """Load (and cache) RNA-FM rna_fm_t12: returns (model, alphabet, batch_converter).
+
+    Confirms the checkpoint first, so a missing / unreadable checkpoint is a hard failure
+    (FileNotFoundError with the expected path) rather than a silent download or fallback.
+    The model is loaded in float32 and never half precision.
+    """
     require_rnafm()
     if "rna_fm_t12" not in _MODEL_CACHE:
         import fm
 
+        confirm_checkpoint()
         model, alphabet = fm.pretrained.rna_fm_t12()
-        model.eval()
+        model = model.float().eval()  # force float32; never fp16
         _MODEL_CACHE["rna_fm_t12"] = (model, alphabet, alphabet.get_batch_converter())
     return _MODEL_CACHE["rna_fm_t12"]
 
 
+def resolve_device(device=None):
+    """Resolve the torch device: explicit, else cuda if available else cpu."""
+    import torch
+
+    if device is None:
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+    return torch.device(device)
+
+
 def extract_embeddings(
-    sequences: list[str], labels: list[str] | None = None, batch_size: int = 8
+    sequences: list[str],
+    labels: list[str] | None = None,
+    batch_size: int = 8,
+    device=None,
 ) -> tuple[list[np.ndarray], np.ndarray]:
     """Return (per_nucleotide, mean_pooled) RNA-FM embeddings for ``sequences``.
 
     per_nucleotide is a list of float32 arrays, one (L_i, 640) array per sequence (the
-    special tokens stripped); mean_pooled is a float32 (n, 640) array. Raises on any
-    missing / invalid sequence (no synthetic fallback).
+    special tokens stripped); mean_pooled is a float32 (n, 640) array. Both the model and
+    the tokenized inputs are moved to ``device`` (default: cuda if available else cpu); the
+    embeddings stay float32 (no fp16 autocast). Raises on any missing / invalid sequence
+    (no synthetic fallback).
     """
     import torch
 
@@ -88,7 +143,9 @@ def extract_embeddings(
         labels = [f"seq{i}" for i in range(len(clean))]
     elif len(labels) != len(clean):
         raise ValueError(f"got {len(labels)} labels for {len(clean)} sequences")
+    dev = resolve_device(device)
     model, _alphabet, batch_converter = load_model()
+    model = model.float().to(dev).eval()  # float32 on the chosen device; never fp16
 
     per_nt: list[np.ndarray] = []
     pooled: list[np.ndarray] = []
@@ -96,11 +153,17 @@ def extract_embeddings(
         chunk = clean[start : start + batch_size]
         chunk_labels = labels[start : start + batch_size]
         _, _, tokens = batch_converter(list(zip(chunk_labels, chunk, strict=True)))
+        tokens = tokens.to(dev)
+        # No autocast: run the forward in plain float32 so the device move cannot change values.
         with torch.no_grad():
             reps = model(tokens, repr_layers=[_REPR_LAYER])["representations"][_REPR_LAYER]
+        if reps.dtype != torch.float32:
+            raise ValueError(
+                f"RNA-FM embeddings must stay float32; got {reps.dtype} (no fp16 / autocast allowed)"
+            )
         for j, seq in enumerate(chunk):
             # tokens are [BOS, base_1 ... base_L, EOS, pad ...]; keep the L base positions.
-            emb = reps[j, 1 : len(seq) + 1, :].cpu().numpy().astype(np.float32)
+            emb = reps[j, 1 : len(seq) + 1, :].detach().to("cpu").numpy().astype(np.float32)
             if emb.shape != (len(seq), RNAFM_DIM):
                 raise ValueError(
                     f"unexpected RNA-FM output {emb.shape} for a {len(seq)} nt sequence"

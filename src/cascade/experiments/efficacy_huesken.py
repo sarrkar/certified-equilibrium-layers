@@ -123,16 +123,18 @@ def run() -> dict:
 
     without = fit_eval(x_tr, y_tr, x_te, y_te)
 
+    # The with-RNA-FM arm is pending ONLY when the rna-fm package is absent (not on the
+    # RNA-FM environment). A present-but-missing / unreadable checkpoint is a HARD FAILURE
+    # (FileNotFoundError propagates), never a silent fallback to the without-RNA-FM row.
     try:
         pooled = rnafm_pooled(guides)
         xr = np.hstack([x, pooled.astype(float)])
         with_rnafm = fit_eval(xr[is_train], y_tr, xr[test_mask], y_te)
         with_rnafm["rnafm_dim"] = int(pooled.shape[1])
-    except (ImportError, FileNotFoundError) as exc:
+    except ImportError as exc:
         with_rnafm = {
             "status": "pending_real_data",
-            "source": f"RNA-FM embeddings unavailable (need the 'fm' package or a precomputed "
-            f"cache at {RNAFM_CACHE.name}): {exc}",
+            "source": f"RNA-FM package not installed (run on the cascade_fm env): {exc}",
         }
 
     return {
