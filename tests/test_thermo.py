@@ -100,12 +100,16 @@ def test_thermo_input_vector_real() -> None:
 def test_require_vienna_raises_with_install_command(monkeypatch) -> None:
     import pytest
 
+    from cascade import seed_dg
     from cascade.features import thermo
 
     # Force the ViennaRNA-absent branch and confirm the real functions raise.
     monkeypatch.setattr(thermo, "_RNA", None)
     with pytest.raises(ImportError, match="ViennaRNA"):
         thermo.require_vienna()
+    # seed_duplex_dg is promoted to cascade.seed_dg (re-exported by thermo); its gate
+    # lives there, so the ViennaRNA-absent branch is forced on the canonical module.
+    monkeypatch.setattr(seed_dg, "_RNA", None)
     with pytest.raises(ImportError) as exc:
         thermo.seed_duplex_dg(GUIDE_T, UTR_WITH_SITE)
     assert "pip install ViennaRNA" in str(exc.value)

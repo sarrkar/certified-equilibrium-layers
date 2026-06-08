@@ -32,6 +32,8 @@ from pathlib import Path
 
 import numpy as np
 
+from cascade.seed_dg import seed_duplex_dg  # canonical home; re-exported here for T3 / T4
+
 from .seedmatch import Site, find_sites, revcomp, to_rna
 
 try:  # ViennaRNA is the preferred backend; fall back when unavailable.
@@ -220,21 +222,9 @@ def require_vienna() -> None:
         )
 
 
-def seed_duplex_dg(guide: str, utr: str, seed_start: int = 1, seed_len: int = 7) -> float:
-    """Real seed-region binding free energy dG (kcal/mol), via ViennaRNA.
-
-    The guide 5' seed (positions ``seed_start+1`` .. ``seed_start+seed_len``,
-    default 2 to 8) is hybridized to its best site in the 3'UTR with
-    ``RNA.duplexfold`` (Turner nearest-neighbor parameters). A more negative dG is
-    a stronger seed:target duplex. Raises if ViennaRNA is absent.
-    """
-    require_vienna()
-    seed = to_rna(guide)[seed_start : seed_start + seed_len]
-    target = to_rna(utr)
-    if len(seed) < 2 or len(target) < 2:
-        raise ValueError("guide seed and 3'UTR must each be at least 2 nt")
-    duplex = _RNA.duplexfold(seed, target)
-    return float(duplex.energy)
+# seed_duplex_dg is promoted to its own committed module (cascade.seed_dg) and
+# imported at the top of this module; it is re-exported here so the existing T3 / T4
+# call sites (cascade.features.thermo.seed_duplex_dg) are unchanged.
 
 
 def site_opening_energy(utr: str, site_start: int, site_end: int, pad: int = 70) -> float:
