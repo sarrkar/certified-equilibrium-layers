@@ -11,7 +11,7 @@ study, cell line, assay type). The Huesken loader additionally exposes the
 standard 2182 train / 249 test split (column ``split`` plus ``.train()`` /
 ``.test()``).
 
-HARD DATA POLICY (CLAUDE.md). This module loads ONLY real measured data. If a
+HARD DATA POLICY (OUTLINE.md). This module loads ONLY real measured data. If a
 file is absent the loader RAISES ``FileNotFoundError`` with the exact URL to
 fetch. There is no fallback that generates rows, sequences, or efficacy values.
 Fetch the real files with ``scripts/download_efficacy.sh`` (writes to

@@ -23,7 +23,7 @@ uses ||S||_2 (regime alpha > 1 - 1/||S||_2); the inf-norm certified constant use
 ||S||_inf <= 1 and holds for every alpha (P_alpha non-expansive in the inf-norm).
 The acceptance reports which normalization / regime holds.
 
-HARD DATA POLICY (CLAUDE.md): REAL DATA ONLY. The GRN comes from a real loader
+HARD DATA POLICY (OUTLINE.md): REAL DATA ONLY. The GRN comes from a real loader
 that RAISES if absent (run scripts/download_grn.sh). No graph is generated.
 
 Output results/aaai/t2_stability.json and results/aaai/t2_stability.png. Accepts

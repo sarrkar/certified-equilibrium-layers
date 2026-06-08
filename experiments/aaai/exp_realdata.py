@@ -7,7 +7,7 @@ offtarget_certification (cascade.data.datasets_with_role): GSE184929 (RNA-seq),
 Jackson 2003, Jackson 2006, Birmingham 2006, and the SeedSeq union, with S from
 STRING.
 
-HARD DATA POLICY (CLAUDE.md): this experiment uses ONLY real measured data. It
+HARD DATA POLICY (OUTLINE.md): this experiment uses ONLY real measured data. It
 contains no generated data, no signal injection, and no fabricated confidences.
 Each loader RAISES FileNotFoundError when its real file is absent, and the parts
 of the real join that are not yet wired RAISE NotImplementedError. No numbers are
@@ -29,7 +29,7 @@ Step 3 (aligning measured transcripts to STRING nodes and computing x0 from real
 sequences) is a tracked data gap and currently RAISES NotImplementedError.
 
 Output: results/aaai/realdata.json and figures under results/aaai/figures/.
-Accepts --seed and logs it (CLAUDE.md rule 3). No LaTeX.
+Accepts --seed and logs it (OUTLINE.md rule 3). No LaTeX.
 """
 
 from __future__ import annotations

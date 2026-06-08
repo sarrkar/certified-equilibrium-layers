@@ -211,13 +211,78 @@
     }
   },
   "T4_certified_offtarget_bound": {
-    "provenance": "GSE184929 RNA-seq (SeedMatchR export), Jackson 2006 and Birmingham 2006 microarray; STRING v12 GRN",
-    "status": "pending_real_data",
+    "provenance": "GSE184929 RNA-seq DESeq2 (GEO direct, no R), native seed-match of the confirmed Schlegel 2022 Ttr guide (seed UAUAGAG) against Ensembl Rnor_6.0 rat 3'UTRs; TRRUST v2 GRN for the certified-bound P_alpha propagation (orthologous gene-symbol alignment)",
+    "status": "ok",
+    "certified_bound_status": "real_via_trrust_join",
     "acceptance": "PENDING",
+    "measured_offtarget": {
+      "guide": "UUAUAGAGCAAGAACACUGUUUU",
+      "seed": "UAUAGAG",
+      "reference": "Ensembl Rnor_6.0 rat 3'UTRs (build-matched to GSE184929)",
+      "per_contrast": {
+        "Schlegel_2022_Ttr_D1_30mkg": {
+          "ks_D": 0.15868186146579627,
+          "ks_p": 8.644613806104149e-24,
+          "n_seed_match": 1117,
+          "n_background": 18850
+        },
+        "Schlegel_2022_Ttr_D4_30mkg": {
+          "ks_D": 0.04815100128470301,
+          "ks_p": 0.007522820667006979,
+          "n_seed_match": 1117,
+          "n_background": 18850
+        },
+        "Schlegel_2022_Ttr_D1_10mkg": {
+          "ks_D": 0.007651755516144446,
+          "ks_p": 0.8867127494899683,
+          "n_seed_match": 1090,
+          "n_background": 17702
+        }
+      }
+    },
+    "certified_bound_join": {
+      "grn": "TRRUST v2 (human); https://www.grnpedia.org/trrust/data/trrust_rawdata.human.tsv",
+      "n_nodes": 2072,
+      "alpha": 0.5,
+      "uncertainty_budget": {
+        "e_rel_err": 0.1,
+        "s_rel_err": 0.1
+      },
+      "cross_species_note": "TRRUST is human, GSE184929 is rat; aligned by orthologous gene symbol. e is the seed-match-derived direct repression of the ViennaRNA-confirmed Ttr seed.",
+      "per_contrast": {
+        "Schlegel_2022_Ttr_D1_30mkg": {
+          "certified_bound": 74.4055822105,
+          "measured_deviation": 25.221563799285647,
+          "binds": true,
+          "vacuous": false,
+          "bound_over_measured": 3.144564039580452,
+          "rowwise_max_bound": 31.465013390706257,
+          "n_aligned": 1908
+        },
+        "Schlegel_2022_Ttr_D4_30mkg": {
+          "certified_bound": 74.40558221050001,
+          "measured_deviation": 11.545466743547227,
+          "binds": true,
+          "vacuous": false,
+          "bound_over_measured": 9.004221476998453,
+          "rowwise_max_bound": 31.465013390706265,
+          "n_aligned": 1908
+        },
+        "Schlegel_2022_Ttr_D1_10mkg": {
+          "certified_bound": 74.40558221050001,
+          "measured_deviation": 14.6949649099571,
+          "binds": true,
+          "vacuous": false,
+          "bound_over_measured": 6.202257725017541,
+          "rowwise_max_bound": 31.465013390706265,
+          "n_aligned": 1908
+        }
+      }
+    },
     "pending": {
       "gse184929": {
         "assay": "rna_seq",
-        "source": "Schlegel_2022_Ttr_D1_30mkg not found at /home/shadi/ICLR2026/data/raw/offtarget/seedmatchr/Schlegel_2022_Ttr_D1_30mkg.csv. This is the REAL off-target ground truth. Fetch it: SeedMatchR R package example data (install.packages('SeedMatchR')); Schlegel et al. 2022, GEO GSE184929 (rat liver Ttr GalNAc-siRNA). Export with scripts/export_seedmatchr_data.R. REAL DATA ONLY: no values are generated."
+        "source": "gse184929: a real STRING confidence file is required (--string-links); none given. Fetch STRING v12 with scripts/download_data.sh. REAL DATA ONLY."
       },
       "jackson2006": {
         "assay": "microarray",
@@ -232,11 +297,6 @@
       "rna_seq_mean_ks_D": null,
       "microarray_mean_ks_D": null,
       "note": "RNA-seq (GSE184929) and microarray (Jackson, Birmingham) are different assays; differences in the KS separation and the bound tightness are expected and reported."
-    },
-    "metrics": {
-      "certified_bound_vs_measured_deviation": null,
-      "ks_D": null,
-      "bound_binds": null
     }
   },
   "baselines_efficacy": {

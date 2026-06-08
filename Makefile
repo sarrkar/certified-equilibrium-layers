@@ -38,7 +38,7 @@ test:
 verify:
 	python verify/containment.py --seed 0
 
-# Hard data policy (CLAUDE.md): no generated data on any AAAI reported-number path.
+# Hard data policy (OUTLINE.md): no generated data on any AAAI reported-number path.
 assert-no-synthetic:
 	python scripts/assert_no_synthetic.py
 

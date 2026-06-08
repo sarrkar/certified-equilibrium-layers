@@ -18,7 +18,7 @@ OFF-TARGET. On real GSE184929 (Schlegel et al. 2022, via the SeedMatchR export)
 it runs the SeedMatchR one-sided KS / ECDF test on the measured DESeq2 log2FC
 (seed-matched vs background transcripts), per contrast.
 
-HARD DATA POLICY (CLAUDE.md): REAL DATA ONLY. Every input comes from a real
+HARD DATA POLICY (OUTLINE.md): REAL DATA ONLY. Every input comes from a real
 loader that RAISES when its file is absent. When the real data is not present the
 relevant section is recorded as pending with the exact source to fetch, and no
 number is produced from non-real inputs.
@@ -273,7 +273,8 @@ def offtarget_section(seedmatchr_dir: Path | None, cache_root: Path) -> dict:
             continue
         if not ds.has_seed_annotation:
             pending[name] = (
-                "loaded but no seed-match annotation; run the seed-match step in the R export"
+                "loaded but no seed-match annotation; run scripts/download_rat_3utr.sh then "
+                "scripts/annotate_seedmatch.py"
             )
             continue
         res = ds.ks(alternative="greater")

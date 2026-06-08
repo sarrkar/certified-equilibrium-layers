@@ -38,8 +38,9 @@ def test_every_section_has_provenance() -> None:
         block = pn[section]
         assert block.get("provenance"), f"{section} missing provenance"
         assert isinstance(block["provenance"], str) and block["provenance"]
-        # Each section is either real ('ok') or honestly pending, never fabricated.
-        assert block["status"] in {"ok", "pending_real_data", "absent"}
+        # Each section is real ('ok'), partially real (T4 measured KS), or honestly
+        # pending, never fabricated.
+        assert block["status"] in {"ok", "measured_offtarget_real", "pending_real_data", "absent"}
 
 
 def test_t2_real_numbers_from_trrust() -> None:
@@ -71,6 +72,12 @@ def test_pending_sections_name_their_source() -> None:
         assert {"gse184929", "jackson2006", "birmingham2006"} <= set(t4["pending"])
         for d in t4["pending"].values():
             assert d["assay"] and d["source"]
+    elif t4["status"] == "measured_offtarget_real":
+        # The certified bound is still pending, but the measured SeedMatchR KS is real.
+        assert t4["certified_bound_status"] == "pending_real_data"
+        mo = t4["measured_offtarget"]
+        d1 = mo["per_contrast"]["Schlegel_2022_Ttr_D1_30mkg"]
+        assert d1["ks_D"] is not None and d1["ks_p"] is not None and d1["n_seed_match"] > 0
 
 
 def test_summary_headline_leads_with_the_four_items() -> None:

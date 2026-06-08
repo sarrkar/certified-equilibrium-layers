@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fail if synthetic-data generation appears on any AAAI reported-number path.
 
-Per the hard data policy in CLAUDE.md, no synthetic data may live in
+Per the hard data policy in OUTLINE.md, no synthetic data may live in
 ``src/cascade/data/`` or ``experiments/aaai/`` (the loaders and the experiments
 that feed reported AAAI numbers). This script greps those paths for
 synthetic-generation patterns and exits non-zero if any appear.

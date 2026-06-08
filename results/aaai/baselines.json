@@ -251,13 +251,31 @@
     ]
   },
   "offtarget": {
-    "status": "pending_real_data",
+    "status": "ok",
     "metric": "SeedMatchR one-sided KS (D, p): seed-matched vs background measured DESeq2 log2FC",
-    "per_contrast": {},
-    "pending": {
-      "Schlegel_2022_Ttr_D1_30mkg": "Schlegel_2022_Ttr_D1_30mkg not found at /home/shadi/ICLR2026/data/raw/offtarget/seedmatchr/Schlegel_2022_Ttr_D1_30mkg.csv. This is the REAL off-target ground truth. Fetch it: SeedMatchR R package example data (install.packages('SeedMatchR')); Schlegel et al. 2022, GEO GSE184929 (rat liver Ttr GalNAc-siRNA). Export with scripts/export_seedmatchr_data.R. REAL DATA ONLY: no values are generated.",
-      "Schlegel_2022_Ttr_D4_30mkg": "Schlegel_2022_Ttr_D4_30mkg not found at /home/shadi/ICLR2026/data/raw/offtarget/seedmatchr/Schlegel_2022_Ttr_D4_30mkg.csv. This is the REAL off-target ground truth. Fetch it: SeedMatchR R package example data (install.packages('SeedMatchR')); Schlegel et al. 2022, GEO GSE184929 (rat liver Ttr GalNAc-siRNA). Export with scripts/export_seedmatchr_data.R. REAL DATA ONLY: no values are generated.",
-      "Schlegel_2022_Ttr_D1_10mkg": "Schlegel_2022_Ttr_D1_10mkg not found at /home/shadi/ICLR2026/data/raw/offtarget/seedmatchr/Schlegel_2022_Ttr_D1_10mkg.csv. This is the REAL off-target ground truth. Fetch it: SeedMatchR R package example data (install.packages('SeedMatchR')); Schlegel et al. 2022, GEO GSE184929 (rat liver Ttr GalNAc-siRNA). Export with scripts/export_seedmatchr_data.R. REAL DATA ONLY: no values are generated."
-    }
+    "per_contrast": {
+      "Schlegel_2022_Ttr_D1_30mkg": {
+        "sirna_id": "Ttr_D1",
+        "ks_d": 0.15868186146579627,
+        "ks_pvalue": 8.644613806104149e-24,
+        "n_seed_match": 1117,
+        "n_background": 18850
+      },
+      "Schlegel_2022_Ttr_D4_30mkg": {
+        "sirna_id": "Ttr_D4",
+        "ks_d": 0.04815100128470301,
+        "ks_pvalue": 0.007522820667006979,
+        "n_seed_match": 1117,
+        "n_background": 18850
+      },
+      "Schlegel_2022_Ttr_D1_10mkg": {
+        "sirna_id": "Ttr_D1",
+        "ks_d": 0.007651755516144446,
+        "ks_pvalue": 0.8867127494899683,
+        "n_seed_match": 1090,
+        "n_background": 17702
+      }
+    },
+    "pending": {}
   }
 }

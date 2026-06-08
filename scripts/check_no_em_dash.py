@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Forbid em-dashes (U+2014) and en-dashes-as-em (U+2013 between words).
 
-Per CLAUDE.md rule 4, em-dashes are not allowed anywhere in this repo.
+Per OUTLINE.md rule 4, em-dashes are not allowed anywhere in this repo.
 This script is wired into pre-commit and CI. It exits non-zero on the first
 hit and prints file:line for each offense.
 """

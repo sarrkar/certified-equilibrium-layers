@@ -12,7 +12,7 @@ regressor on the real OligoFormer efficacy suite, under the standard protocol:
 The cross-dataset drop from Huesken-test to the independent sets is the expected
 distribution shift; it is reported, not hidden.
 
-HARD DATA POLICY (CLAUDE.md): this experiment uses ONLY the real OligoFormer
+HARD DATA POLICY (OUTLINE.md): this experiment uses ONLY the real OligoFormer
 CSVs. There is no fallback to generated data. The loader RAISES FileNotFoundError
 when the real CSVs are absent (place them under --raw-dir, default
 data/raw/oligoformer).
@@ -27,7 +27,7 @@ ACCEPTANCE: the backbone must be at least competitive with the reported state of
 the art on the Huesken test split; the JSON flags PASS / FAIL.
 
 Writes results/aaai/backbone_efficacy.json and a cross-dataset bar figure.
-Accepts --seed and logs it (CLAUDE.md rule 3). No LaTeX.
+Accepts --seed and logs it (OUTLINE.md rule 3). No LaTeX.
 """
 
 from __future__ import annotations
