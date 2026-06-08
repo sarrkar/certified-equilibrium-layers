@@ -9,8 +9,16 @@ exported there.
 try:
     from .cascade import CASCADE
     from .ccmp_backbone import CCMPBackbone, ConceptStream
+    from .concept_gnn import RNAFM_CONCEPT, ConceptGNN
     from .propagation_head import PropagationHead
 
-    __all__ = ["CASCADE", "CCMPBackbone", "ConceptStream", "PropagationHead"]
+    __all__ = [
+        "CASCADE",
+        "CCMPBackbone",
+        "ConceptGNN",
+        "ConceptStream",
+        "PropagationHead",
+        "RNAFM_CONCEPT",
+    ]
 except ImportError:  # torch not installed
     __all__ = []
