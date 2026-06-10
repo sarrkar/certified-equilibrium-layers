@@ -10,6 +10,7 @@ try:
     from .cascade import CASCADE
     from .ccmp_backbone import CCMPBackbone, ConceptStream
     from .concept_gnn import RNAFM_CONCEPT, ConceptGNN
+    from .offtarget_predictor import OffTargetPredictor, assert_leakage_free
     from .propagation_head import PropagationHead
     from .rc_equivariant import RCEquivariantLinear
 
@@ -18,9 +19,11 @@ try:
         "CCMPBackbone",
         "ConceptGNN",
         "ConceptStream",
+        "OffTargetPredictor",
         "PropagationHead",
         "RCEquivariantLinear",
         "RNAFM_CONCEPT",
+        "assert_leakage_free",
     ]
 except ImportError:  # torch not installed
     __all__ = []
