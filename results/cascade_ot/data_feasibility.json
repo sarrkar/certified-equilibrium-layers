@@ -1,0 +1,172 @@
+{
+  "status": "ok",
+  "purpose": "feasibility probe for a learned off-target predictor; data assessment only, no build",
+  "real_offtarget_corpus": {
+    "studies": {
+      "Schlegel_2022_GSE184929": {
+        "paper": "Schlegel et al. 2022",
+        "geo": "GSE184929",
+        "organism": "rat (liver)",
+        "effect_type": "DESeq2 RNA-seq log2FC vs Mock",
+        "n_conditions": 3,
+        "conditions": {
+          "Schlegel_2022_Ttr_D1_30mkg": {
+            "n_genes": 32883,
+            "n_genes_with_log2fc": 19967,
+            "n_seed_matched": 125,
+            "n_aligned": 1725,
+            "ks_D": 0.17912499999999998,
+            "ks_p": 0.0005871809423997847
+          },
+          "Schlegel_2022_Ttr_D4_30mkg": {
+            "n_genes": 32883,
+            "n_genes_with_log2fc": 19967,
+            "n_seed_matched": 125,
+            "n_aligned": 1725,
+            "ks_D": 0.13574999999999998,
+            "ks_p": 0.013937476539281363
+          },
+          "Schlegel_2022_Ttr_D1_10mkg": {
+            "n_genes": 32883,
+            "n_genes_with_log2fc": 18792,
+            "n_seed_matched": 121,
+            "n_aligned": 1687,
+            "ks_D": 0.01947901164202115,
+            "ks_p": 0.9182950337895507
+          }
+        },
+        "seed_matched_note": "n_seed_matched is over the TRRUST-aligned subset (n_aligned); the full-table Rnor_6.0 seed annotation is pending. Source: results/offtarget_t4.json."
+      },
+      "Patel_2022_GSE164289": {
+        "paper": "Patel et al. 2022",
+        "geo": "GSE164289",
+        "organism": "human (HeyA8 ovarian)",
+        "effect_type": "authors' DESeq2 RNA-seq log2FC vs siNT1",
+        "n_conditions": 2,
+        "conditions": {
+          "siGGGGGC": {
+            "n_genes": 58395,
+            "n_genes_with_log2fc": 34542,
+            "n_seed_matched": 6346,
+            "n_with_3utr": 34346,
+            "ks_D": 0.0263643690063482,
+            "ks_p": 0.0007526196694136884
+          },
+          "siGGCAGU": {
+            "n_genes": 58395,
+            "n_genes_with_log2fc": 33952,
+            "n_seed_matched": 7002,
+            "n_with_3utr": 33754,
+            "ks_D": 0.03227852107190152,
+            "ks_p": 9.501500311247002e-06
+          }
+        }
+      },
+      "Patel_2022_GSE196839": {
+        "paper": "Patel et al. 2022",
+        "geo": "GSE196839",
+        "organism": "human (PC3 prostate)",
+        "effect_type": "count-derived CPM log2((siGGGGGC+1)/(siNT1+1)); single replicate",
+        "n_conditions": 1,
+        "conditions": {
+          "siGGGGGC": {
+            "n_genes": 26485,
+            "n_seed_matched": 6656,
+            "n_with_3utr": 23423,
+            "ks_D": 0.1882449833492758,
+            "ks_p": 2.2296508725809885e-147
+          }
+        }
+      }
+    },
+    "n_geo_series": 3,
+    "n_independent_papers": 2,
+    "n_conditions_total": 6,
+    "independence_note": "GSE164289 and GSE196839 are both Patel 2022 (same lab; the siGGGGGC reagent appears in both, different cell lines), so they are NOT statistically independent studies; the count of truly independent studies is 2."
+  },
+  "mirna_auxiliary_corpus": {
+    "targetscan_context_plus_plus": {
+      "version": "TargetScan v8.0 (vert_80)",
+      "base_url": "https://www.targetscan.org/vert_80/vert_80_data_download/",
+      "files": [
+        {
+          "name": "Predicted_Targets_Context_Scores.default_predictions.txt.zip",
+          "url": "https://www.targetscan.org/vert_80/vert_80_data_download/Predicted_Targets_Context_Scores.default_predictions.txt.zip",
+          "bytes": 17673917,
+          "downloaded": false,
+          "note": "predicted context++ scores"
+        },
+        {
+          "name": "Conserved_Site_Context_Scores.txt.zip",
+          "url": "https://www.targetscan.org/vert_80/vert_80_data_download/Conserved_Site_Context_Scores.txt.zip",
+          "bytes": 18603027,
+          "downloaded": false,
+          "note": "conserved-site context++ scores"
+        },
+        {
+          "name": "Nonconserved_Site_Context_Scores.txt.zip",
+          "url": "https://www.targetscan.org/vert_80/vert_80_data_download/Nonconserved_Site_Context_Scores.txt.zip",
+          "bytes": 542498322,
+          "downloaded": false,
+          "note": "nonconserved-site scores (LARGE, not fetched)"
+        },
+        {
+          "name": "miR_Family_Info.txt.zip",
+          "url": "https://www.targetscan.org/vert_80/vert_80_data_download/miR_Family_Info.txt.zip",
+          "bytes": 162636,
+          "downloaded": false,
+          "note": "miRNA seed-family table"
+        }
+      ],
+      "license": "publicly downloadable (Bartel lab / Whitehead Institute, MIT); free for academic / non-commercial use; commercial terms to be confirmed.",
+      "examples": "context++ scores are PREDICTIONS (a repression proxy), not measured repression: millions of (miRNA family, target site) rows across ~150 conserved miRNA families and human 3'UTRs.",
+      "sizes_from": "HTTP HEAD on the listed URLs (no file downloaded)"
+    },
+    "mcgeary_2019_agorbns": {
+      "paper": "McGeary, Lin et al. 2019, Science (biochemical basis of microRNA targeting efficacy)",
+      "geo": "GSE140217",
+      "repression_matrix_url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE140nnn/GSE140217/suppl/GSE140217_HeLa_transfection_logtpm_batchnormalized.txt.gz",
+      "repression_matrix_bytes": 640906,
+      "kd_models": "AGO-RBNS 12-mer Kd affinities; modeled Kd available via scanMiR / scanMiRData (Bioconductor) and github.com/kslin/miRNA_models.",
+      "downloaded": true,
+      "n_transcripts": 4279,
+      "n_transfected_mirnas": 17,
+      "mirnas": [
+        "let7",
+        "lsy6",
+        "mir1",
+        "mir124",
+        "mir137",
+        "mir139",
+        "mir143",
+        "mir144",
+        "mir153",
+        "mir155",
+        "mir182",
+        "mir199a",
+        "mir204",
+        "mir205",
+        "mir216b",
+        "mir223",
+        "mir7"
+      ],
+      "n_measured_examples": 72743,
+      "examples_note": "REAL measured (miRNA seed, transcript, log-TPM repression) examples = n_transcripts x n_transfected_mirnas.",
+      "license": "GEO data public; scanMiR / scanMiRData on Bioconductor (open source); github.com/kslin/miRNA_models for the model code (confirm repo license).",
+      "urls": {
+        "geo": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE140217",
+        "github": "https://github.com/kslin/miRNA_models",
+        "scanmir": "https://bioconductor.org/packages/scanMiR"
+      }
+    }
+  },
+  "verdict": {
+    "n_geo_series": 3,
+    "n_independent_papers": 2,
+    "n_conditions_total": 6,
+    "loso_folds_available": 2,
+    "learned_predictor_trainable_on_offtarget_corpus_with_loso": false,
+    "reasoning": "Leave-one-study-out needs on the order of 5+ independent studies for a meaningful held-out transfer estimate. Here there are only 2 truly independent studies (Schlegel 2022 rat; Patel 2022 human) across 3 GEO series and 6 conditions, and the conditions within a study share siRNA reagents, seeds, and cell context, so they are not independent folds. Training a learned off-target predictor ON the real off-target corpus with LOSO is NOT viable: the independent-study count is low single digits.",
+    "recommendation": "Use the miRNA auxiliary corpus as the TRAINING signal (McGeary 2019: 72743 real measured (seed, 3'UTR, repression) examples across 17 seeds, plus TargetScan context++ and AGO-RBNS Kd), and hold out the 2-3 real siRNA off-target studies (GSE184929 / GSE164289 / GSE196839) as a small leave-one-study-out TRANSFER-validation set, not as the training corpus."
+  }
+}
