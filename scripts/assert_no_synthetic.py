@@ -118,7 +118,7 @@ def _scan_paths(paths: list[str]) -> int:
             data_files = [p for p in target.rglob("*") if p.is_file() and p.suffix != ".py"]
         for p in py_files:
             n_py += 1
-            rel = p.relative_to(REPO) if REPO in p.resolve().parents else p
+            rel = p.resolve().relative_to(REPO) if REPO in p.resolve().parents else p
             for lineno, line in scan_file(p):
                 all_hits.append((rel, lineno, line))
         for d in data_files:
