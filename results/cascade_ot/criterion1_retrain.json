@@ -1,0 +1,86 @@
+{
+  "status": "ok",
+  "stage": "Stage E/F: modification-aware occupancy + MonotoneEquilibriumPropagation, pre-trained on McGeary, criterion-1 transfer gate",
+  "pre_registered": {
+    "criterion_a_min_mean_margin": 0.05,
+    "criterion_b": "the learned-minus-baseline margin is positive on BOTH the Schlegel and Patel held-out studies separately (not just pooled)",
+    "criterion_c": "the D4 < D1 discrimination still holds in the retrained model (E(D4) < E(D1))",
+    "baseline": "SeedMatchR + seed-duplex-Tm = occupancy(seed dG) * seed-match count (no learning, no propagation)",
+    "decision_rule": "PASS only if (a) AND (b) AND (c); otherwise FAIL"
+  },
+  "training": {
+    "corpus": "McGeary GSE140217 (data-rich AGO-RBNS / transfection repression)",
+    "n_train_cells": 8942,
+    "n_mirnas": 17,
+    "learned_alpha": 0.3878314451568116,
+    "learned_edge_scale_w": 0.48963993328570066,
+    "propagation": "MonotoneEquilibriumPropagation (IFT-exact, unique fixed point)"
+  },
+  "conditions": {
+    "GSE164289:siGGGGGC": {
+      "study": "Patel",
+      "n_genes": 34542,
+      "spearman_learned": -0.00020804402443333917,
+      "spearman_baseline": -0.06822505551914965,
+      "margin": 0.06801701149471631,
+      "mean_pred": 0.00040914952658628064
+    },
+    "GSE164289:siGGCAGU": {
+      "study": "Patel",
+      "n_genes": 33952,
+      "spearman_learned": -0.010873139392728638,
+      "spearman_baseline": -0.06115963719573283,
+      "margin": 0.05028649780300419,
+      "mean_pred": 0.00041521220078432925
+    },
+    "GSE196839:siGGGGGC": {
+      "study": "Patel",
+      "n_genes": 26485,
+      "spearman_learned": 0.0309671311706233,
+      "spearman_baseline": 0.09835491891213073,
+      "margin": -0.06738778774150743,
+      "mean_pred": 0.000609936833920093
+    },
+    "GSE184929:Schlegel_2022_Ttr_D1_30mkg": {
+      "study": "Schlegel",
+      "n_genes": 19967,
+      "spearman_learned": -0.035674534293583235,
+      "spearman_baseline": 0.050210541635735975,
+      "margin": -0.08588507592931921,
+      "mean_pred": 7.49674697644633e-05
+    },
+    "GSE184929:Schlegel_2022_Ttr_D4_30mkg": {
+      "study": "Schlegel",
+      "n_genes": 19967,
+      "spearman_learned": -0.012371096830748347,
+      "spearman_baseline": -0.006067165251808304,
+      "margin": -0.006303931578940043,
+      "mean_pred": 6.834628445711606e-06
+    },
+    "GSE184929:Schlegel_2022_Ttr_D1_10mkg": {
+      "study": "Schlegel",
+      "n_genes": 18792,
+      "spearman_learned": 0.02330087766641708,
+      "spearman_baseline": -0.04109313381184258,
+      "margin": 0.06439401147825966,
+      "mean_pred": 7.796389105148524e-05
+    }
+  },
+  "margins": {
+    "schlegel_mean": -0.009264998676666534,
+    "patel_mean": 0.016971907185404356,
+    "pooled_mean": 0.0038534542543689127
+  },
+  "d4_lt_d1": {
+    "E_D1": 7.49674697644633e-05,
+    "E_D4": 6.834628445711606e-06,
+    "holds": true
+  },
+  "criteria": {
+    "a_pooled_margin": false,
+    "b_both_studies_positive": false,
+    "c_d4_lt_d1": true
+  },
+  "verdict": "FAIL",
+  "decision": "FAIL: the retrained predictor does not clear the pre-registered margin on both studies. The mechanistic SeedMatchR + seed-Tm baseline is not beaten by >= 0.05 mean; do not build the generator. Pivot to the certified-discrimination + differentiable-propagation methods result (the D4<D1 sub-gate and IFT layer stand on their own)."
+}
