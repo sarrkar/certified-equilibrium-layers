@@ -1,0 +1,118 @@
+{
+  "AB_definition": {
+    "A": {
+      "meaning": "measured effective endogenous target-site abundance",
+      "source": "Denzler et al. 2016 Mol Cell 64:565 (PMID 27871486) Fig 7A: effective endogenous target-site abundance ~3e4 copies/cell, which is BELOW the threshold-like release at >=1.5e5 added sites measured in Denzler et al. 2014 Mol Cell 54:766 (PMID 24793693)",
+      "x_competitor": 30000.0
+    },
+    "B": {
+      "meaning": "measured derepression IC50 (half-maximal)",
+      "source": "Denzler et al. 2016 Mol Cell 64:565 (PMID 27871486): miR-122 derepression IC50 = 4.5e5 sites/cell, i.e. half-maximal derepression (fraction ~0.5) at this added-site abundance",
+      "x_competitor": 450000.0
+    },
+    "shared": "identical miR-122 reporter site and guide pool; A and B differ ONLY in added competitor abundance, so an independent per-target scorer receives identical inputs"
+  },
+  "candidate2_cross_system_nongrounded": {
+    "label": "NON_GROUNDED (requires a shared-reporter construct; NOT claimed as grounded)",
+    "measured_thresholds": {
+      "measured_ordering": "miR-92/25 threshold (~3000 sites) << miR-122 threshold (~1.5e5 sites), so at a fixed added-site level between them only miR-92/25 is derepressed (matches operator)",
+      "miR-122": {
+        "source": "Denzler et al. 2014 Mol Cell 54:766 (PMID 24793693): repression released in a threshold-like manner at >= 1.5e5 added target sites per cell",
+        "threshold_sites": 150000.0
+      },
+      "miR-92/25": {
+        "source": "Bosson et al. 2014 Mol Cell 56:347 (PMID 25449132): ~3000 additional high-affinity target sites affect miRNAs with low endogenous miRNA:target ratios such as miR-92/25",
+        "threshold_sites": 3000.0
+      }
+    },
+    "prediction": "At a FIXED added-competitor abundance the operator predicts miR-92/25 (small guide pool) is derepressed while miR-122 (large guide pool) is not, because derepression turns on when added sites approach the guide pool. This is the FALSIFIABLE cross-system ordering.",
+    "why_not_grounded": "Requirement (i) needs A and B to share the SAME focal-target sites so the independent scorer is indifferent. miR-122 and miR-92/25 are different guides and cannot share a reporter site; the identical reporter in the config is a modeling construct, so this is recorded for a future camera-ready that finds a shared-reporter dataset, and is NOT counted as evidence."
+  },
+  "determinism": "bisection solver, no randomness, CPU; JSON bitwise-identical on rerun (md5 reported)",
+  "example": "1B decision-relevant capability (Candidate 1: miR-122 competitor titration, grounded)",
+  "independent_scorer": {
+    "dpred_dx_competitor": {
+      "independent_occupancy": 0.0,
+      "seed_Tm": 0.0,
+      "seed_count": 0.0,
+      "targetscan_context": 0.0
+    },
+    "identical_for_A_and_B": true,
+    "note": "each scorer is a function of (guide, reporter) only; it has no competitor-abundance argument, so it is blind to the A/B distinction (derivative exactly 0)",
+    "predictions_A": {
+      "independent_occupancy": 0.9509583875968338,
+      "seed_Tm": -6.907755278982137,
+      "seed_count": 1.0,
+      "targetscan_context": 0.5
+    },
+    "predictions_B": {
+      "independent_occupancy": 0.9509583875968338,
+      "seed_Tm": -6.907755278982137,
+      "seed_count": 1.0,
+      "targetscan_context": 0.5
+    }
+  },
+  "measured": {
+    "A": {
+      "derepression": "sub-threshold (below the >=1.5e5 release threshold); far below half-maximal",
+      "source": "Denzler et al. 2016 Mol Cell 64:565 (PMID 27871486) Fig 7A: effective endogenous target-site abundance ~3e4 copies/cell, which is BELOW the threshold-like release at >=1.5e5 added sites measured in Denzler et al. 2014 Mol Cell 54:766 (PMID 24793693)",
+      "value_bound": "< 0.5",
+      "x_competitor": 30000.0
+    },
+    "B": {
+      "derepression": "half-maximal by definition of the measured IC50",
+      "source": "Denzler et al. 2016 Mol Cell 64:565 (PMID 27871486): miR-122 derepression IC50 = 4.5e5 sites/cell, i.e. half-maximal derepression (fraction ~0.5) at this added-site abundance",
+      "value": 0.5,
+      "x_competitor": 450000.0
+    },
+    "ordering": "derepression(B) > derepression(A)",
+    "resolved": true
+  },
+  "operator": {
+    "A": {
+      "D_jacobian": 4.676558641371723,
+      "derepression_fraction": 0.026866912672536047,
+      "free_guide": 12406.456013007948,
+      "theta_rep": 0.9254090716420712,
+      "x_competitor": 30000.0
+    },
+    "B": {
+      "D_jacobian": 261.05972154493685,
+      "derepression_fraction": 0.7106821051687155,
+      "free_guide": 379.5563411713673,
+      "theta_rep": 0.2751292787716737,
+      "x_competitor": 450000.0
+    },
+    "monotone_by_construction": "D_jacobian >= 1 > 0 at both A and B (reduced residual Jacobian, M-matrix); reporter derepression is monotone increasing in competitor abundance by this property, so the operator ordering is not a risky prediction",
+    "predicted_ordering": "derepression(B) > derepression(A)"
+  },
+  "reused_components": {
+    "jacobian": "occ_langmuir(f, K) -> (f/(K+f), K/(K+f)**2) [scripts/theory_realdata_verification.py]",
+    "scorers_and_loader": "BASELINES, load_systems [scripts/cerna_derepression.py] (RAISES on missing)",
+    "solver": "solve_f(M, x, K) [/home/shadi/mirna_baselines/scripts/offtarget_phase_probe.py]"
+  },
+  "system": {
+    "background_sites": [
+      {
+        "K": 1000.0,
+        "abundance": 20000.0
+      },
+      {
+        "K": 5000.0,
+        "abundance": 50000.0
+      },
+      {
+        "K": 50000.0,
+        "abundance": 200000.0
+      }
+    ],
+    "competitor_K": 1000.0,
+    "guide_total_M": 135000.0,
+    "name": "miR-122",
+    "reporter_K": 1000.0,
+    "reporter_x": 1000.0,
+    "source": "Denzler et al. 2014 Mol Cell 54:766 (PMID 24793693); Denzler et al. 2016 Mol Cell 64:565 (PMID 27871486)"
+  },
+  "verdict": "WIN",
+  "verdict_nature": "BLINDNESS-FILLED capability confirmation, NOT a passed falsification test. The operator ordering is monotone by construction and so cannot disagree with a monotone measured titration; the decision-relevant content is that the independent scorer is structurally blind (D = 0 for both A and B) while the operator and the measured Denzler biology agree B > A."
+}

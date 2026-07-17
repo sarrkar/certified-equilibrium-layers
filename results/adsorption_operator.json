@@ -1,0 +1,91 @@
+{
+  "closed_system_jacobian_Zmatrix_all_points": true,
+  "closed_system_jacobian_nonsingular_Mmatrix_all_points": true,
+  "finite_diff_max_rel_error": 5.499939500695698e-06,
+  "n_checks": 4,
+  "panel_row": {
+    "M_matrix": "Z + nonsingular M over measured range (closed-system Jacobian)",
+    "certified_static": "raise competitor concentration -> lower target loading",
+    "finite_diff_max_rel_error": 5.499939500695698e-06,
+    "instance": "competitive Langmuir adsorption (non-biological)",
+    "sign_match_rate": 1.0,
+    "status": "HOLDS (certified sign matches measured antagonism at every step)"
+  },
+  "provenance": {
+    "conditions": "Activated carbon (AC) 5 g/L, pH 5 +/- 0.02, 25 +/- 2 C, 48 h equilibration, concentration range 1-100 mg/L (batch, 150 rpm). Source: Heliyon 2024 Methods.",
+    "extraction": "Transcribed from the EuropePMC full-text XML table cells (deterministic parse), Tables 4, 7, 8.",
+    "primary_source": "Boregowda, Acharya, Jeppu, Girish, Prabhu et al., 'Adsorption of arsenic and fluoride: Modeling of single and competitive adsorption systems', Heliyon 2024, DOI 10.1016/j.heliyon.2024.e31967 (open access, PMC11167366). This is the open-access experimental companion (activated carbon, As(V)/F, single + competitive isotherms) to the paywalled JAMM paper the request cited (Acharya, Jeppu, Girish, Prabhu, Langmuir 2023, 39(49):17862-17878, DOI 10.1021/acs.langmuir.3c02496), by the same group and using the same JAMM multicomponent model. The Langmuir 2023 table values were not machine-accessible (paywall); the same-system experimental constants and binary antagonism data are transcribed here from the Heliyon 2024 tables with exact table citations. NO synthetic points."
+  },
+  "reduced_residual_1x1_trivial_Mmatrix": true,
+  "series": {
+    "As vs F": {
+      "competitor_mg_L": [
+        0,
+        20,
+        30
+      ],
+      "measured_Qm": [
+        3.54,
+        2.82,
+        2.29
+      ],
+      "measured_ratio": [
+        1.0,
+        0.8,
+        0.65
+      ],
+      "operator_load_at_Cref": [
+        1.498604651162791,
+        0.6575510204081634,
+        0.5134661354581674
+      ],
+      "operator_ratio": [
+        1.0,
+        0.4387755102040816,
+        0.3426294820717131
+      ]
+    },
+    "F vs As": {
+      "competitor_mg_L": [
+        0,
+        20,
+        30
+      ],
+      "measured_Qm": [
+        2.24,
+        2.03,
+        1.91
+      ],
+      "measured_ratio": [
+        1.0,
+        0.9,
+        0.85
+      ],
+      "operator_load_at_Cref": [
+        1.5949999999999998,
+        1.3020408163265307,
+        1.1925233644859812
+      ],
+      "operator_ratio": [
+        1.0,
+        0.816326530612245,
+        0.7476635514018692
+      ]
+    }
+  },
+  "sign_match_rate": 1.0,
+  "single_langmuir": {
+    "As": {
+      "R2": 0.97,
+      "kL_L_mg": 0.036,
+      "qmax_mg_g": 3.58
+    },
+    "F": {
+      "R2": 0.98,
+      "kL_L_mg": 0.11,
+      "qmax_mg_g": 2.32
+    },
+    "_table": "Heliyon 2024 Table 4 (single-component equilibrium isotherm parameters, Langmuir Isotherm Model rows)"
+  },
+  "system": "As(V)/F competitive adsorption on activated carbon (Heliyon 2024)"
+}

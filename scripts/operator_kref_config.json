@@ -1,0 +1,35 @@
+{
+  "_description": "Per-contrast chemistry-to-seed-K map for the conservation-law operator. R_REF is the K_modified/K_parent ratio the modification imposes on the seed dissociation constant. It is populated ONLY where a measured thermodynamic value exists; otherwise R_REF=UNKNOWN and the operator MUST NOT be run as if it predicts reduction. This replaces the old uniform R_REF=2.0 that was applied to every chemistry and encoded the (empirically wrong) assumption that every seed modification weakens base pairing.",
+  "_conversion": "delta-Tm -> K_ratio: ddG = |dS| * |dTm|; K_ratio = exp(ddG / R T). Constants: R = 1.987e-3 kcal/mol/K, T = 310 K (37 C), so R T = 0.616 kcal/mol. |dS| = 0.20 kcal/mol/K assumed for a seed-region duplex (VERIFY: nearest-neighbor melting entropy of a 7-8 bp seed is ~0.15-0.25 kcal/mol/K). This conversion is order-of-magnitude only; the certified SIGN is invariant to the exact R_REF>1 but the operator should still only be RUN where dTm is sourced.",
+  "_calibration_note": "R_REF=3.1 is a REFERENCE POINT, NOT a calibrated constant. Its source is weak: Schlegel 2022 describes the 2'-5'-RNA destabilization as 'similar to that of GNA' (a comparison, not a direct GNA measurement), |dS| is flagged VERIFY, and the same paper states free-duplex destabilization does not predict safety. The certified SIGN is CALIBRATION-FREE: the operator dOcc is negative for ALL R>1 (sign-invariance sweep printed by certified_panel_filtered.py over R = 1.1, 1.25, 1.5, 2, 3.1, 5, 10). The exact R value never carried the claim; only R>1 does.",
+  "contrasts": {
+    "GSE184929_Ttr_GNA_g7": {
+      "chemistry": "(S)-GNA (sugar/base)",
+      "seed_position": 7,
+      "delta_Tm_C": -3.5,
+      "R_REF": 3.1,
+      "source": "Schlegel 2022 NAR (DOI 10.1093/nar/gkac539): GNA free-duplex thermal destabilization is 3-4 C (text: a single 2'-5'-RNA linkage destabilized 3-4 C, 'similar to that of GNA'). Midpoint dTm=-3.5 C. Conversion: ddG=0.20*3.5=0.70 kcal/mol; K_ratio=exp(0.70/0.616)=3.1. CAVEAT: Schlegel 2022 itself states free-duplex seed-pairing destabilization is 'not sufficient to predict' improved safety, so even this sourced GNA value is a weak antecedent."
+    },
+    "GSE108823_Hao1_GNA_g7": {
+      "chemistry": "(S)-GNA (sugar/base)",
+      "seed_position": 7,
+      "delta_Tm_C": -3.5,
+      "R_REF": 3.1,
+      "source": "Same (S)-GNA at seed position 7 chemistry as GSE184929 D4 (Janas 2018 / Schlegel 2022 lineage). GNA free-duplex dTm 3-4 C from Schlegel 2022 NAR (DOI 10.1093/nar/gkac539); converted as above to K_ratio=3.1. Same free-duplex caveat applies."
+    },
+    "GSE285764_Ttr_MOP_link6-7": {
+      "chemistry": "alkyl phosphonate (MOP), backbone linkage 6-7",
+      "seed_position": null,
+      "delta_Tm_C": null,
+      "R_REF": "UNKNOWN",
+      "source": "No measured delta-K or delta-Tm justifies a seed-K INCREASE for the alkyl-phosphonate BACKBONE modification. Nikan 2025 NAR (DOI 10.1093/nar/gkaf692) states thermal destabilization does NOT predict mitigation, and that modifications at g6 vs g7 differ ~20-fold in effect at similar delta-Tm. The chemistry-to-K map is therefore NOT established. Operator MUST NOT be run; report 'certificate antecedent not established'."
+    },
+    "GSE285764_ACTN1_alkylphos_link6-7": {
+      "chemistry": "alkyl phosphonate (MOP / iBu), backbone linkage 6-7",
+      "seed_position": null,
+      "delta_Tm_C": null,
+      "R_REF": "UNKNOWN",
+      "source": "As GSE285764_Ttr_MOP_link6-7: no sourced delta-K/delta-Tm for the alkyl phosphonate. Certificate antecedent not established; operator not run."
+    }
+  }
+}
