@@ -1,0 +1,218 @@
+{
+ "_schema": "Per parent-vs-modified contrast. Loader produces a standardized long-format table (transcript_id, arm, log2FoldChange, seed_matched, ...). Every biological value (seed, dose) carries a source/VERIFY note. processed_status=on_disk loads directly; needs_preprocessing RAISES with the exact processed files that Prompt 2 must produce (loader never runs alignment).",
+ "canonical_site_types": [
+  "8mer",
+  "7mer-m8",
+  "7mer-A1",
+  "6mer"
+ ],
+ "contrasts": [
+  {
+   "name": "GSE184929_Ttr_D1_vs_D4_GNA_g7_30mkg",
+   "series": "GSE184929",
+   "series_ref": "Schlegel et al. 2022 (rat Ttr GalNAc-siRNA); processed DESeq2 tables are the ones SeedMatchR auto-downloads",
+   "organism": "Rattus norvegicus",
+   "guide": "Ttr (transthyretin) GalNAc-siRNA",
+   "seed": {
+    "value": "UAUAGAG",
+    "positions": "guide 2-8",
+    "source": "VERIFY: guide seed positions 2-8 from the repo SeedMatchR-derived annotation (SCHLEGEL_SEED); confirm against Schlegel 2022 primary / SeedMatchR package"
+   },
+   "modification": {
+    "chemistry": "(S)-GNA",
+    "seed_position": 7,
+    "source": "VERIFY: (S)-GNA at guide seed position 7 in arm D4; from Schlegel 2022, not from GEO characteristics"
+   },
+   "dose": {
+    "value": "30 mg/kg",
+    "source": "VERIFY: from on-disk file name Schlegel_2022_Ttr_D*_30mkg and GEO title Fig3-TTR-2_D*_30mkg"
+   },
+   "parent_arm": {
+    "label": "D1 (parent)",
+    "sample_ids": [
+     "GSM6209329",
+     "GSM6209330",
+     "GSM6209331",
+     "GSM6209332"
+    ],
+    "file": "data/raw/offtarget/seedmatchr/Schlegel_2022_Ttr_D1_30mkg.csv",
+    "source": "GEO GSE184929 Fig3-TTR-2_D1_30mkg reps; sample IDs from series metadata"
+   },
+   "modified_arm": {
+    "label": "D4 ((S)-GNA g7)",
+    "sample_ids": [
+     "GSM6209341",
+     "GSM6209342",
+     "GSM6209343",
+     "GSM6209344"
+    ],
+    "file": "data/raw/offtarget/seedmatchr/Schlegel_2022_Ttr_D4_30mkg.csv",
+    "source": "GEO GSE184929 Fig3-TTR-2_D4_30mkg reps; sample IDs from series metadata"
+   },
+   "utr_fasta": "data/raw/reference/rat_3utr.fa",
+   "gene_id_col": "ensembl_gene_id",
+   "logfc_col": "log2FoldChange",
+   "sep": "\t",
+   "processed_status": "on_disk",
+   "assignment_note": "GEO metadata labels these as group codes D1/D4 only (characteristics carry strain/sex/cell-line/age). The parent (D1) vs (S)-GNA-modified (D4) assignment is from the paper / SeedMatchR, NOT from GEO characteristics."
+  },
+  {
+   "name": "GSE108823_siRNA5_vs_siRNA5_GNA",
+   "series": "GSE108823",
+   "series_ref": "Janas et al. 2018 (rat hepatocytes GalNAc-siRNA); treatment field labels -GNA and -iB modifications directly",
+   "organism": "Rattus norvegicus",
+   "guide": "siRNA-5 (targets Hao1; Janas et al. 2018 Nat Commun, DOI 10.1038/s41467-018-02989-4)",
+   "seed": {
+    "value": "UGUCGAU",
+    "positions": "guide 2-8",
+    "source": "PUBLISHED SEQUENCE: Schlegel et al. 2022 NAR (DOI 10.1093/nar/gkac539) Supplementary Table S1, Hao1 duplex D6 (parent) / D9 (GNA @ g7), guide strand 5'-UUGUCGAUGACUUUCACAUUCUG-3', seed g2-8 = UGUCGAU. This is a published sequence table, NOT enrichment-inferred. IDENTITY of NAR Hao1 D6/D9 to GSE108823 'siRNA-5' is a sourced inference (Janas 2018 states siRNA-4=Ttr, siRNA-5=Hao1; NAR D1=Ttr/D6=Hao1; both use GNA@g7), corroborated NON-circularly: Janas siRNA-4 reproduces the Ttr seed UAUAGAG signature at D=0.124 p=1.6e-27 (matching GSE184929 Ttr), confirming the Janas<->NAR compound-code mapping. CAVEAT: no single source literally equates 'siRNA-5' to this exact sequence; GEO/SRA carry no sequences, Janas 2018 supplementary is histology-only, Alnylam HAO1 patent full sequence listings were not machine-accessible (inconclusive), lumasiran is a different (3'UTR-targeting) siRNA. The Hao1 enrichment (D=0.158) is CONSISTENCY, not the seed's source, and random-7mer controls are not clean nulls (D up to 0.051, p to 5e-8; UGUCGAU is a ~3x outlier)."
+   },
+   "modification": {
+    "chemistry": "GNA",
+    "seed_position": 7,
+    "source": "Janas 2018 main text: a thermally destabilizing GNA nucleotide was placed at position seven of the antisense strand in siRNA-5 (same modification and position as GSE184929 D4)."
+   },
+   "dose": {
+    "value": null,
+    "source": "VERIFY: transfection dose not in the treatment field; requires Janas 2018 (methods list 10 nM transfections)"
+   },
+   "parent_arm": {
+    "label": "siRNA-5 (parent)",
+    "sample_ids": [
+     "GSM2913807",
+     "GSM2913808",
+     "GSM2913809",
+     "GSM2913828",
+     "GSM2913829",
+     "GSM2913830"
+    ],
+    "file": "data/raw/offtarget/geo/GSE108823_group_siRNA-5.vsMock.DESeq2.txt.gz",
+    "source": "GEO GSE108823 treatment 'siRNA-5' samples"
+   },
+   "modified_arm": {
+    "label": "siRNA-5-GNA",
+    "sample_ids": [
+     "GSM2913831",
+     "GSM2913832",
+     "GSM2913833"
+    ],
+    "file": "data/raw/offtarget/geo/GSE108823_group_siRNA-5-GNA.vsMock.DESeq2.txt.gz",
+    "source": "GEO GSE108823 treatment 'siRNA-5-GNA' samples"
+   },
+   "utr_fasta": "data/raw/reference/rat_3utr.fa",
+   "gene_id_col": "ensembl_gene_id",
+   "logfc_col": "log2FoldChange",
+   "sep": "\t",
+   "processed_status": "on_disk",
+   "assignment_note": "Both arms are the SAME guide (siRNA-5, anti-Hao1): Hao1 on-target knocked down equally in parent (-1.55) and GNA (-1.61); parent off-targets (Cdh17,Actg1,Neo1,Sf3b1) collapse in the GNA arm. Per-group DESeq2 tables (siRNA-5.vsMock, siRNA-5-GNA.vsMock) downloaded from GEO on 2026-07-11. Data blocker RESOLVED; the certified-direction test remains BLOCKED on the unavailable siRNA-5 antisense seed.",
+   "on_target": {
+    "symbol": "Hao1",
+    "source": "Janas 2018 main text (siRNA-5 targets Hao1); confirmed in data: Hao1 knocked down equally in both arms (-1.55 parent, -1.61 GNA)"
+   }
+  },
+  {
+   "name": "GSE285764_Ttr_Parent_vs_MOP",
+   "series": "GSE285764",
+   "series_ref": "Nikan et al. 2025 (alkyl phosphonate seed modification); 3' QuantSeq Tag-Seq; per-sample salmon quant.sf only, no series-level DESeq2",
+   "organism": "Mus musculus",
+   "guide": "Ttr siRNA (Nikan 2025; sequence not stated in GEO metadata)",
+   "seed": {
+    "value": null,
+    "positions": "guide 2-8",
+    "source": "VERIFY: Ttr guide seed for Nikan 2025 NOT recoverable from GEO metadata; may differ from the Schlegel Ttr siRNA; requires Nikan 2025 primary sequence table"
+   },
+   "modification": {
+    "chemistry": "alkyl phosphonate (MOP)",
+    "seed_position": null,
+    "source": "VERIFY: arm Ttr-MOP is single alkyl phosphonate in the seed per GEO treatment label and series title; exact seed position requires Nikan 2025"
+   },
+   "dose": {
+    "value": null,
+    "source": "VERIFY: dose per arm not in the treatment field; titles show mg/kg dose groups; requires Nikan 2025"
+   },
+   "parent_arm": {
+    "label": "Ttr-Parent",
+    "sample_ids": [
+     "GSM8708396",
+     "GSM8708397",
+     "GSM8708398",
+     "GSM8708399",
+     "GSM8708400",
+     "GSM8708401",
+     "GSM8708402",
+     "GSM8708403",
+     "GSM8708404",
+     "GSM8708405",
+     "GSM8708406",
+     "GSM8708407"
+    ],
+    "file": "data/raw/offtarget/geo/GSE285764_Ttr-Parent.vs.control.DESeq2.txt.gz",
+    "source": "GEO GSE285764 treatment 'Ttr-Parent' samples"
+   },
+   "modified_arm": {
+    "label": "Ttr-MOP",
+    "sample_ids": [
+     "GSM8708412",
+     "GSM8708413",
+     "GSM8708414",
+     "GSM8708415",
+     "GSM8708420",
+     "GSM8708421",
+     "GSM8708422",
+     "GSM8708423",
+     "GSM8708428",
+     "GSM8708429",
+     "GSM8708430",
+     "GSM8708431"
+    ],
+    "file": "data/raw/offtarget/geo/GSE285764_Ttr-MOP.vs.control.DESeq2.txt.gz",
+    "source": "GEO GSE285764 treatment 'Ttr-MOP' samples"
+   },
+   "utr_fasta": "data/raw/reference/mouse_3utr.fa",
+   "gene_id_col": "ensembl_gene_id",
+   "logfc_col": "log2FoldChange",
+   "sep": "\t",
+   "processed_status": "needs_preprocessing",
+   "assignment_note": "Parent-vs-modified is metadata-labeled (Ttr-Parent vs Ttr-MOP). GEO provides only per-sample salmon quant.sf.gz (3' QuantSeq); Prompt 2 must run DESeq2 (or equivalent) to produce arm-vs-control log2FoldChange tables. A mouse 3'UTR fasta is also required and is not on disk. Loader does not run alignment."
+  },
+  {
+   "name": "GSE183164_mouse_Hao1_Ttr_GNA_iso_AMBIGUOUS",
+   "series": "GSE183164",
+   "series_ref": "Schlegel et al. 2021 (primary mouse hepatocytes; GNA vs isomeric GNA-iso; Hao1 + Ttr; dose series)",
+   "organism": "Mus musculus",
+   "guide": "siRNA groups D1-D6 (targets/chemistries by group; not disambiguated in GEO metadata)",
+   "seed": {
+    "value": null,
+    "positions": "guide 2-8",
+    "source": "VERIFY: seed sequences NOT recoverable from GEO metadata (group codes D1-D6); requires Schlegel 2021 primary sequence table"
+   },
+   "modification": {
+    "chemistry": "GNA and isomeric GNA-iso (by group)",
+    "seed_position": null,
+    "source": "VERIFY: per-group chemistry requires Schlegel 2021"
+   },
+   "dose": {
+    "value": "0.1, 1, 10, 50 nM (dose series)",
+    "source": "VERIFY: doses from GEO treatment field siRNA_D*_<dose>nM"
+   },
+   "parent_arm": {
+    "label": "AMBIGUOUS: parent D-group not identified in metadata",
+    "sample_ids": [],
+    "file": "data/raw/offtarget/geo/GSE183164_Fig7_groupD?_10nM.vs.mock.DESeq2.txt.gz",
+    "source": "VERIFY: which D-group is the parent is NOT in GEO metadata; requires Schlegel 2021"
+   },
+   "modified_arm": {
+    "label": "AMBIGUOUS: modified D-group not identified in metadata",
+    "sample_ids": [],
+    "file": "data/raw/offtarget/geo/GSE183164_Fig7_groupD?_10nM.vs.mock.DESeq2.txt.gz",
+    "source": "VERIFY: which D-group is the modified counterpart is NOT in GEO metadata; requires Schlegel 2021"
+   },
+   "utr_fasta": "data/raw/reference/mouse_3utr.fa",
+   "gene_id_col": "ensembl_gene_id",
+   "logfc_col": "log2FoldChange",
+   "sep": "\t",
+   "processed_status": "needs_preprocessing",
+   "assignment_note": "AMBIGUOUS from metadata: GEO labels only group codes D1-D6 (Fig7_groupD*.vs.mock DESeq2 files exist). The parent-vs-modified D-group pairing and per-group chemistry are NOT sourceable from metadata and require the Schlegel 2021 legend. A mouse 3'UTR fasta is also required and not on disk. Do not assert the pairing until confirmed."
+  }
+ ]
+}
