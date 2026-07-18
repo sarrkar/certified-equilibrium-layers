@@ -1,0 +1,91 @@
+{
+  "_separation": "CALIBRATION = Denzler 2014 + Bosson 2014 (miRNA copies only, fixed). HELD_OUT = Denzler 2016 + Mukherji 2011 (predicted, never fit). Kept strictly separate.",
+  "calibration_inputs": {
+    "copies": {
+      "miR-122": {
+        "M": 135000.0,
+        "source": "Denzler et al. 2014 Mol Cell 54:766 (hepatocyte copies/cell)"
+      },
+      "miR-293": {
+        "M": 2600.0,
+        "source": "Bosson et al. 2014 Mol Cell 56:347 (mESC copies/cell)"
+      },
+      "miR-294": {
+        "M": 57000.0,
+        "source": "Bosson et al. 2014 Mol Cell 56:347 (mESC copies/cell)"
+      },
+      "miR-92": {
+        "M": 1700.0,
+        "source": "Bosson et al. 2014 Mol Cell 56:347 (mESC copies/cell)"
+      }
+    },
+    "nominal_reporter_Kd": {
+      "A_rep": 1000.0,
+      "K_comp": 1000.0,
+      "K_rep": 1000.0,
+      "note": "calibration-era nominal, NOT from held-out studies"
+    }
+  },
+  "held_out_primary_Denzler2016": {
+    "mechanism": "systematic ~2-3x under-prediction: the minimal copy-only model omits endogenous-target buffering, which raises the true derepression threshold above the bare copy number.",
+    "order_of_magnitude_agreement_all": true,
+    "ordering_reproduced": true,
+    "rows": [
+      {
+        "copies_M": 1700.0,
+        "measured_note": "derepression not observed until >1.3e4 added miR-92 MREs; ~12% of apparent target abundance",
+        "measured_over_predicted": 3.2850648475092203,
+        "measured_threshold_sites": 13000.0,
+        "miRNA": "miR-92",
+        "order_of_magnitude_agreement": true,
+        "predicted_threshold_sites": 3957.303920455869
+      },
+      {
+        "copies_M": 135000.0,
+        "measured_note": "IC50 = 4.5e5 sites/cell in hepatocytes",
+        "measured_over_predicted": 1.6726788998214477,
+        "measured_threshold_sites": 450000.0,
+        "miRNA": "miR-122",
+        "order_of_magnitude_agreement": true,
+        "predicted_threshold_sites": 269029.519083451
+      }
+    ],
+    "source": "Denzler et al. 2016 Mol Cell 64:565, DOI 10.1016/j.molcel.2016.09.027",
+    "status": "HOLDS (quantitative, order-of-magnitude, held-out, not fit)"
+  },
+  "held_out_secondary_Mukherji2011": {
+    "absolute_location_note": "absolute location off by ~10x (predicted ~4.4e+03 vs observed ~420); stated plainly, this is NOT a quantitative pass",
+    "axis": "target-mRNA production (not added competitor MREs)",
+    "copies_source": "Mukherji 2011: ~2,000 miR-20 molecules per cell",
+    "measured_note": "switch-like (threshold-linear) transition; onset ~60 mRNAs x 7 sites = 420",
+    "measured_onset_sites": 420,
+    "miR20_copies": 2000.0,
+    "order_of_magnitude_agreement": false,
+    "predicted_threshold_sites": 4414.213562372952,
+    "qualitative_agreement": true,
+    "qualitative_prediction": "conservation law predicts a SHARP threshold: target repressed until target sites approach the miRNA copy number (~2e3), then a switch-like transition to expression",
+    "status": "qualitative only (OOM disagree)",
+    "system": "Mukherji et al. 2011 Nat Genet 43:854, DOI 10.1038/ng.905 (miR-20, HeLa)",
+    "validation_kind": "SECONDARY qualitative cross-check (directional/structural, NOT a magnitude validation); independent system, DIFFERENT axis = target-mRNA production, not added competitors"
+  },
+  "panel": [
+    {
+      "OOM_agreement": true,
+      "kind": "PRIMARY quantitative held-out",
+      "ordering_12pct_to_30pct_reproduced": true,
+      "predicted_vs_measured": "miR-92 3.96e3 vs >1.3e4; miR-122 2.69e5 vs 4.5e5 (both within 2-3x)",
+      "qualitative_only": false,
+      "status": "HOLDS (quantitative, order-of-magnitude, held-out, not fit)",
+      "system": "Denzler 2016"
+    },
+    {
+      "OOM_agreement": false,
+      "kind": "SECONDARY qualitative cross-check",
+      "predicted_vs_measured": "predicted ~4.4e+03 vs observed ~420 sites (off ~10x)",
+      "qualitative_agreement": true,
+      "qualitative_only": true,
+      "status": "qualitative only (OOM disagree)",
+      "system": "Mukherji 2011"
+    }
+  ]
+}

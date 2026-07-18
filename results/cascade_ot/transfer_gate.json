@@ -1,0 +1,57 @@
+{
+  "status": "ok",
+  "stage": "Stage 4 transfer gate (hard go/no-go before the generator)",
+  "benchmark": "zero-shot transfer of the McGeary-trained off-target predictor to the real siRNA off-target studies (GSE184929 / GSE164289 / GSE196839), versus the mechanistic SeedMatchR / seed-match-count baseline on the same data",
+  "pre_registered": {
+    "margin_spearman": 0.05,
+    "criterion_1": "learned mean per-condition Spearman beats the mechanistic seed-count baseline by at least margin_spearman",
+    "criterion_2": "reproduces the (S)-GNA KS direction on GSE184929: the model predicts MORE off-target for the parent D1 than for the (S)-GNA-destabilized D4, matching the measured shift",
+    "decision_rule": "PASS only if BOTH criteria hold; otherwise FAIL and do not build the generator"
+  },
+  "criterion_1_margin": {
+    "mean_spearman_learned": -0.00801714949580606,
+    "mean_spearman_baseline_seedcount": -0.00466325520511111,
+    "delta": -0.0033538942906949504,
+    "required_margin": 0.05,
+    "pass": false,
+    "per_condition": {
+      "GSE164289:siGGGGGC": {
+        "learned": -0.07767324610852067,
+        "baseline": -0.06822505551914965
+      },
+      "GSE164289:siGGCAGU": {
+        "learned": -0.06382371474438213,
+        "baseline": -0.06115963719573283
+      },
+      "GSE196839:siGGGGGC": {
+        "learned": 0.09034382130598136,
+        "baseline": 0.09835491891213073
+      },
+      "GSE184929:Schlegel_2022_Ttr_D1_30mkg": {
+        "learned": 0.050210541635735975,
+        "baseline": 0.050210541635735975
+      },
+      "GSE184929:Schlegel_2022_Ttr_D4_30mkg": {
+        "learned": -0.006067165251808304,
+        "baseline": -0.006067165251808304
+      },
+      "GSE184929:Schlegel_2022_Ttr_D1_10mkg": {
+        "learned": -0.04109313381184258,
+        "baseline": -0.04109313381184258
+      }
+    }
+  },
+  "criterion_2_sgna_direction": {
+    "measured_parent_ks_D": 0.17912499999999998,
+    "measured_sgna_ks_D": 0.13574999999999998,
+    "measured_parent_more_offtarget": true,
+    "predicted_parent_ks_D": 0.995625,
+    "predicted_sgna_ks_D": 0.995625,
+    "predicted_parent_more_offtarget": false,
+    "reproduced": false,
+    "note": "the predictor uses the same seed (count + seed-duplex dG) for D1 and D4, so its features are identical for the parent and the (S)-GNA guide; it cannot distinguish the (S)-GNA destabilization and predicts the same off-target for both"
+  },
+  "verdict": "FAIL",
+  "decision": "FAIL: the McGeary-trained predictor does NOT beat the mechanistic seed-count baseline (delta below the pre-registered margin) and cannot reproduce the (S)-GNA direction. Per the staged playbook, do NOT build the generator on this predictor; publish the predictor plus the honest negative transfer result and stop before Stage 5.",
+  "supports": "Stage 4 hard gate; the empirically measured miRNA->siRNA domain-adaptation (Ben-David) transfer term of the composition theorem, reported not assumed"
+}

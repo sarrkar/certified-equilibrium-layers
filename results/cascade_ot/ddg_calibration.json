@@ -1,0 +1,15 @@
+{
+  "guide": "Schlegel 2022 Ttr; D1 parent vs D4 g7 (S)-GNA",
+  "site_bound": "CUCUAUA",
+  "dG_D1_kcal_per_mol": -5.7,
+  "dG_D4_kcal_per_mol": -1.7,
+  "ddG_kcal_per_mol": 4.0,
+  "occupancy_D1": 5.7,
+  "occupancy_D4": 1.7,
+  "destabilizing": true,
+  "model": "g7 (S)-GNA modeled as a Watson-Crick A->C mismatch (real ViennaRNA duplexfold); an upper bound on the true GNA penalty (ViennaRNA has no GNA sugar parameters)",
+  "delta_tm_calibration": {
+    "status": "pending_real_data",
+    "reason": "a learned ddG-magnitude head calibrated on Schlegel 2017 delta-Tm data needs that real delta-Tm table, which is not in the repo; the sub-gate needs only the destabilization sign, which the real ViennaRNA mismatch dG provides"
+  }
+}

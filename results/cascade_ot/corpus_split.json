@@ -1,0 +1,68 @@
+{
+  "status": "ok",
+  "frozen": true,
+  "policy": "train ONLY on the miRNA auxiliary corpus; the real siRNA off-target studies are the held-out transfer-validation set and are NEVER in training",
+  "train": {
+    "source": "McGeary 2019 GSE140217 miRNA auxiliary corpus",
+    "n_cells": 72743,
+    "n_examples_with_3utr": 71791,
+    "n_examples_with_seed_site": 35065,
+    "n_mirnas": 17
+  },
+  "held_out_transfer": {
+    "n_independent_studies": 2,
+    "n_conditions": 6,
+    "conditions": {
+      "GSE184929:Schlegel_2022_Ttr_D1_30mkg": {
+        "study": "Schlegel_2022_GSE184929",
+        "geo": "GSE184929",
+        "organism": "rat (liver)",
+        "n_genes": 32883,
+        "n_genes_with_log2fc": 19967,
+        "n_seed_matched": 125
+      },
+      "GSE184929:Schlegel_2022_Ttr_D4_30mkg": {
+        "study": "Schlegel_2022_GSE184929",
+        "geo": "GSE184929",
+        "organism": "rat (liver)",
+        "n_genes": 32883,
+        "n_genes_with_log2fc": 19967,
+        "n_seed_matched": 125
+      },
+      "GSE184929:Schlegel_2022_Ttr_D1_10mkg": {
+        "study": "Schlegel_2022_GSE184929",
+        "geo": "GSE184929",
+        "organism": "rat (liver)",
+        "n_genes": 32883,
+        "n_genes_with_log2fc": 18792,
+        "n_seed_matched": 121
+      },
+      "GSE164289:siGGGGGC": {
+        "study": "Patel_2022_GSE164289",
+        "geo": "GSE164289",
+        "organism": "human (HeyA8 ovarian)",
+        "n_genes": 58395,
+        "n_genes_with_log2fc": 34542,
+        "n_seed_matched": 6346
+      },
+      "GSE164289:siGGCAGU": {
+        "study": "Patel_2022_GSE164289",
+        "geo": "GSE164289",
+        "organism": "human (HeyA8 ovarian)",
+        "n_genes": 58395,
+        "n_genes_with_log2fc": 33952,
+        "n_seed_matched": 7002
+      },
+      "GSE196839:siGGGGGC": {
+        "study": "Patel_2022_GSE196839",
+        "geo": "GSE196839",
+        "organism": "human (PC3 prostate)",
+        "n_genes": 26485,
+        "n_genes_with_log2fc": null,
+        "n_seed_matched": 6656
+      }
+    },
+    "n_examples_total_measured_genes": 153705,
+    "never_in_training": true
+  }
+}

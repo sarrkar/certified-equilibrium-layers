@@ -1,0 +1,90 @@
+{
+  "definitions": {
+    "threshold_target": 0.5,
+    "units": "abundances and K in copies per cell; guide_total_M in loaded-guide copies per cell",
+    "_comment_identical_background": "background_sites and reporter are held IDENTICAL across systems so guide_total_M is the SOLE differentiator. A per-system MEASURED background (real endogenous target pools and Kd per cell type) is a documented refinement (Prompt 3).",
+    "_comment_verify": "Every numeric value is an object {value, verify}. The verify string is a VERIFY note to confirm against the primary source; load_systems RAISES if value or verify is missing."
+  },
+  "systems": [
+    {
+      "name": "miR-122",
+      "threshold_axis": "added_competing_sites",
+      "source": "Denzler et al. 2014 Mol Cell 54:766 (PMID 24793693); Denzler et al. 2016 Mol Cell 64:565 (PMID 27871486)",
+      "guide_total_M": {"value": 135000, "verify": "VERIFY: miR-122 loaded-guide copies per hepatocyte; confirm exact copies against Denzler 2014/2016 primary"},
+      "background_sites": [
+        {"abundance": {"value": 20000, "verify": "VERIFY: high-affinity endogenous target-site pool copies/cell; nominal identical-across-systems value, confirm vs measured pool"},
+         "K": {"value": 1000, "verify": "VERIFY: high-affinity (8mer-like) site Kd in copies/cell; nominal, confirm"}},
+        {"abundance": {"value": 50000, "verify": "VERIFY: medium-affinity endogenous site pool copies/cell; nominal, confirm"},
+         "K": {"value": 5000, "verify": "VERIFY: medium-affinity (7mer-like) site Kd in copies/cell; nominal, confirm"}},
+        {"abundance": {"value": 200000, "verify": "VERIFY: low-affinity endogenous site pool copies/cell; nominal, confirm"},
+         "K": {"value": 50000, "verify": "VERIFY: low-affinity (6mer-like) site Kd in copies/cell; nominal, confirm"}}
+      ],
+      "reporter": {
+        "abundance": {"value": 1000, "verify": "VERIFY: reporter transcript copies/cell; nominal, confirm"},
+        "K": {"value": 1000, "verify": "VERIFY: reporter high-affinity site Kd in copies/cell; nominal, confirm"}
+      },
+      "competitor_K": {"value": 1000, "verify": "VERIFY: added competitor high-affinity site Kd in copies/cell; nominal, confirm"},
+      "measured_threshold_sites": {"value": 150000, "verify": "VERIFY: >= 1.5e5 added target sites per cell for threshold-like release, Denzler 2014 abstract"},
+      "measured_threshold_source": "Denzler et al. 2014 Mol Cell 54:766 (PMID 24793693): repression released in a threshold-like manner at >= 1.5e5 added target sites per cell",
+      "measured_background_sites": {
+        "abundance": {"value": 30000, "verify": "VERIFY: effective endogenous target-site abundance ~3e4 copies/cell; Denzler 2016 Fig 7A states the IC50 (= effective target-site abundance) reflects the experimentally determined value of ~3 x 10^4 copies per cell. DIRECT measurement."},
+        "K": {"value": 1000, "verify": "VERIFY: representative high-affinity Kd for the effective sink in copies/cell; nominal, confirm"},
+        "source": "Denzler et al. 2016 Mol Cell 64:565 (PMID 27871486): effective endogenous target-site abundance (IC50) ~3 x 10^4 copies per cell"
+      }
+    },
+    {
+      "name": "miR-92/25",
+      "threshold_axis": "added_competing_sites",
+      "source": "Bosson et al. 2014 Mol Cell 56:347 (PMID 25449132)",
+      "guide_total_M": {"value": 13000, "verify": "VERIFY: miR-92/25 loaded-guide copies/cell; low endogenous miRNA:target ratio; confirm exact copies against Bosson 2014 primary"},
+      "background_sites": [
+        {"abundance": {"value": 20000, "verify": "VERIFY: IDENTICAL to miR-122 by design (guide_total_M is sole differentiator); per-system measured pool is a Prompt 3 refinement"},
+         "K": {"value": 1000, "verify": "VERIFY: IDENTICAL to miR-122 by design"}},
+        {"abundance": {"value": 50000, "verify": "VERIFY: IDENTICAL to miR-122 by design"},
+         "K": {"value": 5000, "verify": "VERIFY: IDENTICAL to miR-122 by design"}},
+        {"abundance": {"value": 200000, "verify": "VERIFY: IDENTICAL to miR-122 by design"},
+         "K": {"value": 50000, "verify": "VERIFY: IDENTICAL to miR-122 by design"}}
+      ],
+      "reporter": {
+        "abundance": {"value": 1000, "verify": "VERIFY: IDENTICAL to miR-122 by design"},
+        "K": {"value": 1000, "verify": "VERIFY: IDENTICAL to miR-122 by design"}
+      },
+      "competitor_K": {"value": 1000, "verify": "VERIFY: IDENTICAL to miR-122 by design"},
+      "measured_threshold_sites": {"value": 3000, "verify": "VERIFY: ~3000 added high-affinity target sites per cell, Bosson 2014 abstract"},
+      "measured_threshold_source": "Bosson et al. 2014 Mol Cell 56:347 (PMID 25449132): ~3000 additional high-affinity target sites affect miRNAs with low endogenous miRNA:target ratios such as miR-92/25",
+      "measured_background_sites": {
+        "abundance": {"value": 3000, "verify": "VERIFY: PROXY. Effective endogenous target-site abundance estimated as the ~3000 added-site derepression threshold (Bosson 2014), using the Denzler 2016 relation that half-maximal derepression occurs when competing sites match the effective endogenous target-site abundance (IC50 = TSA). Bosson full text is paywalled so the direct TSA was not scriptable; confirm against the primary source."},
+        "K": {"value": 1000, "verify": "VERIFY: representative high-affinity Kd in copies/cell; nominal, confirm"},
+        "source": "Bosson et al. 2014 Mol Cell 56:347 (PMID 25449132) with the Denzler et al. 2016 IC50 = effective-target-site-abundance relation (PMID 27871486)",
+        "circular_with": "measured_threshold_sites"
+      }
+    },
+    {
+      "name": "miR-20",
+      "threshold_axis": "target_production",
+      "source": "Mukherji et al. 2011 Nat Genet 43:854 (PMID 21857679); single-cell molecular-titration threshold in HeLa",
+      "guide_total_M": {"value": 2000, "verify": "VERIFY: ~2,000 endogenous miR-20 molecules per cell in HeLa (Mukherji 2011 full text: 'an endogenous level of approximately 2,000 miR-20 molecules per cell')"},
+      "background_sites": [
+        {"abundance": {"value": 20000, "verify": "VERIFY: IDENTICAL to miR-122 by design (guide_total_M is sole differentiator); per-system measured pool is a Prompt 3 refinement"},
+         "K": {"value": 1000, "verify": "VERIFY: IDENTICAL to miR-122 by design"}},
+        {"abundance": {"value": 50000, "verify": "VERIFY: IDENTICAL to miR-122 by design"},
+         "K": {"value": 5000, "verify": "VERIFY: IDENTICAL to miR-122 by design"}},
+        {"abundance": {"value": 200000, "verify": "VERIFY: IDENTICAL to miR-122 by design"},
+         "K": {"value": 50000, "verify": "VERIFY: IDENTICAL to miR-122 by design"}}
+      ],
+      "reporter": {
+        "abundance": {"value": 1000, "verify": "VERIFY: IDENTICAL to miR-122 by design"},
+        "K": {"value": 1000, "verify": "VERIFY: IDENTICAL to miR-122 by design"}
+      },
+      "competitor_K": {"value": 1000, "verify": "VERIFY: IDENTICAL to miR-122 by design"},
+      "measured_threshold_sites": {"value": 420, "verify": "VERIFY: 60 target mRNAs per cell x 7 sites = 420 threshold sites (Mukherji 2011: 'threshold transition starts at approximately 60 target mRNAs per cell with seven typical sites'). NOTE: this is a target-PRODUCTION titration threshold (same molecular-titration physics), semantically distinct from the Denzler/Bosson added-competitor-site derepression thresholds; confirm mapping against the primary source"},
+      "measured_threshold_source": "Mukherji et al. 2011 Nat Genet 43:854 (PMID 21857679): threshold transition at ~60 target mRNAs per cell (7 sites each) at ~2,000 miR-20 molecules per cell",
+      "measured_background_sites": {
+        "abundance": {"value": 420, "verify": "VERIFY: PROXY. Effective target-site abundance ~420 sites (60 target mRNAs x 7 sites) at the molecular-titration threshold for ~2000 miR-20/cell (Mukherji 2011). Mukherji does not report the total endogenous miR-20 target pool as a number, so the reporter titration threshold is used as the effective-TSA estimate; confirm against the primary source."},
+        "K": {"value": 1000, "verify": "VERIFY: representative high-affinity Kd in copies/cell; nominal, confirm"},
+        "source": "Mukherji et al. 2011 Nat Genet 43:854 (PMID 21857679): titration threshold ~60 target mRNAs x 7 sites per cell at ~2000 miR-20/cell",
+        "circular_with": "measured_threshold_sites"
+      }
+    }
+  ]
+}

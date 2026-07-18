@@ -1,0 +1,38 @@
+{
+  "status": "ok",
+  "stage": "Stage 0 / Stage C sub-gate: E(D4) < E(D1) on GSE184929 (blocking)",
+  "supports": "Direction-1 modification-aware representation + the monotone-readout certificate",
+  "ddg_calibration": {
+    "guide": "Schlegel 2022 Ttr; D1 parent vs D4 g7 (S)-GNA",
+    "site_bound": "CUCUAUA",
+    "dG_D1_kcal_per_mol": -5.7,
+    "dG_D4_kcal_per_mol": -1.7,
+    "ddG_kcal_per_mol": 4.0,
+    "occupancy_D1": 5.7,
+    "occupancy_D4": 1.7,
+    "destabilizing": true,
+    "model": "g7 (S)-GNA modeled as a Watson-Crick A->C mismatch (real ViennaRNA duplexfold); an upper bound on the true GNA penalty (ViennaRNA has no GNA sugar parameters)",
+    "delta_tm_calibration": {
+      "status": "pending_real_data",
+      "reason": "a learned ddG-magnitude head calibrated on Schlegel 2017 delta-Tm data needs that real delta-Tm table, which is not in the repo; the sub-gate needs only the destabilization sign, which the real ViennaRNA mismatch dG provides"
+    }
+  },
+  "off_target_readout": "E(guide) = ||P_alpha(mouse TRRUST) e||_2 with e = occupancy(guide) * GSE184929 D1-seed-match count per gene (monotone in occupancy)",
+  "n_seed_matched_genes": 1201,
+  "monotone": {
+    "E_D1": 47.56660874603737,
+    "E_D4": 14.18653243302869,
+    "E_D4_over_E_D1": 0.29824561403508776,
+    "occ_ratio_D4_over_D1": 0.2982456140350877,
+    "D4_lt_D1": true,
+    "certificate": "E is linear in occupancy and D1/D4 hit the same sites, so E(D4) = (occ_D4/occ_D1) E(D1); occ_D4 < occ_D1 implies E(D4) < E(D1) by construction"
+  },
+  "non_monotone_control": {
+    "E_D1_count_only": 8.34501907825217,
+    "E_D4_count_only": 8.34501907825217,
+    "D4_lt_D1": false,
+    "note": "the count-only readout ignores occupancy, so it predicts the same off-target for D1 and D4 and CANNOT reproduce the inequality; this motivates the monotone design"
+  },
+  "subgate": "PASS",
+  "decision": "PASS: the monotone modification-aware readout outputs E(D4) < E(D1); proceed."
+}

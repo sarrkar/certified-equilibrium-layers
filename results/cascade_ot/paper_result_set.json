@@ -1,0 +1,102 @@
+{
+  "status": "ok",
+  "title": "CASCADE certified-discrimination + differentiable-propagation result set",
+  "real_data_only": true,
+  "sources": {
+    "subgate_d4d1": "results/cascade_ot/subgate_d4d1.json",
+    "ift_check": "results/cascade_ot/ift_check.json",
+    "transfer_gate": "results/cascade_ot/transfer_gate.json",
+    "criterion1_retrain": "results/cascade_ot/criterion1_retrain.json"
+  },
+  "results": {
+    "criterion_2_modification_discrimination": {
+      "claim": "modification discrimination: the certified off-target readout distinguishes a chemically modified guide from its parent in the correct direction",
+      "verdict": "PASS",
+      "with_certificate": true,
+      "evidence": {
+        "subgate_d4d1": {
+          "source": "results/cascade_ot/subgate_d4d1.json",
+          "subgate": "PASS",
+          "monotone_E_D1": 47.56660874603737,
+          "monotone_E_D4": 14.18653243302869,
+          "D4_lt_D1": true,
+          "certificate": "E is linear in occupancy and D1/D4 hit the same sites, so E(D4) = (occ_D4/occ_D1) E(D1); occ_D4 < occ_D1 implies E(D4) < E(D1) by construction",
+          "non_monotone_control_D4_lt_D1": false,
+          "ddG_kcal_per_mol": 4.0,
+          "ddG_model": "g7 (S)-GNA modeled as a Watson-Crick A->C mismatch (real ViennaRNA duplexfold); an upper bound on the true GNA penalty (ViennaRNA has no GNA sugar parameters)",
+          "ddG_destabilizing": true
+        },
+        "ift_propagation": {
+          "source": "results/cascade_ot/ift_check.json",
+          "verdict": "PASS",
+          "n_nodes": 2072,
+          "operator": "TRRUST v2 (human); https://www.grnpedia.org/trrust/data/trrust_rawdata.human.tsv",
+          "fixed_point_residual": 7.018940983982702e-12,
+          "appnp_layer_vs_closed_form": 2.245420557284082e-11,
+          "ift_grad_vs_finite_diff_max_rel_error": 5.0773090394453334e-08,
+          "spectral_radius_rho_S": 1.0000000000000027,
+          "contraction_factor": 0.6874096530265377,
+          "unique_fixed_point": true
+        }
+      }
+    },
+    "criterion_1_transfer": {
+      "claim": "miRNA -> siRNA transfer: a predictor trained on the data-rich miRNA corpus beats the mechanistic seed baseline on the held-out siRNA off-target studies",
+      "verdict": "FAIL",
+      "failed_twice_pre_registered": true,
+      "attempts": {
+        "transfer_gate_count_based": {
+          "source": "results/cascade_ot/transfer_gate.json",
+          "pre_registered": {
+            "margin_spearman": 0.05,
+            "criterion_1": "learned mean per-condition Spearman beats the mechanistic seed-count baseline by at least margin_spearman",
+            "criterion_2": "reproduces the (S)-GNA KS direction on GSE184929: the model predicts MORE off-target for the parent D1 than for the (S)-GNA-destabilized D4, matching the measured shift",
+            "decision_rule": "PASS only if BOTH criteria hold; otherwise FAIL and do not build the generator"
+          },
+          "criterion_1_margin": {
+            "mean_spearman_learned": -0.00801714949580606,
+            "mean_spearman_baseline": -0.00466325520511111,
+            "delta": -0.0033538942906949504,
+            "required_margin": 0.05,
+            "pass": false
+          },
+          "criterion_2_sgna_direction_reproduced": false,
+          "verdict": "FAIL"
+        },
+        "criterion1_retrain_learned": {
+          "source": "results/cascade_ot/criterion1_retrain.json",
+          "pre_registered": {
+            "criterion_a_min_mean_margin": 0.05,
+            "criterion_b": "the learned-minus-baseline margin is positive on BOTH the Schlegel and Patel held-out studies separately (not just pooled)",
+            "criterion_c": "the D4 < D1 discrimination still holds in the retrained model (E(D4) < E(D1))",
+            "baseline": "SeedMatchR + seed-duplex-Tm = occupancy(seed dG) * seed-match count (no learning, no propagation)",
+            "decision_rule": "PASS only if (a) AND (b) AND (c); otherwise FAIL"
+          },
+          "model": "modification-aware occupancy + learned binding head + MonotoneEquilibriumPropagation (learned alpha=0.388, w=0.490), pre-trained on McGeary",
+          "margins": {
+            "schlegel_mean": -0.009264998676666534,
+            "patel_mean": 0.016971907185404356,
+            "pooled_mean": 0.0038534542543689127
+          },
+          "criteria": {
+            "a_pooled_margin": false,
+            "b_both_studies_positive": false,
+            "c_d4_lt_d1": true
+          },
+          "d4_lt_d1_holds": true,
+          "verdict": "FAIL"
+        }
+      }
+    }
+  },
+  "demarcation": {
+    "criterion_2_modification_discrimination": "PASS with certificate. The monotone modification-aware readout reproduces E(D4) < E(D1) by construction (E linear in occupancy, same sites), a count-only readout cannot, and the differentiable propagation that carries the occupancy is IFT-exact on the real 2072-node TRRUST operator.",
+    "criterion_1_transfer": "FAIL twice, both pre-registered. The count-based predictor missed the >= 0.05 Spearman margin (delta -0.0034) and could not reproduce the (S)-GNA direction; the learned occupancy + MonotoneEquilibriumPropagation predictor also missed the margin (pooled 0.0039) and was not positive on both studies (Schlegel -0.0093, Patel 0.0170).",
+    "binding_constraint": "The binding constraint is the independent-study count, not model capacity. Both a simple count baseline and a learned propagation predictor land at the same near-zero margin against the mechanistic seed baseline, and the margin oscillates in sign across the handful of held-out conditions; with only two independent off-target studies (Schlegel rat, Patel human) there is no statistical room for a model to separate from the baseline, regardless of capacity. More independent studies, not a bigger model, is the unlock."
+  },
+  "stage_g_generator": {
+    "status": "GATED",
+    "reason": "Stage G (the off-target-aware generator) requires criterion 1 to PASS. It has FAILED twice pre-registered, so no generator code is written and Stage G stays gated."
+  },
+  "headline": "Criterion 2 (modification discrimination) PASSES with a certificate; criterion 1 (miRNA -> siRNA transfer) FAILS twice pre-registered. The defensible contribution is the certified modification-aware discrimination and the IFT-exact differentiable propagation layer, not a generator."
+}

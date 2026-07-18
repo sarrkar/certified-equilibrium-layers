@@ -1,0 +1,30 @@
+{
+  "status": "ok",
+  "stage": "Stage D: monotone equilibrium propagation layer (monDEQ/IGNN) with IFT backward",
+  "supports": "implicit-layer well-posedness (unique fixed point of the non-normal P_alpha) and IFT-exact gradient; the differentiable-propagation headline contribution",
+  "operator": "TRRUST v2 (human); https://www.grnpedia.org/trrust/data/trrust_rawdata.human.tsv",
+  "n_nodes": 2072,
+  "alpha": 0.30000000000000004,
+  "edge_scale_w": 0.9820137900379085,
+  "dtype": "float64",
+  "checks": {
+    "fixed_point_residual": 7.018940983982702e-12,
+    "fixed_point_machine_precision": true,
+    "appnp_layer_vs_closed_form": 2.245420557284082e-11,
+    "appnp_closed_form_vs_numpy_propagate": 4.406513323129016e-15,
+    "appnp_agreement": true,
+    "ift_grad_vs_finite_diff_max_rel_error": 5.0773090394453334e-08,
+    "ift_grad_pass": true,
+    "grad_rel_errors": {
+      "alpha": 1.2319761395375309e-10,
+      "w": 5.1986872627886485e-09,
+      "e[0]": 5.0773090394453334e-08,
+      "e[690]": 5.270599410946557e-09,
+      "e[1381]": 1.216548265438235e-08
+    },
+    "spectral_radius_rho_S": 1.0000000000000027,
+    "contraction_factor": 0.6874096530265377,
+    "unique_fixed_point": true
+  },
+  "verdict": "PASS"
+}

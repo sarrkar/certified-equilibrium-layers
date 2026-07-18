@@ -1,0 +1,30 @@
+{
+  "_provenance": {
+    "primary_source": "Boregowda, Acharya, Jeppu, Girish, Prabhu et al., 'Adsorption of arsenic and fluoride: Modeling of single and competitive adsorption systems', Heliyon 2024, DOI 10.1016/j.heliyon.2024.e31967 (open access, PMC11167366). This is the open-access experimental companion (activated carbon, As(V)/F, single + competitive isotherms) to the paywalled JAMM paper the request cited (Acharya, Jeppu, Girish, Prabhu, Langmuir 2023, 39(49):17862-17878, DOI 10.1021/acs.langmuir.3c02496), by the same group and using the same JAMM multicomponent model. The Langmuir 2023 table values were not machine-accessible (paywall); the same-system experimental constants and binary antagonism data are transcribed here from the Heliyon 2024 tables with exact table citations. NO synthetic points.",
+    "conditions": "Activated carbon (AC) 5 g/L, pH 5 +/- 0.02, 25 +/- 2 C, 48 h equilibration, concentration range 1-100 mg/L (batch, 150 rpm). Source: Heliyon 2024 Methods.",
+    "extraction": "Transcribed from the EuropePMC full-text XML table cells (deterministic parse), Tables 4, 7, 8."
+  },
+  "single_langmuir": {
+    "_table": "Heliyon 2024 Table 4 (single-component equilibrium isotherm parameters, Langmuir Isotherm Model rows)",
+    "As": {"qmax_mg_g": 3.58, "kL_L_mg": 0.036, "R2": 0.97},
+    "F":  {"qmax_mg_g": 2.32, "kL_L_mg": 0.11, "R2": 0.98}
+  },
+  "binary_constant_F": {
+    "_table": "Heliyon 2024 Table 7 (competitive params at constant fluoride, Extended Langmuir rows); As(V) swept 5-100 mg/L, F fixed. Qm is the fitted binary capacity; ratio = QmaxB/QmaxS.",
+    "_certified_direction": "raising F should LOWER As(V) capacity/loading",
+    "points": [
+      {"F_mg_L": 0,  "As_Qm_mg_g": 3.54, "As_kL_L_mg": 0.036, "ratio_QmaxB_QmaxS": 1.00, "interaction": "single"},
+      {"F_mg_L": 20, "As_Qm_mg_g": 2.82, "As_kL_L_mg": 0.058, "ratio_QmaxB_QmaxS": 0.80, "interaction": "Antagonism"},
+      {"F_mg_L": 30, "As_Qm_mg_g": 2.29, "As_kL_L_mg": 0.312, "ratio_QmaxB_QmaxS": 0.65, "interaction": "Antagonism"}
+    ]
+  },
+  "binary_constant_As": {
+    "_table": "Heliyon 2024 Table 8 (competitive params at constant arsenic, Extended Langmuir rows); F swept 5-100 mg/L, As(V) fixed. Qm is the fitted binary capacity; ratio = QmaxB/QmaxS.",
+    "_certified_direction": "raising As(V) should LOWER F capacity/loading",
+    "points": [
+      {"As_mg_L": 0,  "F_Qm_mg_g": 2.24, "F_kL_L_mg": 0.14, "ratio_QmaxB_QmaxS": 1.00, "interaction": "single"},
+      {"As_mg_L": 20, "F_Qm_mg_g": 2.03, "F_kL_L_mg": 0.16, "ratio_QmaxB_QmaxS": 0.90, "interaction": "Antagonism"},
+      {"As_mg_L": 30, "F_Qm_mg_g": 1.91, "F_kL_L_mg": 0.13, "ratio_QmaxB_QmaxS": 0.85, "interaction": "Antagonism"}
+    ]
+  }
+}

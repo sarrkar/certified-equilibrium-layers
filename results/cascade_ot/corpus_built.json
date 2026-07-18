@@ -1,0 +1,154 @@
+{
+  "status": "ok",
+  "corpus": "CASCADE-OT miRNA auxiliary training corpus",
+  "source": "McGeary 2019 GSE140217 HeLa transfection log-TPM (4279 transcripts x 17 miRNAs)",
+  "build": "RefSeq to symbol (mygene) to GRCh38/104 3'UTR (pyensembl); canonical seed-match sites (cascade.features.seedmatch); ViennaRNA seed-duplex dG per seed",
+  "n_cells_prefilter": 72743,
+  "n_cells_prefilter_expected": 72743,
+  "n_transcripts": 4279,
+  "n_mirnas": 17,
+  "n_transcripts_with_3utr": 4223,
+  "n_examples_with_3utr": 71791,
+  "n_examples_with_seed_site": 35065,
+  "feature_schema": [
+    "best_site_type",
+    "site_count",
+    "seed_dg"
+  ],
+  "site_type_counts": {
+    "none": 36726,
+    "6mer": 10577,
+    "offset-6mer": 9467,
+    "7mer-m8": 6235,
+    "7mer-A1": 5588,
+    "8mer": 3198,
+    "no_3utr": 952
+  },
+  "signal_check": {
+    "mean_log_tpm_repression_site_bearing": 4.548225494869333,
+    "mean_log_tpm_repression_no_site": 4.8438311428136265,
+    "site_more_repressed": true
+  },
+  "per_mirna": {
+    "let7": {
+      "seed": "GAGGUAG",
+      "mirbase_id": "hsa-let-7a-5p",
+      "seed_dg": -9.3,
+      "n_with_seed_site": 1808,
+      "mean_repression_site": 4.469935383116627
+    },
+    "lsy6": {
+      "seed": "AAUGCGU",
+      "mirbase_id": "cel-lsy-6-5p",
+      "seed_dg": -7.0,
+      "n_with_seed_site": 541,
+      "mean_repression_site": 4.524543230483088
+    },
+    "mir1": {
+      "seed": "GGAAUGU",
+      "mirbase_id": "hsa-miR-1-3p",
+      "seed_dg": -7.4,
+      "n_with_seed_site": 2073,
+      "mean_repression_site": 4.427394050323135
+    },
+    "mir124": {
+      "seed": "AAGGCAC",
+      "mirbase_id": "hsa-miR-124-3p",
+      "seed_dg": -9.4,
+      "n_with_seed_site": 2673,
+      "mean_repression_site": 4.533652459327594
+    },
+    "mir137": {
+      "seed": "UAUUGCU",
+      "mirbase_id": "hsa-miR-137-3p",
+      "seed_dg": -5.8,
+      "n_with_seed_site": 1701,
+      "mean_repression_site": 4.455806914836974
+    },
+    "mir139": {
+      "seed": "CUACAGU",
+      "mirbase_id": "hsa-miR-139-5p",
+      "seed_dg": -7.4,
+      "n_with_seed_site": 2103,
+      "mean_repression_site": 4.583547796015315
+    },
+    "mir143": {
+      "seed": "GAGAUGA",
+      "mirbase_id": "hsa-miR-143-3p",
+      "seed_dg": -7.9,
+      "n_with_seed_site": 2416,
+      "mean_repression_site": 4.555964894448651
+    },
+    "mir144": {
+      "seed": "ACAGUAU",
+      "mirbase_id": "hsa-miR-144-3p",
+      "seed_dg": -5.9,
+      "n_with_seed_site": 1987,
+      "mean_repression_site": 4.626935524476329
+    },
+    "mir153": {
+      "seed": "UGCAUAG",
+      "mirbase_id": "hsa-miR-153-3p",
+      "seed_dg": -7.5,
+      "n_with_seed_site": 1592,
+      "mean_repression_site": 4.529327030125739
+    },
+    "mir155": {
+      "seed": "UAAUGCU",
+      "mirbase_id": "hsa-miR-155-5p",
+      "seed_dg": -5.8,
+      "n_with_seed_site": 1938,
+      "mean_repression_site": 4.554193414390001
+    },
+    "mir182": {
+      "seed": "UUGGCAA",
+      "mirbase_id": "hsa-miR-182-5p",
+      "seed_dg": -7.8,
+      "n_with_seed_site": 2362,
+      "mean_repression_site": 4.636639572056123
+    },
+    "mir199a": {
+      "seed": "CCAGUGU",
+      "mirbase_id": "hsa-miR-199a-5p",
+      "seed_dg": -9.4,
+      "n_with_seed_site": 2421,
+      "mean_repression_site": 4.537476699206452
+    },
+    "mir204": {
+      "seed": "UCCCUUU",
+      "mirbase_id": "hsa-miR-204-5p",
+      "seed_dg": -7.8,
+      "n_with_seed_site": 2278,
+      "mean_repression_site": 4.5595224458012895
+    },
+    "mir205": {
+      "seed": "CCUUCAU",
+      "mirbase_id": "hsa-miR-205-5p",
+      "seed_dg": -7.3,
+      "n_with_seed_site": 2472,
+      "mean_repression_site": 4.620296950106179
+    },
+    "mir216b": {
+      "seed": "AAUCUCU",
+      "mirbase_id": "hsa-miR-216b-5p",
+      "seed_dg": -5.9,
+      "n_with_seed_site": 2152,
+      "mean_repression_site": 4.522160897685845
+    },
+    "mir223": {
+      "seed": "GUCAGUU",
+      "mirbase_id": "hsa-miR-223-3p",
+      "seed_dg": -7.3,
+      "n_with_seed_site": 2061,
+      "mean_repression_site": 4.565762974771478
+    },
+    "mir7": {
+      "seed": "GGAAGAC",
+      "mirbase_id": "hsa-miR-7-5p",
+      "seed_dg": -9.2,
+      "n_with_seed_site": 2487,
+      "mean_repression_site": 4.549586335262945
+    }
+  },
+  "examples_cache": "data/raw/offtarget/mirna_aux/cascade_ot_examples.csv.gz (gitignored)"
+}

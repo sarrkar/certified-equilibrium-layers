@@ -1,0 +1,89 @@
+{
+  "hao1_correct_annotation": "union",
+  "hao1_isoform_fragility": {
+    "last": {
+      "D_modified": 0.11115197917357333,
+      "D_parent": 0.15835063634365001,
+      "attenuation": 0.29806420902311315,
+      "n_matched": 470
+    },
+    "union": {
+      "D_modified": 0.1431473435183887,
+      "D_parent": 0.14680249572083268,
+      "attenuation": 0.024898433671010634,
+      "n_matched": 650
+    }
+  },
+  "headline_ci_overlap": {
+    "Hao1_CI95": [
+      -0.3624209390528933,
+      0.2844287039761688
+    ],
+    "Ttr_CI95": [
+      0.5688991539701513,
+      0.8597837032072124
+    ],
+    "overlap": false
+  },
+  "n_bootstrap": 2000,
+  "n_permutation": 2000,
+  "rows": {
+    "GSE108823": {
+      "bootstrap": {
+        "D_modified": 0.1431473435183887,
+        "D_parent": 0.14680249572083268,
+        "atten_CI95": [
+          -0.3624209390528933,
+          0.2844287039761688
+        ],
+        "attenuation": 0.024898433671010634,
+        "n_background": 18111,
+        "n_matched": 650
+      },
+      "permutation_modified": {
+        "D": 0.1431473435183887,
+        "n_perm": 2000,
+        "p_ks_analytic": 6.1515222462760265e-12,
+        "p_permutation": 0.0004997501249375312,
+        "perm_exceedances": 0
+      },
+      "permutation_parent": {
+        "D": 0.14680249572083268,
+        "n_perm": 2000,
+        "p_ks_analytic": 1.622808811045746e-12,
+        "p_permutation": 0.0004997501249375312,
+        "perm_exceedances": 0
+      },
+      "target": "Hao1 siRNA-5"
+    },
+    "GSE184929": {
+      "bootstrap": {
+        "D_modified": 0.03453745736290992,
+        "D_parent": 0.11796631316281975,
+        "atten_CI95": [
+          0.5688991539701513,
+          0.8597837032072124
+        ],
+        "attenuation": 0.7072261017834766,
+        "n_background": 16760,
+        "n_matched": 3206
+      },
+      "permutation_modified": {
+        "D": 0.03453745736290992,
+        "n_perm": 2000,
+        "p_ks_analytic": 0.0015851920662837194,
+        "p_permutation": 0.0029985007496251873,
+        "perm_exceedances": 5
+      },
+      "permutation_parent": {
+        "D": 0.11796631316281975,
+        "n_perm": 2000,
+        "p_ks_analytic": 2.6971559002641584e-33,
+        "p_permutation": 0.0004997501249375312,
+        "perm_exceedances": 0
+      },
+      "target": "Ttr"
+    }
+  },
+  "seed": 20240716
+}
