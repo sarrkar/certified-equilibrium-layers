@@ -1,5 +1,8 @@
 # CASCADE
 
+**Paper:** *Certified Comparative Statics for Conservation-Law Equilibrium Layers, with an
+Application to siRNA Off-Target Competition*
+
 Interpretable modeling of siRNA seed-mediated off-target activity and competitive
 endogenous RNA (ceRNA) derepression, built on a certified conservation-law equilibrium
 operator with provable comparative statics.
@@ -50,6 +53,37 @@ predicted within an order of magnitude from copy numbers alone; and the certifie
 monotonicity survives learning (the trainable layer keeps `D > 0` at every training step
 while reaching magnitude parity with a same-capacity feedforward baseline that structurally
 cannot express competitor coupling).
+
+## Figures
+
+### Certified-direction panel
+
+![Certified-direction panel](results/figures/fig2_certified_panel.png)
+
+Seed-matched vs background log2 fold-change ECDFs across the certified panel. The KS
+attenuation separates the arms where the certified sign is testable and sourced (for
+example Ttr under GNA versus the trivial Hao1 arm).
+
+### Second instantiation: competitive Langmuir adsorption
+
+![Competitive Langmuir adsorption operator](results/figures/fig4_adsorption.png)
+
+Measured (Heliyon 2024) versus operator loading of each adsorbate as the competitor
+concentration is swept. The certified sign `dq_target/dC_competitor < 0` matches every
+measured antagonism step (4/4); the shaded band is the disclosed, uncertified magnitude
+gap. This is a purely physical, non-biological instance of the same M-matrix comparative
+static, showing it is domain-general and not an RNAi artifact.
+
+### Trainable certified-monotone equilibrium layer
+
+![Trainable certified-monotone layer](results/figures/fig5_learned_layer.png)
+
+Left: held-out mean per-microRNA Spearman over training, equilibrium layer versus a
+same-capacity feedforward baseline (magnitude parity). Right: the capability contrast. The
+baseline is structurally flat (`d pred / d competitor abundance = 0`, competitor is not an
+input) while the equilibrium layer has a strictly negative slope, the Proposition-2
+derepression direction, now for a learned layer against a learned baseline of equal
+capacity. The certified monotonicity condition `D > 0` holds at every training step.
 
 ## Quickstart
 
