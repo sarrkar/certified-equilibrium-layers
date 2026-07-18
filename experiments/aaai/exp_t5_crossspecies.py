@@ -121,7 +121,9 @@ def human_site_counts(gene_ids, symbols, site: str) -> tuple[dict, dict]:
     return counts, ensg2sym
 
 
-def mag_feature(grn_index: dict, keys: list[str], seed_counts: np.ndarray, L, alpha: float) -> np.ndarray:
+def mag_feature(
+    grn_index: dict, keys: list[str], seed_counts: np.ndarray, L, alpha: float
+) -> np.ndarray:
     """Per-gene magnetic-propagated score: |P_mag e| at the gene's GRN node (0 if absent)."""
     n = len(grn_index)
     e = np.zeros(n)
@@ -206,7 +208,9 @@ def main() -> int:
     # GSE196839 count-derived log2FC (PC3 siGGGGGC vs siNT1, single replicate), by symbol.
     sample_cols = [c for c in g196.columns if c.startswith(("PC3_", "HeyA8_"))]
     cpm = g196[sample_cols].apply(lambda s: s / s.sum() * 1e6, axis=0)
-    lfc196 = np.log2((cpm["PC3_siMxy_3AB_48h"].to_numpy() + 1.0) / (cpm["PC3_siNT_3AB_48h"].to_numpy() + 1.0))
+    lfc196 = np.log2(
+        (cpm["PC3_siMxy_3AB_48h"].to_numpy() + 1.0) / (cpm["PC3_siNT_3AB_48h"].to_numpy() + 1.0)
+    )
     sym196 = [str(s).upper() for s in g196.index]
     humans.append(human_block("GSE196839_siGGGGGC", sym196, sym196, lfc196))
     auroc = {}

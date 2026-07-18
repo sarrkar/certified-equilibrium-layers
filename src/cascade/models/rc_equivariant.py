@@ -125,7 +125,9 @@ def one_hot_guides(guides: list[str]) -> Tensor:
     return x
 
 
-def equivariance_check(guides: list[str], c_out: int = 8, tol: float = 1e-10, seed: int = 0) -> dict:
+def equivariance_check(
+    guides: list[str], c_out: int = 8, tol: float = 1e-10, seed: int = 0
+) -> dict:
     """Empirically verify f(g . x) = g . f(x) on real guides, with a non-equivariant control."""
     torch.manual_seed(seed)
     x = one_hot_guides(guides).double()
@@ -138,12 +140,16 @@ def equivariance_check(guides: list[str], c_out: int = 8, tol: float = 1e-10, se
         equiv_err = float(torch.max(torch.abs(f_rc - rc_f)))
 
         # RC is an involution on the inputs (sanity on the group action).
-        involution_err = float(torch.max(torch.abs(rc_action(rc_action(x, layer.M_in), layer.M_in) - x)))
+        involution_err = float(
+            torch.max(torch.abs(rc_action(rc_action(x, layer.M_in), layer.M_in) - x))
+        )
 
         # Non-equivariant control: a plain (untied) position-wise linear breaks equivariance.
         plain = nn.Linear(len(ALPHABET), c_out, bias=True).double()
         fxp = plain(x)
-        ctrl_err = float(torch.max(torch.abs(plain(rc_action(x, layer.M_in)) - rc_action(fxp, layer.M_out))))
+        ctrl_err = float(
+            torch.max(torch.abs(plain(rc_action(x, layer.M_in)) - rc_action(fxp, layer.M_out)))
+        )
 
     return {
         "reference": "Mallet and Vert 2021, reverse-complement equivariant networks for DNA",

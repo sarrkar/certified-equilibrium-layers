@@ -70,7 +70,9 @@ def p_alpha_metrics(S, eig_S: np.ndarray, alpha: float) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--seed", type=int, default=0, help="RNG seed (logged; result deterministic)")
+    parser.add_argument(
+        "--seed", type=int, default=0, help="RNG seed (logged; result deterministic)"
+    )
     parser.add_argument("--out-dir", type=Path, default=OUT)
     args = parser.parse_args()
     print(f"[t2-mag] seed={args.seed}  q_grid={Q_GRID}  alpha_grid={ALPHA_GRID}")
@@ -128,9 +130,7 @@ def main() -> int:
         for q in Q_GRID
         for a in ALPHA_GRID
     ]
-    mag_le1_where_palpha_gt1 = all(
-        (m2 <= 1.0) for _q, _a, m2, pa in cells if pa["exceeds_1"]
-    )
+    mag_le1_where_palpha_gt1 = all((m2 <= 1.0) for _q, _a, m2, pa in cells if pa["exceeds_1"])
     mag_le1_everywhere = all(m2 <= 1.0 for _q, _a, m2, _pa in cells)
     all_psd = all(b["psd_spectrum_in_0_2"] and b["hermitian"] for b in magnetic.values())
     # The magnetic operator is complex Hermitian: it does NOT realize the real directed
@@ -139,9 +139,7 @@ def main() -> int:
     realizes_real_directed_propagation = False
     preserves_pagerank_rho1 = False
     dominates_every_metric = bool(
-        mag_le1_where_palpha_gt1
-        and realizes_real_directed_propagation
-        and preserves_pagerank_rho1
+        mag_le1_where_palpha_gt1 and realizes_real_directed_propagation and preserves_pagerank_rho1
     )
     outcome = (
         "magnetic_primary"
@@ -199,9 +197,15 @@ def main() -> int:
     print(f"  {'alpha':>6} {'||P_a||_2':>10} {'rho':>8} {'>1':>4}")
     for a in ALPHA_GRID:
         pa = p_alpha[f"{a}"]
-        print(f"  {a:>6} {pa['two_norm']:>10.4f} {pa['spectral_radius']:>8.4f} {pa['exceeds_1']!s:>4}")
-    print("[t2-mag] magnetic M(q,alpha) = (1-a)(I - L_q^sigma)  [2-norm == rho; PSD spectrum in 0..2]:")
-    print(f"  {'q':>5} {'lam_min':>8} {'lam_max':>8} {'PSD[0,2]':>9} | 2-norm by alpha {ALPHA_GRID}")
+        print(
+            f"  {a:>6} {pa['two_norm']:>10.4f} {pa['spectral_radius']:>8.4f} {pa['exceeds_1']!s:>4}"
+        )
+    print(
+        "[t2-mag] magnetic M(q,alpha) = (1-a)(I - L_q^sigma)  [2-norm == rho; PSD spectrum in 0..2]:"
+    )
+    print(
+        f"  {'q':>5} {'lam_min':>8} {'lam_max':>8} {'PSD[0,2]':>9} | 2-norm by alpha {ALPHA_GRID}"
+    )
     for q in Q_GRID:
         m = magnetic[f"{q}"]
         norms = "  ".join(f"{m['by_alpha'][f'{a}']['two_norm']:.3f}" for a in ALPHA_GRID)

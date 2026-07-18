@@ -50,8 +50,7 @@ def load_split() -> dict:
     f = ds.frame.reset_index(drop=True)
     guides = f["antisense"].astype(str).str.upper().tolist()
     targets = [
-        (str(s).strip() or revcomp(a))
-        for a, s in zip(f["antisense"], f["sense"], strict=True)
+        (str(s).strip() or revcomp(a)) for a, s in zip(f["antisense"], f["sense"], strict=True)
     ]
     eff = f["efficacy"].to_numpy(dtype=float)
     is_train = (f["split"].astype(str) == "train").to_numpy()
@@ -183,7 +182,9 @@ def main() -> int:
     if wr.get("status") == "pending_real_data":
         print(f"[efficacy-huesken] with RNA-FM: PENDING ({wr['source'][:80]}...)")
     else:
-        print(f"[efficacy-huesken] with RNA-FM:    Spearman {wr['spearman']:.4f}  PCC {wr['pcc']:.4f}")
+        print(
+            f"[efficacy-huesken] with RNA-FM:    Spearman {wr['spearman']:.4f}  PCC {wr['pcc']:.4f}"
+        )
     print(f"[efficacy-huesken] wrote {args.out}")
     return 0
 

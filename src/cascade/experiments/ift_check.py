@@ -138,11 +138,21 @@ def main() -> int:
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(numbers, indent=2), encoding="utf-8")
     c = numbers["checks"]
-    print(f"[ift-check] {numbers['stage']} | {numbers['n_nodes']} nodes | alpha={numbers['alpha']:.3f} w={numbers['edge_scale_w']:.3f}")
-    print(f"  fixed-point residual {c['fixed_point_residual']:.2e} (machine precision: {c['fixed_point_machine_precision']})")
-    print(f"  APPNP: layer-vs-closed {c['appnp_layer_vs_closed_form']:.2e}, closed-vs-numpy {c['appnp_closed_form_vs_numpy_propagate']:.2e} (agree: {c['appnp_agreement']})")
-    print(f"  IFT grad vs finite-diff max rel error {c['ift_grad_vs_finite_diff_max_rel_error']:.2e} (< {GRAD_TOL}: {c['ift_grad_pass']})")
-    print(f"  spectral radius rho(S)={c['spectral_radius_rho_S']:.4f}, contraction (1-a)w*rho={c['contraction_factor']:.4f} (unique: {c['unique_fixed_point']})")
+    print(
+        f"[ift-check] {numbers['stage']} | {numbers['n_nodes']} nodes | alpha={numbers['alpha']:.3f} w={numbers['edge_scale_w']:.3f}"
+    )
+    print(
+        f"  fixed-point residual {c['fixed_point_residual']:.2e} (machine precision: {c['fixed_point_machine_precision']})"
+    )
+    print(
+        f"  APPNP: layer-vs-closed {c['appnp_layer_vs_closed_form']:.2e}, closed-vs-numpy {c['appnp_closed_form_vs_numpy_propagate']:.2e} (agree: {c['appnp_agreement']})"
+    )
+    print(
+        f"  IFT grad vs finite-diff max rel error {c['ift_grad_vs_finite_diff_max_rel_error']:.2e} (< {GRAD_TOL}: {c['ift_grad_pass']})"
+    )
+    print(
+        f"  spectral radius rho(S)={c['spectral_radius_rho_S']:.4f}, contraction (1-a)w*rho={c['contraction_factor']:.4f} (unique: {c['unique_fixed_point']})"
+    )
     print(f"  VERDICT: {numbers['verdict']}")
     print(f"[ift-check] wrote {OUT}")
     return 0

@@ -181,7 +181,9 @@ def efficacy_predictor():
     return predict, cal_pred, cal_y
 
 
-def conformal_pvalues(cal_pred: np.ndarray, cal_y: np.ndarray, test_pred: np.ndarray, eta: float) -> np.ndarray:
+def conformal_pvalues(
+    cal_pred: np.ndarray, cal_y: np.ndarray, test_pred: np.ndarray, eta: float
+) -> np.ndarray:
     """Jin and Candes split-conformal p-values for H0: efficacy < eta (larger-is-better)."""
     null_scores = cal_pred[cal_y < eta]
     n0 = null_scores.size
@@ -248,7 +250,9 @@ def run(
         "assumptions": {
             "tau": tau,
             "tau_note": "default tau is the parent Ttr guide's certified U (off-target no worse "
-            "than the parent)" if n_seeds is None else "default tau as above",
+            "than the parent)"
+            if n_seeds is None
+            else "default tau as above",
             "eta": eta,
             "q_efficacy_fdr": q,
             "U_definition": "U(g) = ||P_alpha(mouse TRRUST)||_2 * ||e_seed||_2, a certified upper "

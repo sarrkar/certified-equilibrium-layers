@@ -43,7 +43,11 @@ def test_verdict_follows_pre_registered_rule() -> None:
     # (c) D4 < D1.
     assert cr["c_d4_lt_d1"] == (j["d4_lt_d1"]["E_D4"] < j["d4_lt_d1"]["E_D1"])
     # verdict is exactly the conjunction.
-    expected = "PASS" if (cr["a_pooled_margin"] and cr["b_both_studies_positive"] and cr["c_d4_lt_d1"]) else "FAIL"
+    expected = (
+        "PASS"
+        if (cr["a_pooled_margin"] and cr["b_both_studies_positive"] and cr["c_d4_lt_d1"])
+        else "FAIL"
+    )
     assert j["verdict"] == expected
 
 

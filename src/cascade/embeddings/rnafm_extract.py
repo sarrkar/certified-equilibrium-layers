@@ -55,7 +55,9 @@ def confirm_checkpoint(checkpoint_dir: str | Path = RNAFM_CHECKPOINT_DIR) -> str
     try:
         fm.pretrained.rna_fm_t12()
     except Exception as exc:  # checkpoint present but unreadable / wrong: hard fail with the path
-        print(f"[rnafm] RNA-FM checkpoint at {pths[0]} failed to load via fm.pretrained.rna_fm_t12()")
+        print(
+            f"[rnafm] RNA-FM checkpoint at {pths[0]} failed to load via fm.pretrained.rna_fm_t12()"
+        )
         raise FileNotFoundError(
             f"RNA-FM checkpoint under {cdir} did not load via fm.pretrained.rna_fm_t12() ({exc}); "
             f"confirm the cuhkaih/rnafm weights at {pths[0]} are the rna_fm_t12 checkpoint."

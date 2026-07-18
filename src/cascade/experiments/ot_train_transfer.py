@@ -40,9 +40,24 @@ SITE_GRADE_6MER = 0.5
 
 # Held-out siRNA conditions: seed (RNA) and the 3'UTR DNA site word scanned (Patel reagents).
 PATEL_CONDITIONS = {
-    "GSE164289:siGGGGGC": {"seed": "GGGGGC", "site_word": "GCCCCC", "file": "GSE164289_siGGGGGC_vs_siNT1_48h.csv", "kind": "deseq"},
-    "GSE164289:siGGCAGU": {"seed": "GGCAGU", "site_word": "ACTGCC", "file": "GSE164289_siGGCAGU_vs_siNT1_48h.csv", "kind": "deseq"},
-    "GSE196839:siGGGGGC": {"seed": "GGGGGC", "site_word": "GCCCCC", "file": "GSE196839_counts.txt", "kind": "counts"},
+    "GSE164289:siGGGGGC": {
+        "seed": "GGGGGC",
+        "site_word": "GCCCCC",
+        "file": "GSE164289_siGGGGGC_vs_siNT1_48h.csv",
+        "kind": "deseq",
+    },
+    "GSE164289:siGGCAGU": {
+        "seed": "GGCAGU",
+        "site_word": "ACTGCC",
+        "file": "GSE164289_siGGCAGU_vs_siNT1_48h.csv",
+        "kind": "deseq",
+    },
+    "GSE196839:siGGGGGC": {
+        "seed": "GGGGGC",
+        "site_word": "GCCCCC",
+        "file": "GSE196839_counts.txt",
+        "kind": "counts",
+    },
 }
 SCHLEGEL_SEED = "UAUAGAG"  # Ttr D1 guide seed (positions 2-8)
 
@@ -119,14 +134,22 @@ def train_predictor(corpus: pd.DataFrame, n_steps: int = 600, seed: int = 0) -> 
         pred = model(blocks)
         huber = torch.nn.functional.huber_loss(pred, y, delta=1.0)
         # Differentiable one-sided ECDF-shift (energy) surrogate: push seed scores above background.
-        ecdf = -(pred[is_site].mean() - pred[~is_site].mean()) if is_site.any() and (~is_site).any() else pred.new_zeros(())
+        ecdf = (
+            -(pred[is_site].mean() - pred[~is_site].mean())
+            if is_site.any() and (~is_site).any()
+            else pred.new_zeros(())
+        )
         (huber + 0.1 * ecdf).backward()
         opt.step()
     from scipy.stats import spearmanr
 
     with torch.no_grad():
         train_rho = float(spearmanr(model(blocks).numpy(), y.numpy()).statistic)
-    return model, scaler, {"leakage_offdiag_max": leak, "train_spearman": train_rho, "n_examples": int(len(df))}
+    return (
+        model,
+        scaler,
+        {"leakage_offdiag_max": leak, "train_spearman": train_rho, "n_examples": int(len(df))},
+    )
 
 
 def predict(model, scaler, site_count, seed_dg, site_grade, utr_len) -> np.ndarray:
@@ -134,7 +157,9 @@ def predict(model, scaler, site_count, seed_dg, site_grade, utr_len) -> np.ndarr
 
     from cascade.models.offtarget_predictor import build_feature_blocks
 
-    blocks_np = build_feature_blocks(site_count, np.full(len(site_count), seed_dg), site_grade, utr_len)
+    blocks_np = build_feature_blocks(
+        site_count, np.full(len(site_count), seed_dg), site_grade, utr_len
+    )
     blocks, _ = _standardize(blocks_np, scaler)
     with torch.no_grad():
         return model(blocks).numpy()
@@ -166,7 +191,10 @@ def patel_condition(name: str, spec: dict, release) -> pd.DataFrame:
         df = pd.read_csv(path)
         gid = df.columns[0]
         out = pd.DataFrame(
-            {"gene": df[gid].astype(str).str.split(".").str[0], "log2fc": pd.to_numeric(df["log2FoldChange"], errors="coerce")}
+            {
+                "gene": df[gid].astype(str).str.split(".").str[0],
+                "log2fc": pd.to_numeric(df["log2FoldChange"], errors="coerce"),
+            }
         )
         by_symbol = False
     else:
@@ -175,7 +203,9 @@ def patel_condition(name: str, spec: dict, release) -> pd.DataFrame:
         out = pd.DataFrame(
             {
                 "gene": df.index.astype(str),
-                "log2fc": np.log2((cpm["PC3_siMxy_3AB_48h"] + 1.0) / (cpm["PC3_siNT_3AB_48h"] + 1.0)).to_numpy(),
+                "log2fc": np.log2(
+                    (cpm["PC3_siMxy_3AB_48h"] + 1.0) / (cpm["PC3_siNT_3AB_48h"] + 1.0)
+                ).to_numpy(),
             }
         )
         by_symbol = True
@@ -184,9 +214,7 @@ def patel_condition(name: str, spec: dict, release) -> pd.DataFrame:
     word = spec["site_word"]
     out["site_count"] = [_count_word(utr.get(g, ""), word) for g in out["gene"]]
     out["utr_len"] = [len(utr.get(g, "")) for g in out["gene"]]
-    out["symbol"] = [
-        (g if by_symbol else _id_symbol(release, g)) for g in out["gene"]
-    ]
+    out["symbol"] = [(g if by_symbol else _id_symbol(release, g)) for g in out["gene"]]
     return out
 
 
@@ -235,7 +263,16 @@ def _ks_dir(values, is_site):
     return float(ks.statistic), gap
 
 
-def evaluate(name: str, df: pd.DataFrame, model, scaler, seed_rna: str, has_grade: bool, has_utr: bool, grn=None):
+def evaluate(
+    name: str,
+    df: pd.DataFrame,
+    model,
+    scaler,
+    seed_rna: str,
+    has_grade: bool,
+    has_utr: bool,
+    grn=None,
+):
     from scipy.stats import spearmanr
 
     dg = _seed_dg(seed_rna)
@@ -260,13 +297,18 @@ def evaluate(name: str, df: pd.DataFrame, model, scaler, seed_rna: str, has_grad
     meas_D, _ = _ks_dir(log2fc, is_site)
     pred_D, _ = _ks_dir(-score, is_site)
     meas_seed_more_repressed = (
-        bool(log2fc[is_site].mean() < log2fc[~is_site].mean()) if is_site.any() and (~is_site).any() else None
+        bool(log2fc[is_site].mean() < log2fc[~is_site].mean())
+        if is_site.any() and (~is_site).any()
+        else None
     )
     pred_seed_more_offtarget = (
-        bool(score[is_site].mean() > score[~is_site].mean()) if is_site.any() and (~is_site).any() else None
+        bool(score[is_site].mean() > score[~is_site].mean())
+        if is_site.any() and (~is_site).any()
+        else None
     )
     direction_match = (
-        meas_seed_more_repressed is not None and meas_seed_more_repressed == pred_seed_more_offtarget
+        meas_seed_more_repressed is not None
+        and meas_seed_more_repressed == pred_seed_more_offtarget
     )
 
     result = {
@@ -300,7 +342,9 @@ def evaluate(name: str, df: pd.DataFrame, model, scaler, seed_rna: str, has_grad
         propagated = ob.propagate(grn.S, e, ALPHA)
         prop_scores = np.array([propagated[n] if n is not None else 0.0 for n in node_of])
         if aligned.sum() > 2:
-            result["spearman_propagated_aligned"] = float(spearmanr(prop_scores[aligned], -log2fc[aligned]).statistic)
+            result["spearman_propagated_aligned"] = float(
+                spearmanr(prop_scores[aligned], -log2fc[aligned]).statistic
+            )
             result["n_aligned_grn"] = int(aligned.sum())
     return result
 
@@ -323,16 +367,31 @@ def run() -> dict:
         conditions[name] = {
             "study": "Patel_2022",
             "organism": "human",
-            **evaluate(name, df, model, scaler, spec["seed"], has_grade=True, has_utr=True, grn=human_grn),
+            **evaluate(
+                name, df, model, scaler, spec["seed"], has_grade=True, has_utr=True, grn=human_grn
+            ),
         }
-    for sname in ("Schlegel_2022_Ttr_D1_30mkg", "Schlegel_2022_Ttr_D4_30mkg", "Schlegel_2022_Ttr_D1_10mkg"):
+    for sname in (
+        "Schlegel_2022_Ttr_D1_30mkg",
+        "Schlegel_2022_Ttr_D4_30mkg",
+        "Schlegel_2022_Ttr_D1_10mkg",
+    ):
         df = schlegel_condition(sname)
         conditions[f"GSE184929:{sname}"] = {
             "study": "Schlegel_2022",
             "organism": "rat",
             "note": "rat 3'UTRs not installed: site_grade and accessibility blocks zeroed; "
             "uses the loader real seed_match_count",
-            **evaluate(sname, df, model, scaler, SCHLEGEL_SEED, has_grade=False, has_utr=False, grn=mouse_grn),
+            **evaluate(
+                sname,
+                df,
+                model,
+                scaler,
+                SCHLEGEL_SEED,
+                has_grade=False,
+                has_utr=False,
+                grn=mouse_grn,
+            ),
         }
 
     learned = [c["spearman_learned"] for c in conditions.values()]
@@ -351,7 +410,9 @@ def run() -> dict:
             "mean_spearman_learned": float(np.mean(learned)),
             "mean_spearman_baseline_seedcount": float(np.mean(base)),
             "learned_beats_baseline_mean": bool(np.mean(learned) > np.mean(base)),
-            "ks_direction_reproduced_all": bool(all(c["ks_direction_reproduced"] for c in conditions.values())),
+            "ks_direction_reproduced_all": bool(
+                all(c["ks_direction_reproduced"] for c in conditions.values())
+            ),
         },
     }
 
@@ -359,14 +420,18 @@ def run() -> dict:
 def main() -> int:
     numbers = run()
     RESULTS.mkdir(parents=True, exist_ok=True)
-    (RESULTS / "predictor_transfer.json").write_text(json.dumps(numbers, indent=2), encoding="utf-8")
+    (RESULTS / "predictor_transfer.json").write_text(
+        json.dumps(numbers, indent=2), encoding="utf-8"
+    )
 
     t = numbers["training"]
     print(
         f"[ot-transfer] trained on {t['n_examples']} McGeary examples | leakage off-diag "
         f"{t['leakage_offdiag_max']:.1e} | train Spearman {t['train_spearman']:.3f}"
     )
-    print(f"  {'condition':<34}{'n':>7}{'learned_rho':>12}{'base_rho':>10}{'meas_KS':>9}{'pred_KS':>9}{'dir':>5}")
+    print(
+        f"  {'condition':<34}{'n':>7}{'learned_rho':>12}{'base_rho':>10}{'meas_KS':>9}{'pred_KS':>9}{'dir':>5}"
+    )
     for name, c in numbers["conditions"].items():
         print(
             f"  {name:<34}{c['n_genes']:>7}{c['spearman_learned']:>12.3f}{c['spearman_baseline_seedcount']:>10.3f}"

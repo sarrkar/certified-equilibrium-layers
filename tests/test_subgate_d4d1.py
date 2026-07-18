@@ -39,4 +39,6 @@ def test_subgate_passes_monotone_fails_nonmonotone() -> None:
     assert g["subgate"] == "PASS"
     # The non-monotone count-only readout cannot distinguish D1 from D4 (motivates the monotone design).
     assert g["non_monotone_control"]["D4_lt_D1"] is False
-    assert g["non_monotone_control"]["E_D4_count_only"] == g["non_monotone_control"]["E_D1_count_only"]
+    assert (
+        g["non_monotone_control"]["E_D4_count_only"] == g["non_monotone_control"]["E_D1_count_only"]
+    )

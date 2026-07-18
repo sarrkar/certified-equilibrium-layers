@@ -189,7 +189,9 @@ def gse196839(cache_sites, release) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--seed", type=int, default=0, help="RNG seed (logged; result deterministic)")
+    parser.add_argument(
+        "--seed", type=int, default=0, help="RNG seed (logged; result deterministic)"
+    )
     parser.add_argument("--out-dir", type=Path, default=OUT)
     args = parser.parse_args()
     print(f"[ks-patel] seed={args.seed}  Ensembl release {ENSEMBL_RELEASE} (GRCh38 = hg38)")
@@ -219,9 +221,7 @@ def main() -> int:
     symbols: set[str] = set()
     f164 = PATEL / "GSE164289_siGGGGGC_vs_siNT1_48h.csv"
     if f164.exists():
-        gene_ids |= set(
-            pd.read_csv(f164)["Ensembl ID"].astype(str).str.split(".").str[0].tolist()
-        )
+        gene_ids |= set(pd.read_csv(f164)["Ensembl ID"].astype(str).str.split(".").str[0].tolist())
     f196 = PATEL / "GSE196839_counts.txt"
     if f196.exists():
         symbols |= {str(s) for s in pd.read_csv(f196, sep="\t", index_col=0).index}

@@ -106,19 +106,25 @@ class OffTargetPredictor(nn.Module):
 
     def leakage_offdiag_max(self, blocks: dict[str, Tensor]) -> float:
         """Max |d(contribution_k)/d(input_j)| over k != j. Must be machine-zero (Theorem 1)."""
-        leaf = {name: blocks[name].detach().clone().requires_grad_(True) for name in self.concept_dims}
+        leaf = {
+            name: blocks[name].detach().clone().requires_grad_(True) for name in self.concept_dims
+        }
         worst = 0.0
         names = list(self.concept_dims)
         for k in names:
             out_k = self.heads[k](leaf[k]).sum()
-            grads = torch.autograd.grad(out_k, [leaf[j] for j in names], allow_unused=True, retain_graph=True)
+            grads = torch.autograd.grad(
+                out_k, [leaf[j] for j in names], allow_unused=True, retain_graph=True
+            )
             for j, g in zip(names, grads, strict=True):
                 if j != k and g is not None:
                     worst = max(worst, float(g.abs().max()))
         return worst
 
 
-def assert_leakage_free(model: OffTargetPredictor, blocks: dict[str, Tensor], tol: float = 0.0) -> float:
+def assert_leakage_free(
+    model: OffTargetPredictor, blocks: dict[str, Tensor], tol: float = 0.0
+) -> float:
     """Raise if the per-concept head has any cross-channel leakage (Theorem 1 violated)."""
     worst = model.leakage_offdiag_max(blocks)
     if worst > tol:

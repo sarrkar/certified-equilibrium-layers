@@ -52,7 +52,9 @@ def _revcomp_rna(seq: str) -> str:
     return "".join(comp[b] for b in reversed(seq.upper().replace("T", "U")))
 
 
-def modified_seed_dg(seed: str, site_rna: str, mod_index: int | None = None, mod_base: str | None = None) -> float:
+def modified_seed_dg(
+    seed: str, site_rna: str, mod_index: int | None = None, mod_base: str | None = None
+) -> float:
     """Real ViennaRNA seed-duplex dG of the (optionally modified) guide seed against a site."""
     import RNA
 
@@ -176,7 +178,9 @@ def main() -> int:
         f"E(D1)={m['E_D1']:.4f}  E(D4)={m['E_D4']:.4f}  (ratio {m['E_D4_over_E_D1']:.3f})  D4<D1={m['D4_lt_D1']}"
     )
     nm = numbers["non_monotone_control"]
-    print(f"[subgate-d4d1] count-only control: E(D1)={nm['E_D1_count_only']:.4f} E(D4)={nm['E_D4_count_only']:.4f} D4<D1={nm['D4_lt_D1']}")
+    print(
+        f"[subgate-d4d1] count-only control: E(D1)={nm['E_D1_count_only']:.4f} E(D4)={nm['E_D4_count_only']:.4f} D4<D1={nm['D4_lt_D1']}"
+    )
     print(f"[subgate-d4d1] SUB-GATE: {numbers['subgate']} -- {numbers['decision']}")
     print(f"[subgate-d4d1] wrote {SUBGATE_OUT} and {DDG_OUT}")
     return 0

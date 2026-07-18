@@ -362,7 +362,9 @@ def t2_magnetic_summary(j: dict | None) -> dict | None:
     return {
         "operator": "M(q,alpha) = (1-alpha)(I - L_q^sigma), magnetic signed Laplacian",
         "q_grid": j["q_grid"],
-        "magnetic_2norm_le_1_where_palpha_exceeds_1": sc["magnetic_2norm_le_1_where_palpha_exceeds_1"],
+        "magnetic_2norm_le_1_where_palpha_exceeds_1": sc[
+            "magnetic_2norm_le_1_where_palpha_exceeds_1"
+        ],
         "psd_spectrum_in_0_2_all_q": sc["magnetic_psd_spectrum_in_0_2_all_q"],
         "dominates_on_every_metric": sc["dominates_on_every_metric"],
         "outcome": sc["outcome"],
@@ -406,7 +408,11 @@ def t4_human_ks_summary(j: dict | None) -> dict | None:
     """Fold in the real human cross-species off-target KS (exp_ks_human_patel)."""
     if j is None or j.get("status") != "ok":
         return None
-    out = {"genome_build": j["genome_build"], "ensembl_release": j["ensembl_release_pinned"], "datasets": {}}
+    out = {
+        "genome_build": j["genome_build"],
+        "ensembl_release": j["ensembl_release_pinned"],
+        "datasets": {},
+    }
     for gse in ("GSE164289", "GSE196839"):
         block = j.get(gse, {})
         out["datasets"][gse] = {
@@ -455,8 +461,11 @@ def acceptance_status(numbers: dict) -> dict:
     status: dict = {}
 
     status["T1"] = (
-        {"status": "PASS", "reason": "disjoint CCMP per-concept embeddings change at machine zero "
-         "on real Huesken; the shared-encoder CBM and the Concept Embedding Model leak."}
+        {
+            "status": "PASS",
+            "reason": "disjoint CCMP per-concept embeddings change at machine zero "
+            "on real Huesken; the shared-encoder CBM and the Concept Embedding Model leak.",
+        }
         if t1.get("status") == "ok" and t1.get("acceptance") == "PASS"
         else {"status": "PENDING", "reason": f"real data absent ({t1.get('status')})"}
     )
@@ -474,11 +483,17 @@ def acceptance_status(numbers: dict) -> dict:
         status["T2"] = {"status": "PENDING", "reason": "real GRN absent"}
 
     status["T3"] = (
-        {"status": "PASS", "reason": "KKT mass-action residual at machine precision on every seed "
-         "with no accuracy regression; the composed-error bound holds and the IFT gradient through "
-         "the equality+box ADMM matches finite differences below 1e-6."}
+        {
+            "status": "PASS",
+            "reason": "KKT mass-action residual at machine precision on every seed "
+            "with no accuracy regression; the composed-error bound holds and the IFT gradient through "
+            "the equality+box ADMM matches finite differences below 1e-6.",
+        }
         if t3.get("status") == "ok" and t3.get("acceptance") == "PASS"
-        else {"status": t3.get("acceptance", "PENDING"), "reason": f"see T3 section ({t3.get('status')})"}
+        else {
+            "status": t3.get("acceptance", "PENDING"),
+            "reason": f"see T3 section ({t3.get('status')})",
+        }
     )
 
     if t4.get("certified_bound_status") == "real_via_trrust_join":
@@ -491,7 +506,10 @@ def acceptance_status(numbers: dict) -> dict:
             "which is PENDING (the GEO deposits lack the siRNA sequences and Birmingham is not in GEO).",
         }
     elif t4.get("status") in ("ok", "measured_offtarget_real"):
-        status["T4"] = {"status": "RESTRICTED", "reason": "measured off-target real; certified join partial"}
+        status["T4"] = {
+            "status": "RESTRICTED",
+            "reason": "measured off-target real; certified join partial",
+        }
     else:
         status["T4"] = {"status": "PENDING", "reason": "real off-target join absent"}
 
@@ -776,8 +794,10 @@ def write_summary(numbers: dict, captions: dict) -> None:
         )
     hks = t4.get("human_crossspecies_ks")
     if hks:
-        lines.append(f"- Real HUMAN off-target KS (Patel 2022, {hks['genome_build']}, Ensembl release "
-                     f"{hks['ensembl_release']}):")
+        lines.append(
+            f"- Real HUMAN off-target KS (Patel 2022, {hks['genome_build']}, Ensembl release "
+            f"{hks['ensembl_release']}):"
+        )
         lines.append("")
         lines.append("| dataset | contrast | seed | KS D | p |")
         lines.append("| --- | --- | --- | --- | --- |")
@@ -802,7 +822,9 @@ def write_summary(numbers: dict, captions: dict) -> None:
         )
         lines.append("")
         lines.append("| q | " + " | ".join(sorted(next(iter(t5["auroc_by_q"].values())))) + " |")
-        lines.append("| --- | " + " | ".join("---" for _ in next(iter(t5["auroc_by_q"].values()))) + " |")
+        lines.append(
+            "| --- | " + " | ".join("---" for _ in next(iter(t5["auroc_by_q"].values()))) + " |"
+        )
         for q, row in t5["auroc_by_q"].items():
             cells = " | ".join(_fmt(row[k]["auroc"], 4) for k in sorted(row))
             lines.append(f"| {q} | {cells} |")

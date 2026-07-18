@@ -44,7 +44,7 @@ def test_benjamini_hochberg_closed_form() -> None:
 def test_enumerate_seeds() -> None:
     assert len(cs.enumerate_seeds(n_seeds=10)) == 10
     full = cs.enumerate_seeds()
-    assert len(full) == 4 ** cs.SEED_LEN == 16384
+    assert len(full) == 4**cs.SEED_LEN == 16384
 
 
 def test_run_small_real() -> None:
@@ -71,4 +71,6 @@ def test_run_small_real() -> None:
             assert g["certified_U"] <= a["tau"] * (1.0 + 1e-9)
             assert g["conformal_selected"]
     assert numbers["n_selected"] == sum(g["selected"] for g in guides)
-    assert numbers["n_selected"] <= numbers["n_threshold_selected"] + numbers["n_conformal_selected"]
+    assert (
+        numbers["n_selected"] <= numbers["n_threshold_selected"] + numbers["n_conformal_selected"]
+    )

@@ -29,8 +29,20 @@ sys.path.insert(0, str(REPO / "src"))
 
 DEFAULT_CONFIG = Path(__file__).resolve().parent / "seedmod_loader_config.json"
 DEFAULT_OUTDIR = REPO / "results" / "seedmod_loaded"
-REQUIRED = ("name", "series", "organism", "guide", "seed", "modification", "dose",
-            "parent_arm", "modified_arm", "utr_fasta", "gene_id_col", "logfc_col")
+REQUIRED = (
+    "name",
+    "series",
+    "organism",
+    "guide",
+    "seed",
+    "modification",
+    "dose",
+    "parent_arm",
+    "modified_arm",
+    "utr_fasta",
+    "gene_id_col",
+    "logfc_col",
+)
 
 
 def load_config(path: Path) -> dict:
@@ -76,7 +88,9 @@ def _load_deseq(path: Path, gene_col: str, logfc_col: str, sep: str) -> dict[str
     df = pd.read_csv(path, sep=sep)  # pandas reads .gz transparently
     for col in (gene_col, logfc_col):
         if col not in df.columns:
-            raise ValueError(f"{path}: required column '{col}' absent (have {list(df.columns)[:8]})")
+            raise ValueError(
+                f"{path}: required column '{col}' absent (have {list(df.columns)[:8]})"
+            )
     lfc = pd.to_numeric(df[logfc_col], errors="coerce")
     out = {}
     for g, v in zip(df[gene_col].astype(str), lfc, strict=True):
@@ -127,8 +141,10 @@ def load_contrast(c: dict, repo: Path, canonical: set[str]) -> pd.DataFrame:
 
     seed = c["seed"]["value"]
     if not seed:
-        raise ValueError(f"[{c['name']}] seed sequence is null (VERIFY): {c['seed']['source']}. "
-                         "Source the guide seed before computing seed-match membership.")
+        raise ValueError(
+            f"[{c['name']}] seed sequence is null (VERIFY): {c['seed']['source']}. "
+            "Source the guide seed before computing seed-match membership."
+        )
 
     parent = _load_deseq(parent_file, c["gene_id_col"], c["logfc_col"], c.get("sep", "\t"))
     modified = _load_deseq(modified_file, c["gene_id_col"], c["logfc_col"], c.get("sep", "\t"))
@@ -141,13 +157,33 @@ def load_contrast(c: dict, repo: Path, canonical: set[str]) -> pd.DataFrame:
     for g in genes:
         matched, best, n = flags[g]
         for arm, table in (("parent", parent), ("modified", modified)):
-            rows.append({
-                "contrast": c["name"], "series": c["series"], "organism": c["organism"],
-                "transcript_id": g, "arm": arm, "log2FoldChange": table[g],
-                "seed_matched": matched, "best_site_type": best, "n_canonical_sites": n,
-            })
-    return pd.DataFrame(rows, columns=["contrast", "series", "organism", "transcript_id", "arm",
-                                       "log2FoldChange", "seed_matched", "best_site_type", "n_canonical_sites"])
+            rows.append(
+                {
+                    "contrast": c["name"],
+                    "series": c["series"],
+                    "organism": c["organism"],
+                    "transcript_id": g,
+                    "arm": arm,
+                    "log2FoldChange": table[g],
+                    "seed_matched": matched,
+                    "best_site_type": best,
+                    "n_canonical_sites": n,
+                }
+            )
+    return pd.DataFrame(
+        rows,
+        columns=[
+            "contrast",
+            "series",
+            "organism",
+            "transcript_id",
+            "arm",
+            "log2FoldChange",
+            "seed_matched",
+            "best_site_type",
+            "n_canonical_sites",
+        ],
+    )
 
 
 def main() -> int:
@@ -163,7 +199,9 @@ def main() -> int:
     print("Certified-direction siRNA off-target loader")
     loaded, blocked = 0, 0
     for c in cfg["contrasts"]:
-        print(f"\n[{c['name']}]  series={c['series']}  organism={c['organism']}  status={c.get('processed_status')}")
+        print(
+            f"\n[{c['name']}]  series={c['series']}  organism={c['organism']}  status={c.get('processed_status')}"
+        )
         try:
             df = load_contrast(c, REPO, canonical)
         except (FileNotFoundError, ValueError) as e:
@@ -174,12 +212,18 @@ def main() -> int:
         n_sm = int(df.loc[df["arm"] == "parent", "seed_matched"].sum())
         n_tx = df["transcript_id"].nunique()
         out = args.outdir / f"{c['name']}.long.csv.gz"
-        df.to_csv(out, index=False, compression={"method": "gzip", "mtime": 0})  # mtime=0 -> byte-deterministic
+        df.to_csv(
+            out, index=False, compression={"method": "gzip", "mtime": 0}
+        )  # mtime=0 -> byte-deterministic
         print(f"  LOADED: rows={len(df)}  transcripts={n_tx}  seed-matched transcripts={n_sm}")
-        print(f"          arms: {c['parent_arm']['label']} vs {c['modified_arm']['label']}; "
-              f"seed={c['seed']['value']} ({c['modification']['chemistry']} at seed pos {c['modification']['seed_position']})")
+        print(
+            f"          arms: {c['parent_arm']['label']} vs {c['modified_arm']['label']}; "
+            f"seed={c['seed']['value']} ({c['modification']['chemistry']} at seed pos {c['modification']['seed_position']})"
+        )
         print(f"          wrote {out}")
-    print(f"\nSUMMARY: {loaded} contrast(s) loaded, {blocked} blocked awaiting real processed inputs.")
+    print(
+        f"\nSUMMARY: {loaded} contrast(s) loaded, {blocked} blocked awaiting real processed inputs."
+    )
     return 0
 
 

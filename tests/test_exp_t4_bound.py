@@ -84,7 +84,11 @@ def test_cross_assay_reports_both_assays() -> None:
 
 def test_cross_assay_microarray_pending_is_null_not_faked() -> None:
     measured = {"per_contrast": {"g": {"ks_D": 0.16}}}
-    microarray = {"status": "pending_real_data", "per_dataset": {}, "pending": {"jackson2006": "..."}}
+    microarray = {
+        "status": "pending_real_data",
+        "per_dataset": {},
+        "pending": {"jackson2006": "..."},
+    }
     ca = ex.cross_assay(measured, microarray)
     assert ca["rna_seq_mean_ks_D"] == 0.16
     assert ca["microarray_mean_ks_D"] is None

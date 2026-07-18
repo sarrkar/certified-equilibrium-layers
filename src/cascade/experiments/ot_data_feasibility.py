@@ -37,16 +37,29 @@ RESULTS = REPO / "results"
 OUT = RESULTS / "cascade_ot" / "data_feasibility.json"
 SCHLEGEL_DIR = REPO / "data" / "raw" / "offtarget" / "seedmatchr"
 PATEL_DIR = REPO / "data" / "raw" / "offtarget" / "patel"
-MCGEARY_CACHE = REPO / "data" / "raw" / "offtarget" / "mirna_aux" / (
-    "GSE140217_HeLa_transfection_logtpm_batchnormalized.txt.gz"
+MCGEARY_CACHE = (
+    REPO
+    / "data"
+    / "raw"
+    / "offtarget"
+    / "mirna_aux"
+    / ("GSE140217_HeLa_transfection_logtpm_batchnormalized.txt.gz")
 )
 
 # TargetScan v8.0 context++ download files; sizes from HTTP HEAD (bytes), not downloaded.
 TS_BASE = "https://www.targetscan.org/vert_80/vert_80_data_download/"
 TARGETSCAN_FILES = [
-    ("Predicted_Targets_Context_Scores.default_predictions.txt.zip", 17_673_917, "predicted context++ scores"),
+    (
+        "Predicted_Targets_Context_Scores.default_predictions.txt.zip",
+        17_673_917,
+        "predicted context++ scores",
+    ),
     ("Conserved_Site_Context_Scores.txt.zip", 18_603_027, "conserved-site context++ scores"),
-    ("Nonconserved_Site_Context_Scores.txt.zip", 542_498_322, "nonconserved-site scores (LARGE, not fetched)"),
+    (
+        "Nonconserved_Site_Context_Scores.txt.zip",
+        542_498_322,
+        "nonconserved-site scores (LARGE, not fetched)",
+    ),
     ("miR_Family_Info.txt.zip", 162_636, "miRNA seed-family table"),
 ]
 MCGEARY_URL = (

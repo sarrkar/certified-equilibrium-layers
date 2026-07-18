@@ -30,7 +30,9 @@ def test_gate_verdict_and_structure() -> None:
     assert c1["pass"] == (c1["delta"] >= 0.05)
     c2 = g["criterion_2_sgna_direction"]
     # The (S)-GNA criterion needs BOTH the measured ordering and the predicted ordering to hold.
-    assert c2["reproduced"] == (c2["measured_parent_more_offtarget"] and c2["predicted_parent_more_offtarget"])
+    assert c2["reproduced"] == (
+        c2["measured_parent_more_offtarget"] and c2["predicted_parent_more_offtarget"]
+    )
     # The verdict is the conjunction of the two criteria.
     assert (g["verdict"] == "PASS") == (c1["pass"] and c2["reproduced"])
 

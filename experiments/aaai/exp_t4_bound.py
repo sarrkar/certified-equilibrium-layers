@@ -198,7 +198,10 @@ def microarray_offtarget(seedmatchr_dir: Path, cache_root: Path) -> dict:
     }
     per_dataset: dict = {}
     pending: dict = {}
-    for name, loader in (("jackson2006", load_jackson2006), ("birmingham2006", load_birmingham2006)):
+    for name, loader in (
+        ("jackson2006", load_jackson2006),
+        ("birmingham2006", load_birmingham2006),
+    ):
         try:
             ds = loader()
         except (FileNotFoundError, NotImplementedError):
@@ -231,9 +234,7 @@ def microarray_offtarget(seedmatchr_dir: Path, cache_root: Path) -> dict:
 def cross_assay(measured: dict, microarray: dict) -> dict:
     """Cross-assay KS summary: real RNA-seq (GSE184929) vs microarray (Jackson, Birmingham)."""
     rna_vals = [
-        c["ks_D"]
-        for c in measured.get("per_contrast", {}).values()
-        if c.get("ks_D") is not None
+        c["ks_D"] for c in measured.get("per_contrast", {}).values() if c.get("ks_D") is not None
     ]
     micro_vals = [
         d["ks_measured"]["D"]

@@ -76,15 +76,24 @@ def main() -> int:
     # symbolic structural signs for all positive concentrations
     qa, qf, ka, kf, ca, cf = syms
     own_pos = all(sp.simplify(sym[(i, i)]) > 0 for i in ("As", "F"))
-    cross_neg = bool(sp.ask(sp.Q.negative(sym[("As", "F")])) and sp.ask(sp.Q.negative(sym[("F", "As")]))) \
-        or all(str(sp.simplify(sym[(i, j)])).startswith("-") for i, j in (("As", "F"), ("F", "As")))
-    print(f"\n(3) symbolic signs for all positive C: own-term positive = {own_pos}; "
-          f"cross-term negative = {cross_neg}")
+    cross_neg = bool(
+        sp.ask(sp.Q.negative(sym[("As", "F")])) and sp.ask(sp.Q.negative(sym[("F", "As")]))
+    ) or all(str(sp.simplify(sym[(i, j)])).startswith("-") for i, j in (("As", "F"), ("F", "As")))
+    print(
+        f"\n(3) symbolic signs for all positive C: own-term positive = {own_pos}; "
+        f"cross-term negative = {cross_neg}"
+    )
 
     # numeric reproduction of the titans readout
     data = load_data()
-    qmax = {"As": data["single_langmuir"]["As"]["qmax_mg_g"], "F": data["single_langmuir"]["F"]["qmax_mg_g"]}
-    k = {"As": data["single_langmuir"]["As"]["kL_L_mg"], "F": data["single_langmuir"]["F"]["kL_L_mg"]}
+    qmax = {
+        "As": data["single_langmuir"]["As"]["qmax_mg_g"],
+        "F": data["single_langmuir"]["F"]["qmax_mg_g"],
+    }
+    k = {
+        "As": data["single_langmuir"]["As"]["kL_L_mg"],
+        "F": data["single_langmuir"]["F"]["kL_L_mg"],
+    }
     j = closed_system_jacobian(qmax, k, 30.0, 30.0)
     idx = {"As": 0, "F": 1}
     print(f"\n(2) J = V I + m dq/dC at (As=30, F=30), V={V_L} m={M_G}:")
@@ -93,7 +102,9 @@ def main() -> int:
     for (i, jj), want in READOUT.items():
         got = float(j[idx[i], idx[jj]])
         max_abs = max(max_abs, abs(got - want))
-        print(f"    J[{i},{jj}] code {got:.4f}  vs titans readout {want:.4f}  |delta| {abs(got - want):.2e}")
+        print(
+            f"    J[{i},{jj}] code {got:.4f}  vs titans readout {want:.4f}  |delta| {abs(got - want):.2e}"
+        )
     readout_ok = max_abs < 5e-5
     print(f"    max |code - readout| = {max_abs:.2e}  -> reproduces titans readout = {readout_ok}")
 
@@ -101,13 +112,17 @@ def main() -> int:
     diag_pos = bool(j[0, 0] > 0 and j[1, 1] > 0)
     offdiag_neg = bool(j[0, 1] < 0 and j[1, 0] < 0)
     diag_dom = bool(j[0, 0] > abs(j[0, 1]) and j[1, 1] > abs(j[1, 0]))
-    print(f"\n    numeric J: positive diagonal = {diag_pos}; negative off-diagonal = {offdiag_neg}; "
-          f"strictly diagonally dominant = {diag_dom}")
+    print(
+        f"\n    numeric J: positive diagonal = {diag_pos}; negative off-diagonal = {offdiag_neg}; "
+        f"strictly diagonally dominant = {diag_dom}"
+    )
 
     ok = all_zero and own_pos and cross_neg and readout_ok and diag_pos and offdiag_neg and diag_dom
     print("\n" + "=" * 78)
-    print(f"CONSISTENCY: symbolic Jacobian == code closed form == titans readout, structural signs "
-          f"certified => {ok}")
+    print(
+        f"CONSISTENCY: symbolic Jacobian == code closed form == titans readout, structural signs "
+        f"certified => {ok}"
+    )
     return 0 if ok else 1
 
 

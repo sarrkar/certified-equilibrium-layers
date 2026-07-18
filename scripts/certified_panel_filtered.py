@@ -46,16 +46,30 @@ CANON = {"8mer", "7mer-m8", "7mer-A1", "6mer"}
 KREF = json.loads((REPO / "scripts" / "operator_kref_config.json").read_text())["contrasts"]
 
 CONTRASTS = [
-    {"series": "GSE184929", "target": "Ttr", "on_target": "Ttr", "seed": "UAUAGAG", "dose": "30mkg",
-     "kref": "GSE184929_Ttr_GNA_g7",
-     "parent": "data/raw/offtarget/seedmatchr/Schlegel_2022_Ttr_D1_30mkg.csv",
-     "modified": "data/raw/offtarget/seedmatchr/Schlegel_2022_Ttr_D4_30mkg.csv",
-     "long": "results/seedmod_loaded/GSE184929_Ttr_D1_vs_D4_GNA_g7_30mkg.long.csv.gz", "sep": "\t"},
-    {"series": "GSE108823", "target": "Hao1 siRNA-5", "on_target": "Hao1", "seed": "UGUCGAU", "dose": "10nM",
-     "kref": "GSE108823_Hao1_GNA_g7",
-     "parent": "data/raw/offtarget/geo/GSE108823_group_siRNA-5.vsMock.DESeq2.txt.gz",
-     "modified": "data/raw/offtarget/geo/GSE108823_group_siRNA-5-GNA.vsMock.DESeq2.txt.gz",
-     "long": "results/seedmod_loaded/GSE108823_siRNA5_vs_siRNA5_GNA.long.csv.gz", "sep": "\t"},
+    {
+        "series": "GSE184929",
+        "target": "Ttr",
+        "on_target": "Ttr",
+        "seed": "UAUAGAG",
+        "dose": "30mkg",
+        "kref": "GSE184929_Ttr_GNA_g7",
+        "parent": "data/raw/offtarget/seedmatchr/Schlegel_2022_Ttr_D1_30mkg.csv",
+        "modified": "data/raw/offtarget/seedmatchr/Schlegel_2022_Ttr_D4_30mkg.csv",
+        "long": "results/seedmod_loaded/GSE184929_Ttr_D1_vs_D4_GNA_g7_30mkg.long.csv.gz",
+        "sep": "\t",
+    },
+    {
+        "series": "GSE108823",
+        "target": "Hao1 siRNA-5",
+        "on_target": "Hao1",
+        "seed": "UGUCGAU",
+        "dose": "10nM",
+        "kref": "GSE108823_Hao1_GNA_g7",
+        "parent": "data/raw/offtarget/geo/GSE108823_group_siRNA-5.vsMock.DESeq2.txt.gz",
+        "modified": "data/raw/offtarget/geo/GSE108823_group_siRNA-5-GNA.vsMock.DESeq2.txt.gz",
+        "long": "results/seedmod_loaded/GSE108823_siRNA5_vs_siRNA5_GNA.long.csv.gz",
+        "sep": "\t",
+    },
 ]
 
 
@@ -66,8 +80,12 @@ def tested_ids(df: pd.DataFrame) -> set[str]:
 
 def ks_left(matched: np.ndarray, background: np.ndarray, return_arrays: bool = False) -> dict:
     r = stats.ks_2samp(matched, background, alternative="greater")
-    out = {"ks_D": float(r.statistic), "ks_p": float(r.pvalue),
-           "n_matched": int(len(matched)), "n_background": int(len(background))}
+    out = {
+        "ks_D": float(r.statistic),
+        "ks_p": float(r.pvalue),
+        "n_matched": int(len(matched)),
+        "n_background": int(len(background)),
+    }
     if return_arrays:  # the SAME arrays the KS D was computed on, for plotting (Figure 2)
         out["matched"] = np.asarray(matched, dtype=float)
         out["background"] = np.asarray(background, dtype=float)
@@ -85,24 +103,39 @@ def compute_contrast(c: dict, return_arrays: bool = False) -> dict:
     res = {}
     for arm in ("parent", "modified"):
         a = sub[sub["arm"] == arm]
-        res[arm] = ks_left(a.loc[a["seed_matched"], "log2FoldChange"].to_numpy(),
-                           a.loc[~a["seed_matched"], "log2FoldChange"].to_numpy(),
-                           return_arrays=return_arrays)
-    if (res["parent"]["n_matched"] != res["modified"]["n_matched"]
-            or res["parent"]["n_background"] != res["modified"]["n_background"]):
-        raise AssertionError(f"[{c['series']}] shared-universe violation: n differs across arms "
-                             f"(parent {res['parent']}, modified {res['modified']})")
+        res[arm] = ks_left(
+            a.loc[a["seed_matched"], "log2FoldChange"].to_numpy(),
+            a.loc[~a["seed_matched"], "log2FoldChange"].to_numpy(),
+            return_arrays=return_arrays,
+        )
+    if (
+        res["parent"]["n_matched"] != res["modified"]["n_matched"]
+        or res["parent"]["n_background"] != res["modified"]["n_background"]
+    ):
+        raise AssertionError(
+            f"[{c['series']}] shared-universe violation: n differs across arms "
+            f"(parent {res['parent']}, modified {res['modified']})"
+        )
     atten = 1.0 - res["modified"]["ks_D"] / res["parent"]["ks_D"]
 
     # operator on the same shared universe seed-matched canonical set
     pl = long[long["arm"] == "parent"]
-    sm = pl[pl["seed_matched"] & pl["best_site_type"].isin(K_BY_SITE)
-            & pl["transcript_id"].astype(str).isin(universe)].copy()
-    base = dict(zip(par["ensembl_gene_id"].astype(str),
-                    pd.to_numeric(par["baseMean"], errors="coerce"), strict=True))
+    sm = pl[
+        pl["seed_matched"]
+        & pl["best_site_type"].isin(K_BY_SITE)
+        & pl["transcript_id"].astype(str).isin(universe)
+    ].copy()
+    base = dict(
+        zip(
+            par["ensembl_gene_id"].astype(str),
+            pd.to_numeric(par["baseMean"], errors="coerce"),
+            strict=True,
+        )
+    )
     sm = sm[sm["transcript_id"].astype(str).map(lambda g: pd.notna(base.get(g)))]
-    x = (sm["transcript_id"].astype(str).map(lambda g: float(base[g])).to_numpy()
-         * sm["n_canonical_sites"].to_numpy(float))
+    x = sm["transcript_id"].astype(str).map(lambda g: float(base[g])).to_numpy() * sm[
+        "n_canonical_sites"
+    ].to_numpy(float)
     x = x / x.sum()
     k = sm["best_site_type"].map(K_BY_SITE).to_numpy(float)
     # operator runs ONLY where the chemistry-to-K map is sourced (numeric R_REF); else antecedent absent
@@ -111,20 +144,40 @@ def compute_contrast(c: dict, return_arrays: bool = False) -> dict:
     if isinstance(r_ref, int | float):
         dO = aggregate_occupancy(x, r_ref * k, M_REF) - aggregate_occupancy(x, k, M_REF)
         # sign-invariance sweep: dOcc < 0 for ALL R>1, so the certified SIGN is calibration-free
-        sweep = {R: float(aggregate_occupancy(x, R * k, M_REF) - aggregate_occupancy(x, k, M_REF))
-                 for R in (1.1, 1.25, 1.5, 2.0, 3.1, 5.0, 10.0)}
-        op = {"operator_predicted_change": float(dO), "operator_reduction": bool(dO < 0),
-              "R_REF": r_ref, "R_REF_source": kref["source"],
-              "operator_dOcc_sweep": sweep, "sign_negative_all_R_gt_1": bool(all(v < 0 for v in sweep.values())),
-              "sign_match": bool((dO < 0) and (res["modified"]["ks_D"] < res["parent"]["ks_D"]))}
+        sweep = {
+            R: float(aggregate_occupancy(x, R * k, M_REF) - aggregate_occupancy(x, k, M_REF))
+            for R in (1.1, 1.25, 1.5, 2.0, 3.1, 5.0, 10.0)
+        }
+        op = {
+            "operator_predicted_change": float(dO),
+            "operator_reduction": bool(dO < 0),
+            "R_REF": r_ref,
+            "R_REF_source": kref["source"],
+            "operator_dOcc_sweep": sweep,
+            "sign_negative_all_R_gt_1": bool(all(v < 0 for v in sweep.values())),
+            "sign_match": bool((dO < 0) and (res["modified"]["ks_D"] < res["parent"]["ks_D"])),
+        }
     else:
-        op = {"operator_predicted_change": None, "operator_reduction": None, "R_REF": "UNKNOWN",
-              "R_REF_source": kref["source"], "sign_match": None,
-              "operator_status": "certificate antecedent not established"}
-    return {"series": c["series"], "target": c["target"], "seed": c["seed"], "dose": c["dose"],
-            "universe_size": len(universe), "n_matched": res["parent"]["n_matched"],
-            "n_background": res["parent"]["n_background"], "measured": res, "attenuation": float(atten),
-            **op}
+        op = {
+            "operator_predicted_change": None,
+            "operator_reduction": None,
+            "R_REF": "UNKNOWN",
+            "R_REF_source": kref["source"],
+            "sign_match": None,
+            "operator_status": "certificate antecedent not established",
+        }
+    return {
+        "series": c["series"],
+        "target": c["target"],
+        "seed": c["seed"],
+        "dose": c["dose"],
+        "universe_size": len(universe),
+        "n_matched": res["parent"]["n_matched"],
+        "n_background": res["parent"]["n_background"],
+        "measured": res,
+        "attenuation": float(atten),
+        **op,
+    }
 
 
 def _parent_enrichment(fname: str, seed: str, on_symbol: str) -> dict:
@@ -142,8 +195,10 @@ def _parent_enrichment(fname: str, seed: str, on_symbol: str) -> dict:
     flags = _seed_match(seed, utr, universe, CANON)
     matched = {g for g in universe if flags[g][0]}
     d = df[df["gid"].isin(universe)]
-    return ks_left(d.loc[d["gid"].isin(matched), "log2FoldChange"].to_numpy(),
-                   d.loc[~d["gid"].isin(matched), "log2FoldChange"].to_numpy())
+    return ks_left(
+        d.loc[d["gid"].isin(matched), "log2FoldChange"].to_numpy(),
+        d.loc[~d["gid"].isin(matched), "log2FoldChange"].to_numpy(),
+    )
 
 
 def seed_provenance() -> dict:
@@ -153,36 +208,47 @@ def seed_provenance() -> dict:
     nulls)."""
     p5 = "GSE108823_group_siRNA-5.vsMock.DESeq2.txt.gz"
     p4 = "GSE108823_group_siRNA-4.vsMock.DESeq2.txt.gz"
-    scrambles = {s: _parent_enrichment(p5, s, "Hao1")
-                 for s in ("ACGUACG", "GAUGCUA", "CAGUUAC", "GUACAUG", "UGACAGU")}
+    scrambles = {
+        s: _parent_enrichment(p5, s, "Hao1")
+        for s in ("ACGUACG", "GAUGCUA", "CAGUUAC", "GUACAUG", "UGACAGU")
+    }
     return {
         "seed_source": "Schlegel 2022 NAR (DOI 10.1093/nar/gkac539) Suppl Table S1, Hao1 duplex "
-                       "D6/D9, guide UUGUCGAUGACUUUCACAUUCUG, seed g2-8 UGUCGAU (PUBLISHED sequence)",
+        "D6/D9, guide UUGUCGAUGACUUUCACAUUCUG, seed g2-8 UGUCGAU (PUBLISHED sequence)",
         "identity_noncircular_check": {
             "sirna4_Ttr_seed_UAUAGAG": _parent_enrichment(p4, "UAUAGAG", "Ttr"),
             "interpretation": "Janas siRNA-4 reproduces the externally-fixed Ttr seed (matches "
-                              "GSE184929 Ttr D=0.124), confirming the Janas<->NAR compound mapping; "
-                              "hence siRNA-5=Hao1=NAR D6, seed UGUCGAU."},
+            "GSE184929 Ttr D=0.124), confirming the Janas<->NAR compound mapping; "
+            "hence siRNA-5=Hao1=NAR D6, seed UGUCGAU.",
+        },
         "hao1_seed_UGUCGAU_consistency": _parent_enrichment(p5, "UGUCGAU", "Hao1"),
         "scramble_7mers": scrambles,
         "note": "seed comes from the NAR published table, NOT from enrichment; the UGUCGAU parent "
-                "signature is CONSISTENCY only. Random 7mers are NOT clean nulls (one reaches D~0.06, "
-                "p~1e-12 below); UGUCGAU is a ~2.5x outlier but the scramble control alone is not "
-                "decisive. No source literally equates GSE108823 'siRNA-5' to this sequence."}
+        "signature is CONSISTENCY only. Random 7mers are NOT clean nulls (one reaches D~0.06, "
+        "p~1e-12 below); UGUCGAU is a ~2.5x outlier but the scramble control alone is not "
+        "decisive. No source literally equates GSE108823 'siRNA-5' to this sequence.",
+    }
 
 
 def seedmatchr_comparison() -> dict | None:
     if not SMR_TSV.is_file():
         return None
     t = pd.read_csv(SMR_TSV, sep="\t")
-    out = {"caveat": ("SeedMatchR filters per arm (padj), so its parent (13581) and modified (19938) "
-                      "backgrounds differ from each other and from our shared universe; per-arm D is "
-                      "comparable on a matched background (Task 2), the cross-arm attenuation needs a "
-                      "single shared universe, which is ours.")}
+    out = {
+        "caveat": (
+            "SeedMatchR filters per arm (padj), so its parent (13581) and modified (19938) "
+            "backgrounds differ from each other and from our shared universe; per-arm D is "
+            "comparable on a matched background (Task 2), the cross-arm attenuation needs a "
+            "single shared universe, which is ours."
+        )
+    }
     for _, r in t.iterrows():
-        out[f"{r['arm']}::{r['annotator']}"] = {"ks_D": float(r["KS_D"]), "ks_p": float(r["KS_p"]),
-                                                "n_matched": int(r["n_matched"]),
-                                                "background": int(r["n_filtered_background"])}
+        out[f"{r['arm']}::{r['annotator']}"] = {
+            "ks_D": float(r["KS_D"]),
+            "ks_p": float(r["KS_p"]),
+            "n_matched": int(r["n_matched"]),
+            "background": int(r["n_filtered_background"]),
+        }
     return out
 
 
@@ -190,47 +256,70 @@ def main() -> int:
     rows = [compute_contrast(c) for c in CONTRASTS]
     prov = seed_provenance()
     smr = seedmatchr_comparison()
-    report = {"annotator": "find_sites canonical 6-8mer, single SHARED universe (D1&D4 tested "
-              "intersection: non-NaN log2FoldChange and baseMean>0), on-target removed",
-              "rows": rows, "hao1_seed_provenance": prov, "seedmatchr_package": smr,
-              "honesty": "independent seed scorer with raised seed K also predicts reduction; this "
-              "validates the certified DIRECTION, not superiority over baselines"}
+    report = {
+        "annotator": "find_sites canonical 6-8mer, single SHARED universe (D1&D4 tested "
+        "intersection: non-NaN log2FoldChange and baseMean>0), on-target removed",
+        "rows": rows,
+        "hao1_seed_provenance": prov,
+        "seedmatchr_package": smr,
+        "honesty": "independent seed scorer with raised seed K also predicts reduction; this "
+        "validates the certified DIRECTION, not superiority over baselines",
+    }
     OUT_JSON.write_text(json.dumps(report, indent=2, sort_keys=True))
 
     print("Certified-direction panel (shared-universe find_sites annotator)")
     print("=" * 104)
-    print(f"{'series':10s} {'guide/target':14s} {'chem':4s} {'sp':>3s} {'dose':>7s} {'n_match':>8s} "
-          f"{'parentD':>8s} {'parent_p':>10s} {'modD':>7s} {'mod_p':>10s} {'atten':>7s} {'sign':>5s}")
+    print(
+        f"{'series':10s} {'guide/target':14s} {'chem':4s} {'sp':>3s} {'dose':>7s} {'n_match':>8s} "
+        f"{'parentD':>8s} {'parent_p':>10s} {'modD':>7s} {'mod_p':>10s} {'atten':>7s} {'sign':>5s}"
+    )
     print("-" * 104)
     for r in rows:
         mp, mm = r["measured"]["parent"], r["measured"]["modified"]
-        print(f"{r['series']:10s} {r['target']:14s} {'GNA':4s} {'7':>3s} {r['dose']:>7s} "
-              f"{r['n_matched']:>8d} {mp['ks_D']:>8.4f} {mp['ks_p']:>10.2e} {mm['ks_D']:>7.4f} "
-              f"{mm['ks_p']:>10.2e} {r['attenuation']:>7.4f} {r['sign_match']!s:>5s}")
+        print(
+            f"{r['series']:10s} {r['target']:14s} {'GNA':4s} {'7':>3s} {r['dose']:>7s} "
+            f"{r['n_matched']:>8d} {mp['ks_D']:>8.4f} {mp['ks_p']:>10.2e} {mm['ks_D']:>7.4f} "
+            f"{mm['ks_p']:>10.2e} {r['attenuation']:>7.4f} {r['sign_match']!s:>5s}"
+        )
     print("-" * 104)
     for r in rows:
-        print(f"[{r['series']}] shared universe={r['universe_size']}, n_matched={r['n_matched']} "
-              f"n_background={r['n_background']} (identical across arms; asserted); "
-              f"operator dOcc={r['operator_predicted_change']:+.3e} (reduction={r['operator_reduction']})")
-    print("\n[operator R_REF sign-invariance sweep] dOcc at R = K_mod/K_parent (3.1 is a reference "
-          "point, NOT a calibrated constant; the source is a comparison, |dS| is VERIFY):")
+        print(
+            f"[{r['series']}] shared universe={r['universe_size']}, n_matched={r['n_matched']} "
+            f"n_background={r['n_background']} (identical across arms; asserted); "
+            f"operator dOcc={r['operator_predicted_change']:+.3e} (reduction={r['operator_reduction']})"
+        )
+    print(
+        "\n[operator R_REF sign-invariance sweep] dOcc at R = K_mod/K_parent (3.1 is a reference "
+        "point, NOT a calibrated constant; the source is a comparison, |dS| is VERIFY):"
+    )
     grid = (1.1, 1.25, 1.5, 2.0, 3.1, 5.0, 10.0)
     print(f"  {'series':10s} " + " ".join(f"R={R:<5g}" for R in grid) + "   all_R>1_negative")
     for r in rows:
         sw = r["operator_dOcc_sweep"]
-        print(f"  {r['series']:10s} " + " ".join(f"{sw[R]:>+7.1e}" for R in grid)
-              + f"   {r['sign_negative_all_R_gt_1']}")
-    print("  => dOcc < 0 for ALL R>1: the certified SIGN is calibration-free; the exact R never "
-          "carried the claim.")
+        print(
+            f"  {r['series']:10s} "
+            + " ".join(f"{sw[R]:>+7.1e}" for R in grid)
+            + f"   {r['sign_negative_all_R_gt_1']}"
+        )
+    print(
+        "  => dOcc < 0 for ALL R>1: the certified SIGN is calibration-free; the exact R never "
+        "carried the claim."
+    )
     print("\n[GSE108823 Hao1 seed provenance]")
     print(f"  SEED SOURCE (published, not inferred): {prov['seed_source']}")
     ic = prov["identity_noncircular_check"]["sirna4_Ttr_seed_UAUAGAG"]
-    print(f"  non-circular identity check: Janas siRNA-4 + Ttr seed UAUAGAG -> D={ic['ks_D']:.4f} "
-          f"p={ic['ks_p']:.2e}  (matches GSE184929 Ttr; confirms Janas<->NAR compound mapping)")
+    print(
+        f"  non-circular identity check: Janas siRNA-4 + Ttr seed UAUAGAG -> D={ic['ks_D']:.4f} "
+        f"p={ic['ks_p']:.2e}  (matches GSE184929 Ttr; confirms Janas<->NAR compound mapping)"
+    )
     hc = prov["hao1_seed_UGUCGAU_consistency"]
     print(f"  UGUCGAU consistency (Hao1 parent): D={hc['ks_D']:.4f} p={hc['ks_p']:.2e}")
-    print("  scramble 7mers (NOT clean nulls):", ", ".join(
-        f"{s}={v['ks_D']:.3f}/p{v['ks_p']:.1e}" for s, v in prov["scramble_7mers"].items()))
+    print(
+        "  scramble 7mers (NOT clean nulls):",
+        ", ".join(
+            f"{s}={v['ks_D']:.3f}/p{v['ks_p']:.1e}" for s, v in prov["scramble_7mers"].items()
+        ),
+    )
     print(f"  {prov['note']}")
     if smr:
         print("\n[SeedMatchR package, real CRAN v1.1.1 (GSE184929, per-arm filter_deseq)]:")

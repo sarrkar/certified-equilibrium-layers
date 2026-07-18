@@ -69,7 +69,9 @@ def load_reference() -> tuple[list[tuple[str, pd.DataFrame]], str]:
                 "seed_match": pd.to_numeric(df[sm], errors="coerce").fillna(0.0),
             }
         )
-        return [("SeedMatchR_GSE184929", out)], "SeedMatchR R package (results/seedmatch_gse184929.csv)"
+        return [
+            ("SeedMatchR_GSE184929", out)
+        ], "SeedMatchR R package (results/seedmatch_gse184929.csv)"
 
     from cascade.data import SEEDMATCHR_DATASETS, load_schlegel2022
 
@@ -86,7 +88,9 @@ def load_reference() -> tuple[list[tuple[str, pd.DataFrame]], str]:
                     {
                         "symbol": f["gene_name"].astype(str),
                         "log2fc": pd.to_numeric(f["log2fc"], errors="coerce"),
-                        "seed_match": pd.to_numeric(f["seed_match_count"], errors="coerce").fillna(0.0),
+                        "seed_match": pd.to_numeric(f["seed_match_count"], errors="coerce").fillna(
+                            0.0
+                        ),
                     }
                 ),
             )
@@ -155,7 +159,9 @@ def run() -> dict:
 
         # T4 certified upper bound U(g): global + per-gene rowwise.
         e_err, s_err = E_REL_ERR * e_norm, S_REL_ERR * s2
-        cert = ob.certified_bound(s, ALPHA, e_norm, e_err, s_err, p_norm=p_norm, p_prime_norm=p_norm)
+        cert = ob.certified_bound(
+            s, ALPHA, e_norm, e_err, s_err, p_norm=p_norm, p_prime_norm=p_norm
+        )
         u_global = cert["bound"]
         u_rowwise = (
             row_norms[a] * e_err

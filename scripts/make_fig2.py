@@ -37,8 +37,8 @@ import gse108823_dose_enumeration as g8  # noqa: E402
 from certified_panel_filtered import CONTRASTS, compute_contrast  # noqa: E402
 from seedmod_loader import _load_fasta  # noqa: E402
 
-ACCENT = "#0072B2"   # seed-matched curve
-GREY = "0.55"        # background curve
+ACCENT = "#0072B2"  # seed-matched curve
+GREY = "0.55"  # background curve
 XLIM = (-1.5, 1.0)
 OUT_PDF = REPO / "results/figures/fig2_certified_panel.pdf"
 OUT_PNG = REPO / "results/figures/fig2_certified_panel.png"
@@ -68,7 +68,9 @@ def panel(ax, arm: dict, label: str, assay: str) -> dict:
     matched, background = arm["matched"], arm["background"]
     D, xstar, fb, fm = max_gap(matched, background)
     if abs(D - arm["ks_D"]) >= 1e-9:
-        raise AssertionError(f"{label}: max-gap D from plotted ECDFs ({D!r}) != printed D ({arm['ks_D']!r})")
+        raise AssertionError(
+            f"{label}: max-gap D from plotted ECDFs ({D!r}) != printed D ({arm['ks_D']!r})"
+        )
     for a, color, lw in ((background, GREY, 1.0), (matched, ACCENT, 1.3)):
         xs, ys = ecdf(a)
         ax.plot(xs, ys, drawstyle="steps-post", color=color, lw=lw, solid_capstyle="butt")
@@ -79,9 +81,15 @@ def panel(ax, arm: dict, label: str, assay: str) -> dict:
     ax.plot([xstar, xstar], [fb, fm], color="0.15", lw=0.8, solid_capstyle="butt")
     ax.plot([xstar - tick, xstar + tick], [fb, fb], color="0.15", lw=0.8, solid_capstyle="butt")
     ax.plot([xstar - tick, xstar + tick], [fm, fm], color="0.15", lw=0.8, solid_capstyle="butt")
-    ax.annotate(f"$D$={D:.3f}", xy=(xstar + tick, mid), xytext=(xstar + 0.18, mid),
-                fontsize=6, va="center", color="0.15",
-                arrowprops={"arrowstyle": "-", "color": "0.15", "lw": 0.5, "shrinkA": 1, "shrinkB": 0})
+    ax.annotate(
+        f"$D$={D:.3f}",
+        xy=(xstar + tick, mid),
+        xytext=(xstar + 0.18, mid),
+        fontsize=6,
+        va="center",
+        color="0.15",
+        arrowprops={"arrowstyle": "-", "color": "0.15", "lw": 0.5, "shrinkA": 1, "shrinkB": 0},
+    )
     # header band: title and assay line sit in the blank band ABOVE the curves (data y > 1.0), so
     # nothing is drawn over the data. The assay line matters: the two GNA brackets differ in assay
     # format AND dose, and GSE108823 has no dose variation and no in vivo arm, so guide and assay
@@ -89,48 +97,75 @@ def panel(ax, arm: dict, label: str, assay: str) -> dict:
     ax.text(0.05, 0.99, label, transform=ax.transAxes, fontsize=6.5, va="top")
     ax.text(0.05, 0.90, assay, transform=ax.transAxes, fontsize=5, va="top", color="0.5")
     # p and n stay inside the axes at upper-left, over the flat near-zero part of the curves
-    ax.text(0.05, 0.72, f"$p$={arm['ks_p']:.1e}\n$n$={arm['n_matched']}",
-            transform=ax.transAxes, fontsize=6, va="top")
+    ax.text(
+        0.05,
+        0.72,
+        f"$p$={arm['ks_p']:.1e}\n$n$={arm['n_matched']}",
+        transform=ax.transAxes,
+        fontsize=6,
+        va="top",
+    )
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
     for s in ("left", "bottom"):
         ax.spines[s].set_linewidth(0.6)
-    ax.spines["left"].set_bounds(0, 1.0)  # y-axis line stops at 1.0; blank band above holds the header
+    ax.spines["left"].set_bounds(
+        0, 1.0
+    )  # y-axis line stops at 1.0; blank band above holds the header
     ax.tick_params(width=0.6, labelsize=6)
     ax.set_xlim(*XLIM)
-    ax.set_ylim(0, 1.22)                    # blank band above the curves for the title + assay line
+    ax.set_ylim(0, 1.22)  # blank band above the curves for the title + assay line
     ax.set_yticks([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
     ax.plot([0.0, 0.0], [0.0, 1.0], color="0.85", lw=0.5, zorder=0)  # x=0 guide, only over the data
     ax.set_xlabel("log2 fold change", fontsize=6.5)
-    return {"label": label, "D": D, "p": float(arm["ks_p"]), "n_matched": int(arm["n_matched"]),
-            "xstar": xstar}
+    return {
+        "label": label,
+        "D": D,
+        "p": float(arm["ks_p"]),
+        "n_matched": int(arm["n_matched"]),
+        "xstar": xstar,
+    }
 
 
 def bracket(fig, ax_left, ax_right, text: str) -> None:
     bl, br = ax_left.get_position(), ax_right.get_position()
     xl, xr = (bl.x0 + bl.x1) / 2, (br.x0 + br.x1) / 2
     y, yt = 0.865, 0.83
-    fig.add_artist(Line2D([xl, xl, xr, xr], [yt, y, y, yt], transform=fig.transFigure,
-                          color="0.15", lw=0.8))
+    fig.add_artist(
+        Line2D([xl, xl, xr, xr], [yt, y, y, yt], transform=fig.transFigure, color="0.15", lw=0.8)
+    )
     fig.text((xl + xr) / 2, 0.885, text, ha="center", va="bottom", fontsize=7)
 
 
 def main() -> int:
-    plt.rcParams.update({"font.family": "serif", "font.serif": ["DejaVu Serif"],
-                         "mathtext.fontset": "cm", "pdf.fonttype": 42, "svg.fonttype": "none",
-                         "axes.linewidth": 0.6})
+    plt.rcParams.update(
+        {
+            "font.family": "serif",
+            "font.serif": ["DejaVu Serif"],
+            "mathtext.fontset": "cm",
+            "pdf.fonttype": 42,
+            "svg.fonttype": "none",
+            "axes.linewidth": 0.6,
+        }
+    )
     utr = _load_fasta(REPO / "data/raw/reference/rat_3utr.fa")
-    ttr = compute_contrast(next(c for c in CONTRASTS if c["series"] == "GSE184929"), return_arrays=True)
-    hao = compute_contrast(next(c for c in CONTRASTS if c["series"] == "GSE108823"), return_arrays=True)
+    ttr = compute_contrast(
+        next(c for c in CONTRASTS if c["series"] == "GSE184929"), return_arrays=True
+    )
+    hao = compute_contrast(
+        next(c for c in CONTRASTS if c["series"] == "GSE108823"), return_arrays=True
+    )
     ib = g8.arm_enrichment(g8.load_deseq(g8.ARMS["siRNA-5-iB"]), utr, return_arrays=True)
 
-    assay_iv = "rat liver, in vivo, 30 mg/kg"       # panels 1-2 (GSE184929)
-    assay_ic = "rat hepatocytes, in vitro, 10 nM"   # panels 3-5 (GSE108823)
-    spec = [(ttr["measured"]["parent"], "Ttr parent", assay_iv),
-            (ttr["measured"]["modified"], "Ttr (S)-GNA g7", assay_iv),
-            (hao["measured"]["parent"], "Hao1 parent", assay_ic),
-            (hao["measured"]["modified"], "Hao1 (S)-GNA g7", assay_ic),
-            (ib, "RISC-block (iB)", assay_ic)]
+    assay_iv = "rat liver, in vivo, 30 mg/kg"  # panels 1-2 (GSE184929)
+    assay_ic = "rat hepatocytes, in vitro, 10 nM"  # panels 3-5 (GSE108823)
+    spec = [
+        (ttr["measured"]["parent"], "Ttr parent", assay_iv),
+        (ttr["measured"]["modified"], "Ttr (S)-GNA g7", assay_iv),
+        (hao["measured"]["parent"], "Hao1 parent", assay_ic),
+        (hao["measured"]["modified"], "Hao1 (S)-GNA g7", assay_ic),
+        (ib, "RISC-block (iB)", assay_ic),
+    ]
 
     fig, axes = plt.subplots(1, 5, figsize=(7.0, 2.2), sharey=True)
     built = [panel(ax, arm, lab, assay) for ax, (arm, lab, assay) in zip(axes, spec, strict=True)]
@@ -150,10 +185,14 @@ def main() -> int:
     print("Figure 2 written:", OUT_PDF.relative_to(REPO), "and", OUT_PNG.name)
     print("Numbers the figure was built from (assert: max-gap D == printed D within 1e-9):")
     for b in built:
-        print(f"  {b['label']:22s} D={b['D']:.6f}  p={b['p']:.3e}  n_matched={b['n_matched']}  "
-              f"x*={b['xstar']:+.4f}")
-    print(f"  attenuation Ttr (panels 1->2) = {ttr['attenuation']:.4f}; "
-          f"Hao1 (panels 3->4) = {hao['attenuation']:.4f}")
+        print(
+            f"  {b['label']:22s} D={b['D']:.6f}  p={b['p']:.3e}  n_matched={b['n_matched']}  "
+            f"x*={b['xstar']:+.4f}"
+        )
+    print(
+        f"  attenuation Ttr (panels 1->2) = {ttr['attenuation']:.4f}; "
+        f"Hao1 (panels 3->4) = {hao['attenuation']:.4f}"
+    )
     return 0
 
 

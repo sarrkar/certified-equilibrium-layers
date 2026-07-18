@@ -305,9 +305,7 @@ def load_collectri(
     if species not in COLLECTRI_ORGANISMS:
         raise ValueError(f"species must be one of {sorted(COLLECTRI_ORGANISMS)}; got {species!r}")
     raw_path = (
-        Path(raw_path)
-        if raw_path is not None
-        else default_grn_dir() / f"collectri_{species}.tsv"
+        Path(raw_path) if raw_path is not None else default_grn_dir() / f"collectri_{species}.tsv"
     )
     url = COLLECTRI_URL.format(organism=COLLECTRI_ORGANISMS[species])
     if not raw_path.exists():
@@ -319,7 +317,13 @@ def load_collectri(
 
     def build() -> SignedDirectedGRN:
         df = pd.read_csv(raw_path, sep="\t", dtype=str)
-        need = {"source_genesymbol", "target_genesymbol", "is_directed", "is_stimulation", "is_inhibition"}
+        need = {
+            "source_genesymbol",
+            "target_genesymbol",
+            "is_directed",
+            "is_stimulation",
+            "is_inhibition",
+        }
         missing = need - set(df.columns)
         if missing:
             raise ValueError(f"{raw_path}: CollecTRI export missing columns {sorted(missing)}")

@@ -54,8 +54,8 @@ def occ_langmuir(f, K):
 
 
 def occ_hill2(f, K):
-    d = K ** 2 + f ** 2
-    return f ** 2 / d, 2.0 * f * K ** 2 / d ** 2
+    d = K**2 + f**2
+    return f**2 / d, 2.0 * f * K**2 / d**2
 
 
 def occ_satexp(f, K):
@@ -97,20 +97,27 @@ def verify_mirna(K, x, M, occ_name):
     x2[s] += eps
     f1 = solve_f(M, x2, K) if occ_name == "langmuir" else solve_general(M, x2, K, occ)
     th1, _ = occ(f1, K)
-    dtheta_num = (th1 - th0) / eps                    # numerical dtheta_j/dx_s
-    dfdx = -th0[s] / D                                # closed form df/dx_s
-    dtheta_cf = dth0 * dfdx                           # closed form dtheta_j/dx_s
+    dtheta_num = (th1 - th0) / eps  # numerical dtheta_j/dx_s
+    dfdx = -th0[s] / D  # closed form df/dx_s
+    dtheta_cf = dth0 * dfdx  # closed form dtheta_j/dx_s
 
     partners = np.arange(len(K)) != s
-    certified_sign = bool(np.all(dtheta_num[partners] <= 1e-15))     # all partners de-repressed
-    m_matrix = bool(D > 0.0)                                          # reduced Jacobian M-matrix
+    certified_sign = bool(np.all(dtheta_num[partners] <= 1e-15))  # all partners de-repressed
+    m_matrix = bool(D > 0.0)  # reduced Jacobian M-matrix
     # closed form matches numerical (relative error on the response vector)
     denom = np.abs(dtheta_cf) + 1e-30
     max_rel = float(np.max(np.abs(dtheta_num - dtheta_cf) / denom))
     sign_match = bool(np.all(np.sign(dtheta_num[partners]) == np.sign(dtheta_cf[partners])))
-    return {"n_targets": int(len(K)), "f": f0, "D": D, "m_matrix": m_matrix,
-            "certified_sign": certified_sign, "closed_form_sign_match": sign_match,
-            "max_rel_err_cf_vs_num": max_rel, "mean_derepression": float(np.mean(dtheta_num[partners]))}
+    return {
+        "n_targets": int(len(K)),
+        "f": f0,
+        "D": D,
+        "m_matrix": m_matrix,
+        "certified_sign": certified_sign,
+        "closed_form_sign_match": sign_match,
+        "max_rel_err_cf_vs_num": max_rel,
+        "mean_derepression": float(np.mean(dtheta_num[partners])),
+    }
 
 
 def run() -> dict:
@@ -119,7 +126,9 @@ def run() -> dict:
     corpus = load_corpus()
     corpus = corpus[corpus["best_site_type"].isin(CANONICAL)].copy()
     corpus["K"] = corpus["best_site_type"].map(K_BY_SITE)
-    corpus["x"] = np.exp(corpus["log_tpm_repression"] - corpus["log_tpm_repression"].median())  # real abundance
+    corpus["x"] = np.exp(
+        corpus["log_tpm_repression"] - corpus["log_tpm_repression"].median()
+    )  # real abundance
 
     mirnas = sorted(corpus["mirna"].unique())
     langmuir_rows, form_rows = {}, {f: {} for f in OCC}
@@ -140,8 +149,11 @@ def run() -> dict:
     # NON-VACUOUS validation 1: closed-form comparative static vs numerical finite difference.
     rel = np.array([r["max_rel_err_cf_vs_num"] for r in langmuir_rows.values()])
     cf_all_agree = bool(np.all(rel < 1e-3))
-    cf_disagreements = {mi: r["max_rel_err_cf_vs_num"] for mi, r in langmuir_rows.items()
-                        if r["max_rel_err_cf_vs_num"] >= 1e-3}
+    cf_disagreements = {
+        mi: r["max_rel_err_cf_vs_num"]
+        for mi, r in langmuir_rows.items()
+        if r["max_rel_err_cf_vs_num"] >= 1e-3
+    }
 
     # NON-VACUOUS validation 2: form-independence (Langmuir, Hill h=2, saturating-exponential).
     form_frac = {}
@@ -207,18 +219,26 @@ def main() -> int:
     print(f"  N miRNAs = {N}  (GSE140218 HEK293 unavailable on disk)")
     print(f"  {'miRNA':<10}{'n_tgt':>7}{'D':>10}{'cf_relerr':>12}{'mean_derep':>12}")
     for mi, row in r["per_mirna_langmuir"].items():
-        print(f"  {mi:<10}{row['n_targets']:>7}{row['D']:>10.3g}"
-              f"{row['max_rel_err_cf_vs_num']:>12.2e}{row['mean_derepression']:>12.2e}")
+        print(
+            f"  {mi:<10}{row['n_targets']:>7}{row['D']:>10.3g}"
+            f"{row['max_rel_err_cf_vs_num']:>12.2e}{row['mean_derepression']:>12.2e}"
+        )
     tc = r["trivial_by_construction"]
-    print(f"  TRIVIAL-BY-CONSTRUCTION (excluded from evidence): single-pool Jacobian is diagonal, "
-          f"D_min={tc['D_min']:.3g} (all >= 1). 'M-matrix holds N/N' / 'sign holds N/N' cannot fail; not a verification.")
+    print(
+        f"  TRIVIAL-BY-CONSTRUCTION (excluded from evidence): single-pool Jacobian is diagonal, "
+        f"D_min={tc['D_min']:.3g} (all >= 1). 'M-matrix holds N/N' / 'sign holds N/N' cannot fail; not a verification."
+    )
     v1 = r["validation_closed_form_vs_finite_diff"]
-    print(f"  VALIDATION 1 (closed-form vs finite-diff): rel err {v1['relative_error_min']:.1e} to "
-          f"{v1['relative_error_max']:.1e} (median {v1['relative_error_median']:.1e}); all agree < 1e-3 = {v1['all_agree_below_1e-3']}")
+    print(
+        f"  VALIDATION 1 (closed-form vs finite-diff): rel err {v1['relative_error_min']:.1e} to "
+        f"{v1['relative_error_max']:.1e} (median {v1['relative_error_median']:.1e}); all agree < 1e-3 = {v1['all_agree_below_1e-3']}"
+    )
     v2 = r["validation_form_independence"]
-    print("  VALIDATION 2 (form-independence, cf-vs-fd max rel err): "
-          + ", ".join(f"{k}={v['cf_vs_fd_max_rel_err']:.1e}" for k, v in v2["by_form"].items())
-          + f"  all-forms-agree={v2['form_independent_all_forms_agree']}")
+    print(
+        "  VALIDATION 2 (form-independence, cf-vs-fd max rel err): "
+        + ", ".join(f"{k}={v['cf_vs_fd_max_rel_err']:.1e}" for k, v in v2["by_form"].items())
+        + f"  all-forms-agree={v2['form_independent_all_forms_agree']}"
+    )
     dis = v1["disagreements_rel_err_ge_1e-3"]
     print(f"  CF disagreements (rel err >= 1e-3): {dis if dis else 'none'}")
     print(f"[theory-realdata] wrote {OUT}")

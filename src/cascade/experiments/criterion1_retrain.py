@@ -266,7 +266,11 @@ def run(device: str = "cpu") -> dict:
             "pooled_mean": pooled_margin,
         },
         "d4_lt_d1": {"E_D1": e_d1, "E_D4": e_d4, "holds": d4_lt_d1},
-        "criteria": {"a_pooled_margin": crit_a, "b_both_studies_positive": crit_b, "c_d4_lt_d1": crit_c},
+        "criteria": {
+            "a_pooled_margin": crit_a,
+            "b_both_studies_positive": crit_b,
+            "c_d4_lt_d1": crit_c,
+        },
         "verdict": "PASS" if passed else "FAIL",
         "decision": (
             "PASS: the retrained modification-aware propagation predictor beats the mechanistic "
@@ -283,24 +287,34 @@ def run(device: str = "cpu") -> dict:
 def main() -> int:
     import torch
 
-    device = "cuda:1" if torch.cuda.is_available() and torch.cuda.device_count() > 1 else (
-        "cuda:0" if torch.cuda.is_available() else "cpu"
+    device = (
+        "cuda:1"
+        if torch.cuda.is_available() and torch.cuda.device_count() > 1
+        else ("cuda:0" if torch.cuda.is_available() else "cpu")
     )
     numbers = run(device)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(numbers, indent=2), encoding="utf-8")
 
     t = numbers["training"]
-    print(f"[criterion1] trained on {t['n_train_cells']} McGeary cells | alpha={t['learned_alpha']:.3f} w={t['learned_edge_scale_w']:.3f} | device {device}")
+    print(
+        f"[criterion1] trained on {t['n_train_cells']} McGeary cells | alpha={t['learned_alpha']:.3f} w={t['learned_edge_scale_w']:.3f} | device {device}"
+    )
     print(f"  {'condition':<36}{'learned':>9}{'baseline':>10}{'margin':>9}")
     for name, c in numbers["conditions"].items():
-        print(f"  {name:<36}{c['spearman_learned']:>9.3f}{c['spearman_baseline']:>10.3f}{c['margin']:>+9.3f}")
+        print(
+            f"  {name:<36}{c['spearman_learned']:>9.3f}{c['spearman_baseline']:>10.3f}{c['margin']:>+9.3f}"
+        )
     m = numbers["margins"]
-    print(f"  margins: Schlegel {m['schlegel_mean']:+.3f}  Patel {m['patel_mean']:+.3f}  pooled {m['pooled_mean']:+.3f}")
+    print(
+        f"  margins: Schlegel {m['schlegel_mean']:+.3f}  Patel {m['patel_mean']:+.3f}  pooled {m['pooled_mean']:+.3f}"
+    )
     d = numbers["d4_lt_d1"]
     print(f"  D4<D1: E_D1={d['E_D1']:.4f} E_D4={d['E_D4']:.4f} holds={d['holds']}")
     cr = numbers["criteria"]
-    print(f"  criteria: a(margin>=0.05)={cr['a_pooled_margin']} b(both>0)={cr['b_both_studies_positive']} c(D4<D1)={cr['c_d4_lt_d1']}")
+    print(
+        f"  criteria: a(margin>=0.05)={cr['a_pooled_margin']} b(both>0)={cr['b_both_studies_positive']} c(D4<D1)={cr['c_d4_lt_d1']}"
+    )
     print(f"  VERDICT: {numbers['verdict']}")
     print(f"[criterion1] wrote {OUT}")
     return 0

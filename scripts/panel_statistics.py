@@ -56,11 +56,18 @@ def paired_universe(c: dict):
     on = set(par.loc[par["symbol"] == c["on_target"], "ensembl_gene_id"].astype(str))
     universe = (tested_ids(par) & tested_ids(mod)) - on
     sub = long[long["transcript_id"].astype(str).isin(universe)]
-    p = sub[sub["arm"] == "parent"][["transcript_id", "log2FoldChange", "seed_matched"]].set_index("transcript_id")
-    m = sub[sub["arm"] == "modified"][["transcript_id", "log2FoldChange"]].set_index("transcript_id")
+    p = sub[sub["arm"] == "parent"][["transcript_id", "log2FoldChange", "seed_matched"]].set_index(
+        "transcript_id"
+    )
+    m = sub[sub["arm"] == "modified"][["transcript_id", "log2FoldChange"]].set_index(
+        "transcript_id"
+    )
     m = m.loc[p.index]
-    return (p["log2FoldChange"].to_numpy(), m["log2FoldChange"].to_numpy(),
-            p["seed_matched"].to_numpy(bool))
+    return (
+        p["log2FoldChange"].to_numpy(),
+        m["log2FoldChange"].to_numpy(),
+        p["seed_matched"].to_numpy(bool),
+    )
 
 
 def bootstrap_ci(parent_lfc, mod_lfc, matched_mask, rng) -> dict:
@@ -76,8 +83,14 @@ def bootstrap_ci(parent_lfc, mod_lfc, matched_mask, rng) -> dict:
         dm = ks_dplus(mod_lfc[mi], mod_lfc[bi])
         attens[it] = 1.0 - dm / dp if dp > 0 else np.nan
     lo, hi = np.nanpercentile(attens, [2.5, 97.5])
-    return {"D_parent": dp0, "D_modified": dm0, "attenuation": 1.0 - dm0 / dp0,
-            "atten_CI95": [float(lo), float(hi)], "n_matched": int(mi0.size), "n_background": int(bi0.size)}
+    return {
+        "D_parent": dp0,
+        "D_modified": dm0,
+        "attenuation": 1.0 - dm0 / dp0,
+        "atten_CI95": [float(lo), float(hi)],
+        "n_matched": int(mi0.size),
+        "n_background": int(bi0.size),
+    }
 
 
 def permutation_p(matched_lfc, bg_lfc, rng) -> dict:
@@ -91,8 +104,13 @@ def permutation_p(matched_lfc, bg_lfc, rng) -> dict:
             ge += 1
     p_perm = (ge + 1) / (N_PERM + 1)
     p_ks = float(stats.ks_2samp(matched_lfc, bg_lfc, alternative="greater").pvalue)
-    return {"D": obs, "p_ks_analytic": p_ks, "p_permutation": p_perm, "n_perm": N_PERM,
-            "perm_exceedances": ge}
+    return {
+        "D": obs,
+        "p_ks_analytic": p_ks,
+        "p_permutation": p_perm,
+        "n_perm": N_PERM,
+        "perm_exceedances": ge,
+    }
 
 
 def hao1_isoform_fragility() -> dict:
@@ -133,10 +151,18 @@ def hao1_isoform_fragility() -> dict:
         b = best(universe, mode)
         matched = [g for g in universe if b[g] in CANON]
         bg = [g for g in universe if b[g] is None]
-        dp = ks_dplus(par.loc[matched, "log2FoldChange"].to_numpy(), par.loc[bg, "log2FoldChange"].to_numpy())
-        dm = ks_dplus(mod.loc[matched, "log2FoldChange"].to_numpy(), mod.loc[bg, "log2FoldChange"].to_numpy())
-        out[mode] = {"D_parent": dp, "D_modified": dm, "attenuation": 1.0 - dm / dp,
-                     "n_matched": len(matched)}
+        dp = ks_dplus(
+            par.loc[matched, "log2FoldChange"].to_numpy(), par.loc[bg, "log2FoldChange"].to_numpy()
+        )
+        dm = ks_dplus(
+            mod.loc[matched, "log2FoldChange"].to_numpy(), mod.loc[bg, "log2FoldChange"].to_numpy()
+        )
+        out[mode] = {
+            "D_parent": dp,
+            "D_modified": dm,
+            "attenuation": 1.0 - dm / dp,
+            "n_matched": len(matched),
+        }
     return out
 
 
@@ -155,37 +181,65 @@ def main() -> int:
         perm_par = permutation_p(p_lfc[mask], p_lfc[~mask], rng)
         perm_mod = permutation_p(m_lfc[mask], m_lfc[~mask], rng)
         boot[series] = bc
-        result["rows"][series] = {"bootstrap": bc, "permutation_parent": perm_par,
-                                  "permutation_modified": perm_mod, "target": c["target"]}
-        print(f"\n[{series} {c['target']}]  n_matched={bc['n_matched']} n_background={bc['n_background']}")
-        print(f"  (1) attenuation {bc['attenuation']:.3f}  95% bootstrap CI "
-              f"[{bc['atten_CI95'][0]:.3f}, {bc['atten_CI95'][1]:.3f}]  (D_parent {bc['D_parent']:.3f}, "
-              f"D_mod {bc['D_modified']:.3f})")
-        print(f"  (2) parent   D={perm_par['D']:.4f}  KS p={perm_par['p_ks_analytic']:.2e}  "
-              f"perm p={perm_par['p_permutation']:.2e} ({perm_par['perm_exceedances']}/{N_PERM} exceed)")
-        print(f"      modified D={perm_mod['D']:.4f}  KS p={perm_mod['p_ks_analytic']:.2e}  "
-              f"perm p={perm_mod['p_permutation']:.2e} ({perm_mod['perm_exceedances']}/{N_PERM} exceed)")
+        result["rows"][series] = {
+            "bootstrap": bc,
+            "permutation_parent": perm_par,
+            "permutation_modified": perm_mod,
+            "target": c["target"],
+        }
+        print(
+            f"\n[{series} {c['target']}]  n_matched={bc['n_matched']} n_background={bc['n_background']}"
+        )
+        print(
+            f"  (1) attenuation {bc['attenuation']:.3f}  95% bootstrap CI "
+            f"[{bc['atten_CI95'][0]:.3f}, {bc['atten_CI95'][1]:.3f}]  (D_parent {bc['D_parent']:.3f}, "
+            f"D_mod {bc['D_modified']:.3f})"
+        )
+        print(
+            f"  (2) parent   D={perm_par['D']:.4f}  KS p={perm_par['p_ks_analytic']:.2e}  "
+            f"perm p={perm_par['p_permutation']:.2e} ({perm_par['perm_exceedances']}/{N_PERM} exceed)"
+        )
+        print(
+            f"      modified D={perm_mod['D']:.4f}  KS p={perm_mod['p_ks_analytic']:.2e}  "
+            f"perm p={perm_mod['p_permutation']:.2e} ({perm_mod['perm_exceedances']}/{N_PERM} exceed)"
+        )
 
     ttr_ci = boot["GSE184929"]["atten_CI95"]
     hao_ci = boot["GSE108823"]["atten_CI95"]
     overlap = not (ttr_ci[1] < hao_ci[0] or hao_ci[1] < ttr_ci[0])
     result["headline_ci_overlap"] = {"Ttr_CI95": ttr_ci, "Hao1_CI95": hao_ci, "overlap": overlap}
-    print(f"\nHEADLINE: Ttr attenuation CI {[round(v, 3) for v in ttr_ci]} vs Hao1 CI "
-          f"{[round(v, 3) for v in hao_ci]}  ->  CIs overlap = {overlap}  "
-          f"({'NOT separated' if overlap else 'cleanly separated'})")
+    print(
+        f"\nHEADLINE: Ttr attenuation CI {[round(v, 3) for v in ttr_ci]} vs Hao1 CI "
+        f"{[round(v, 3) for v in hao_ci]}  ->  CIs overlap = {overlap}  "
+        f"({'NOT separated' if overlap else 'cleanly separated'})"
+    )
 
     frag = hao1_isoform_fragility()
     result["hao1_isoform_fragility"] = frag
     print("\n(3) Hao1 isoform fragility (a 12x swing under a preprocessing choice):")
-    print(f"    last-isoform annotation: attenuation {frag['last']['attenuation']:.3f} "
-          f"(D {frag['last']['D_parent']:.3f} -> {frag['last']['D_modified']:.3f}, n_matched {frag['last']['n_matched']})")
-    print(f"    union-over-isoforms    : attenuation {frag['union']['attenuation']:.3f} "
-          f"(D {frag['union']['D_parent']:.3f} -> {frag['union']['D_modified']:.3f}, n_matched {frag['union']['n_matched']})")
-    print("    CORRECT = union. last-isoform keeps only the last 3'UTR record per gene, mis-binning genes")
-    print("    whose seed site sits on another isoform INTO the background; that contaminates the null and")
-    print("    inflates the apparent parent->modified drop. union scores a gene as matched if ANY isoform")
-    print("    carries a canonical site (SeedMatchR A-only shrank 411->196 under the fix). The honest")
-    print("    Hao1 attenuation is ~0.025 (GNA barely reduces this off-target); 0.30 is a last-isoform artifact.")
+    print(
+        f"    last-isoform annotation: attenuation {frag['last']['attenuation']:.3f} "
+        f"(D {frag['last']['D_parent']:.3f} -> {frag['last']['D_modified']:.3f}, n_matched {frag['last']['n_matched']})"
+    )
+    print(
+        f"    union-over-isoforms    : attenuation {frag['union']['attenuation']:.3f} "
+        f"(D {frag['union']['D_parent']:.3f} -> {frag['union']['D_modified']:.3f}, n_matched {frag['union']['n_matched']})"
+    )
+    print(
+        "    CORRECT = union. last-isoform keeps only the last 3'UTR record per gene, mis-binning genes"
+    )
+    print(
+        "    whose seed site sits on another isoform INTO the background; that contaminates the null and"
+    )
+    print(
+        "    inflates the apparent parent->modified drop. union scores a gene as matched if ANY isoform"
+    )
+    print(
+        "    carries a canonical site (SeedMatchR A-only shrank 411->196 under the fix). The honest"
+    )
+    print(
+        "    Hao1 attenuation is ~0.025 (GNA barely reduces this off-target); 0.30 is a last-isoform artifact."
+    )
     result["hao1_correct_annotation"] = "union"
 
     OUT_JSON.write_text(json.dumps(result, indent=2, sort_keys=True))

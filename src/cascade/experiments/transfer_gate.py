@@ -37,9 +37,13 @@ SGNA = "Schlegel_2022_Ttr_D4_30mkg"  # GSE184929 (S)-GNA-destabilized guide
 
 def run() -> dict:
     if not TRANSFER.exists():
-        raise FileNotFoundError(f"{TRANSFER} absent; run cascade.experiments.ot_train_transfer first")
+        raise FileNotFoundError(
+            f"{TRANSFER} absent; run cascade.experiments.ot_train_transfer first"
+        )
     if not OFFTARGET_T4.exists():
-        raise FileNotFoundError(f"{OFFTARGET_T4} absent; run cascade.experiments.offtarget_validate first")
+        raise FileNotFoundError(
+            f"{OFFTARGET_T4} absent; run cascade.experiments.offtarget_validate first"
+        )
     transfer = json.loads(TRANSFER.read_text())
     t4 = json.loads(OFFTARGET_T4.read_text())["per_contrast"]
 

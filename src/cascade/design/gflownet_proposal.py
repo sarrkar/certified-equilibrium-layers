@@ -113,7 +113,12 @@ def diversity(guides: list[str], max_pairs: int = 5000, seed: int = 0) -> dict:
     n = len(uniq)
     n_seeds = len({g[SEED_START : SEED_START + SEED_LEN] for g in uniq})
     if n < 2:
-        return {"n_guides": len(guides), "n_unique": n, "n_distinct_seeds": n_seeds, "mean_pairwise_hamming": 0.0}
+        return {
+            "n_guides": len(guides),
+            "n_unique": n,
+            "n_distinct_seeds": n_seeds,
+            "mean_pairwise_hamming": 0.0,
+        }
     total_pairs = n * (n - 1) // 2
     if total_pairs <= max_pairs:
         dists = [_hamming(uniq[i], uniq[j]) for i in range(n) for j in range(i + 1, n)]
@@ -254,13 +259,18 @@ def main() -> int:
     parser.add_argument("--eta", type=float, default=DEFAULT_ETA)
     parser.add_argument("--n-samples", type=int, default=DEFAULT_N_SAMPLES)
     parser.add_argument("--n-train-steps", type=int, default=5000)
-    parser.add_argument("--n-seeds", type=int, default=None, help="enumeration subset for a fast run")
+    parser.add_argument(
+        "--n-seeds", type=int, default=None, help="enumeration subset for a fast run"
+    )
     parser.add_argument("--out", type=Path, default=RESULTS / "t5_gflownet.json")
     args = parser.parse_args()
 
     numbers = run(
-        tau=args.tau, eta=args.eta, n_samples=args.n_samples,
-        n_train_steps=args.n_train_steps, n_seeds=args.n_seeds,
+        tau=args.tau,
+        eta=args.eta,
+        n_samples=args.n_samples,
+        n_train_steps=args.n_train_steps,
+        n_seeds=args.n_seeds,
     )
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(numbers, indent=2), encoding="utf-8")

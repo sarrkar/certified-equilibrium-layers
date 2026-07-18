@@ -237,7 +237,9 @@ def contrast_ks(ds: str, grn, alpha: float, inputs: dict) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--seed", type=int, default=0, help="RNG seed (logged; result deterministic)")
+    parser.add_argument(
+        "--seed", type=int, default=0, help="RNG seed (logged; result deterministic)"
+    )
     parser.add_argument("--alpha", type=float, default=0.5)
     parser.add_argument("--out-dir", type=Path, default=OUT)
     args = parser.parse_args()
@@ -245,7 +247,10 @@ def main() -> int:
     print(f"[t4-discrim] D1 seed={SEED_D1}  D4 g7-GNA model seed={SEED_D4} (g7 WC pair disrupted)")
 
     if not UTR_FASTA.exists():
-        out = {"status": "pending_real_data", "source": f"rat 3'UTR reference absent at {UTR_FASTA}"}
+        out = {
+            "status": "pending_real_data",
+            "source": f"rat 3'UTR reference absent at {UTR_FASTA}",
+        }
         args.out_dir.mkdir(parents=True, exist_ok=True)
         (args.out_dir / "t4_discrimination.json").write_text(json.dumps(out, indent=2))
         print(f"[t4-discrim] PENDING: {out['source']}")

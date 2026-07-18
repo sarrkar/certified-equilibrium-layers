@@ -108,7 +108,9 @@ def fuse_cds_efficacy(
     if id_to_row is not None:
         missing = [s for s in sirna_ids if str(s) not in id_to_row]
         if missing:
-            raise KeyError(f"{len(missing)} siRNA ids absent from the EquiMRNA index, e.g. {missing[:3]}")
+            raise KeyError(
+                f"{len(missing)} siRNA ids absent from the EquiMRNA index, e.g. {missing[:3]}"
+            )
         emb = embeddings[[id_to_row[str(s)] for s in sirna_ids]]
     else:
         if embeddings.shape[0] != n:

@@ -31,7 +31,9 @@ _MAX_ITER = 2000
 _TOL = 1e-12
 
 
-def _solve_fixed_point(s: Tensor, e: Tensor, beta: float, max_iter: int = _MAX_ITER, tol: float = _TOL):
+def _solve_fixed_point(
+    s: Tensor, e: Tensor, beta: float, max_iter: int = _MAX_ITER, tol: float = _TOL
+):
     """Iterate E = e_scaled + beta S E to convergence; returns (E, residual)."""
     eq = e
     eq_prev = torch.zeros_like(e)
@@ -69,7 +71,7 @@ class _Equilibrium(torch.autograd.Function):
         # E = alpha e + (1-alpha) w S E. dbeta/dalpha = -w, d(alpha e)/dalpha = e.
         g_alpha = (y * (e - w * se)).sum()
         # dbeta/dw = (1-alpha).
-        g_w = ((1.0 - alpha) * (y * se).sum())
+        g_w = (1.0 - alpha) * (y * se).sum()
         return g_e, g_alpha, g_w, None
 
 
@@ -82,7 +84,9 @@ class MonotoneEquilibriumPropagation(nn.Module):
         # Unconstrained params mapped through sigmoid so alpha in (0,1), w in (0,1] (monotone repair).
         import math
 
-        self.alpha_raw = nn.Parameter(torch.tensor(math.log(alpha_init / (1.0 - alpha_init)), dtype=s.dtype))
+        self.alpha_raw = nn.Parameter(
+            torch.tensor(math.log(alpha_init / (1.0 - alpha_init)), dtype=s.dtype)
+        )
         self.w_raw = nn.Parameter(torch.tensor(4.0, dtype=s.dtype))  # sigmoid(4) ~ 0.982
 
     def alpha(self) -> Tensor:

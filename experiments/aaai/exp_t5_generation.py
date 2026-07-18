@@ -135,9 +135,7 @@ def train_efficacy():
     from cascade.features import featurize_pairs
     from cascade.features.seedmatch import revcomp
 
-    frame = load_huesken_efficacy(
-        REPO / "data" / "raw" / "efficacy", cache_root=CACHE
-    ).frame
+    frame = load_huesken_efficacy(REPO / "data" / "raw" / "efficacy", cache_root=CACHE).frame
     anti = frame["antisense"].astype(str).tolist()
     sense = frame["sense"].astype(str).tolist()
     tgt = [(s.strip() or revcomp(a)) for a, s in zip(anti, sense, strict=True)]
@@ -183,7 +181,9 @@ def main() -> int:
     print("[t5-gen] extracting mouse TRRUST-node 3'UTRs (GRCm39/104, cached) ...")
     node_utrs = mouse_node_3utrs(grn, release)
     s2 = build_site_sumsq(node_utrs)
-    print(f"[t5-gen] {len(node_utrs)} node 3'UTRs; {len(s2)} distinct 7mer sites; ||P_alpha||={p_norm:.3f}")
+    print(
+        f"[t5-gen] {len(node_utrs)} node 3'UTRs; {len(s2)} distinct 7mer sites; ||P_alpha||={p_norm:.3f}"
+    )
 
     seeds = all_seeds()
     # Certified off-target upper bound U(seed) (target-independent).
@@ -211,7 +211,12 @@ def main() -> int:
     eff_d4 = eff_d1  # GNA is a sugar modification; the base sequence (hence seq-model efficacy) is unchanged
 
     parent = {
-        "D1": {"seed": TTR_SEED, "occupancy": float(occ[i_d1]), "certified_U": u_d1, "predicted_efficacy": eff_d1},
+        "D1": {
+            "seed": TTR_SEED,
+            "occupancy": float(occ[i_d1]),
+            "certified_U": u_d1,
+            "predicted_efficacy": eff_d1,
+        },
         "D4": {
             "seed_base": TTR_SEED,
             "gna_model": f"g7 {TTR_SEED[GNA_SEED_IDX]}->{GNA_MISMATCH_BASE} mismatch vs the D1 site",
@@ -241,7 +246,11 @@ def main() -> int:
         best = None
         if idxs.size:
             j = idxs[np.argmin(U[idxs])]
-            best = {"seed": seeds[int(j)], "certified_U": float(U[j]), "predicted_efficacy": float(eff_ttr[j])}
+            best = {
+                "seed": seeds[int(j)],
+                "certified_U": float(U[j]),
+                "predicted_efficacy": float(eff_ttr[j]),
+            }
         generation[f"eta_{eta}"] = {
             "exists": bool(idxs.size > 0),
             "n_seeds_below_parent_U_and_eff_ge_eta": int(idxs.size),
@@ -298,18 +307,28 @@ def main() -> int:
     out_path = args.out_dir / "t5_generation.json"
     out_path.write_text(json.dumps(numbers, indent=2), encoding="utf-8")
 
-    print(f"\n[t5-gen] parent Ttr: D1 U={u_d1:.3f} eff={eff_d1:.3f} | D4 U={u_d4:.3f} eff={eff_d4:.3f} "
-          f"| D4 lower U: {parent['D4_lower_certified_U_than_D1']} | eff comparable: {parent['efficacy_comparable']}")
+    print(
+        f"\n[t5-gen] parent Ttr: D1 U={u_d1:.3f} eff={eff_d1:.3f} | D4 U={u_d4:.3f} eff={eff_d4:.3f} "
+        f"| D4 lower U: {parent['D4_lower_certified_U_than_D1']} | eff comparable: {parent['efficacy_comparable']}"
+    )
     print("[t5-gen] certified yield (fraction of 16384 seeds), tau x eta:")
     print(f"  {'tau':>14} " + " ".join(f"eta={e:>4}" for e in ETA_GRID))
     for tau_rel in TAU_REL_GRID:
         row = yield_table[f"tau_{tau_rel}xU_D1"]
-        print(f"  {f'{tau_rel}xU_D1':>14} " + " ".join(f"{row[f'eta_{e}']:>8.4f}" for e in ETA_GRID))
+        print(
+            f"  {f'{tau_rel}xU_D1':>14} " + " ".join(f"{row[f'eta_{e}']:>8.4f}" for e in ETA_GRID)
+        )
     for eta in ETA_GRID:
         g = generation[f"eta_{eta}"]
         bs = g["best_seed"]
-        print(f"[t5-gen] generation eta={eta}: exists={g['exists']} n={g['n_seeds_below_parent_U_and_eff_ge_eta']}"
-              + (f" best seed {bs['seed']} U={bs['certified_U']:.3f} eff={bs['predicted_efficacy']:.3f}" if bs else ""))
+        print(
+            f"[t5-gen] generation eta={eta}: exists={g['exists']} n={g['n_seeds_below_parent_U_and_eff_ge_eta']}"
+            + (
+                f" best seed {bs['seed']} U={bs['certified_U']:.3f} eff={bs['predicted_efficacy']:.3f}"
+                if bs
+                else ""
+            )
+        )
     print(f"[t5-gen] wrote {out_path}")
     return 0
 

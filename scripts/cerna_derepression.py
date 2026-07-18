@@ -31,7 +31,9 @@ DEFAULT_SCALES = [0.01, 0.1, 1.0, 10.0, 100.0]
 # ---------------------------------------------------------------------------------------------
 def _num(node, path: str) -> float:
     if not isinstance(node, dict) or "value" not in node or "verify" not in node:
-        raise ValueError(f"{path}: numeric anchor must be an object with 'value' and 'verify' (VERIFY) fields")
+        raise ValueError(
+            f"{path}: numeric anchor must be an object with 'value' and 'verify' (VERIFY) fields"
+        )
     return float(node["value"])
 
 
@@ -41,8 +43,16 @@ def load_systems(config: dict):
     defs = config["definitions"]
     if "threshold_target" not in defs:
         raise ValueError("definitions missing required field: 'threshold_target'")
-    required = ("name", "source", "guide_total_M", "background_sites", "reporter",
-                "competitor_K", "measured_threshold_sites", "measured_threshold_source")
+    required = (
+        "name",
+        "source",
+        "guide_total_M",
+        "background_sites",
+        "reporter",
+        "competitor_K",
+        "measured_threshold_sites",
+        "measured_threshold_source",
+    )
     systems = []
     for i, s in enumerate(config["systems"]):
         for field in required:
@@ -50,16 +60,22 @@ def load_systems(config: dict):
                 raise ValueError(f"system[{i}] missing required field: {field}")
         for cite in ("source", "measured_threshold_source"):
             if not (isinstance(s[cite], str) and s[cite].strip()):
-                raise ValueError(f"system[{i}] ({s.get('name', '?')}) has empty or non-string '{cite}'; "
-                                 "every anchor must cite its primary source")
+                raise ValueError(
+                    f"system[{i}] ({s.get('name', '?')}) has empty or non-string '{cite}'; "
+                    "every anchor must cite its primary source"
+                )
         if not s["background_sites"]:
             raise ValueError(f"system[{i}] ({s['name']}) has empty background_sites")
         background = []
         for j, e in enumerate(s["background_sites"]):
             if "abundance" not in e or "K" not in e:
                 raise ValueError(f"system[{i}].background_sites[{j}] missing 'abundance' or 'K'")
-            background.append((_num(e["abundance"], f"system[{i}].bg[{j}].abundance"),
-                               _num(e["K"], f"system[{i}].bg[{j}].K")))
+            background.append(
+                (
+                    _num(e["abundance"], f"system[{i}].bg[{j}].abundance"),
+                    _num(e["K"], f"system[{i}].bg[{j}].K"),
+                )
+            )
         rep = s["reporter"]
         if "abundance" not in rep or "K" not in rep:
             raise ValueError(f"system[{i}].reporter missing 'abundance' or 'K'")
@@ -74,7 +90,9 @@ def load_systems(config: dict):
             "reporter_x": _num(rep["abundance"], f"system[{i}].reporter.abundance"),
             "reporter_K": _num(rep["K"], f"system[{i}].reporter.K"),
             "competitor_K": _num(s["competitor_K"], f"system[{i}].competitor_K"),
-            "measured_threshold": _num(s["measured_threshold_sites"], f"system[{i}].measured_threshold_sites"),
+            "measured_threshold": _num(
+                s["measured_threshold_sites"], f"system[{i}].measured_threshold_sites"
+            ),
             "measured_threshold_source": s["measured_threshold_source"],
             "measured_background": None,
             "measured_background_source": None,
@@ -85,15 +103,23 @@ def load_systems(config: dict):
         if mb is not None:
             for f in ("abundance", "K", "source"):
                 if f not in mb:
-                    raise ValueError(f"system[{i}] ({s['name']}) measured_background_sites missing '{f}'")
+                    raise ValueError(
+                        f"system[{i}] ({s['name']}) measured_background_sites missing '{f}'"
+                    )
             if not (isinstance(mb["source"], str) and mb["source"].strip()):
-                raise ValueError(f"system[{i}] ({s['name']}) measured_background_sites has empty 'source'")
-            sys_d["measured_background"] = (_num(mb["abundance"], f"system[{i}].measured_background_sites.abundance"),
-                                           _num(mb["K"], f"system[{i}].measured_background_sites.K"))
+                raise ValueError(
+                    f"system[{i}] ({s['name']}) measured_background_sites has empty 'source'"
+                )
+            sys_d["measured_background"] = (
+                _num(mb["abundance"], f"system[{i}].measured_background_sites.abundance"),
+                _num(mb["K"], f"system[{i}].measured_background_sites.K"),
+            )
             sys_d["measured_background_source"] = mb["source"]
             # A background whose value is derived from the system's own measured threshold is
             # circular: it must not produce a "tightening" predicted-over-measured ratio.
-            sys_d["measured_background_circular"] = mb.get("circular_with") == "measured_threshold_sites"
+            sys_d["measured_background_circular"] = (
+                mb.get("circular_with") == "measured_threshold_sites"
+            )
         systems.append(sys_d)
     return systems, defs
 
@@ -115,6 +141,7 @@ def solve_free_guide(M: float, sites, max_iter: int = 200, tol: float = 1e-12) -
     g is strictly increasing with g(0)=-M<=0 and g(M)=sum x_i M/(K_i+M)>=0, so the bracket [0,M]
     is unconditional. No Picard iteration: |T'|=sum x_i K_i/(K_i+f)^2 can exceed 1 and diverge.
     """
+
     def g(f: float) -> float:
         return f + math.fsum(x * f / (K + f) for x, K in sites) - M
 
@@ -144,15 +171,20 @@ def reporter_occupancy(system: dict, x_comp: float, k_scale: float, mode: str = 
     return f / (k_rep + f)
 
 
-def derepression_fraction(system: dict, x_comp: float, k_scale: float, mode: str = "common") -> float:
+def derepression_fraction(
+    system: dict, x_comp: float, k_scale: float, mode: str = "common"
+) -> float:
     """D(x) = 1 - theta_rep(x)/theta_rep(0). Positive means the reporter is derepressed."""
     t0 = reporter_occupancy(system, 0.0, k_scale, mode)
     tx = reporter_occupancy(system, x_comp, k_scale, mode)
     return 1.0 - tx / t0
 
 
-def derepression_threshold(system: dict, target: float, k_scale: float, mode: str = "common", x_max: float = 1e14) -> float:
+def derepression_threshold(
+    system: dict, target: float, k_scale: float, mode: str = "common", x_max: float = 1e14
+) -> float:
     """Smallest competitor abundance x with D(x)>=target: geometric bracketing then bisection."""
+
     def d(x: float) -> float:
         return derepression_fraction(system, x, k_scale, mode)
 
@@ -190,9 +222,10 @@ def _seed_tm_score(system: dict) -> float:
 
 def _independent_occupancy_score(system: dict) -> float:
     """Occupancy at a FIXED free-guide level (the no-competitor baseline free guide)."""
-    f_fixed = solve_free_guide(system["M"],
-                               [(x, K) for x, K in system["background"]]
-                               + [(system["reporter_x"], system["reporter_K"])])
+    f_fixed = solve_free_guide(
+        system["M"],
+        [(x, K) for x, K in system["background"]] + [(system["reporter_x"], system["reporter_K"])],
+    )
     return f_fixed / (system["reporter_K"] + f_fixed)
 
 
@@ -283,7 +316,9 @@ def run(config: dict, target: float | None = None, scales=None, mode: str = "com
             "baseline_D_curves": base_curves,
             "baseline_loglog_slopes": {k: _loglog_slope(x_grid, v) for k, v in base_curves.items()},
             "nominal_threshold_sites": nominal,
-            "predicted_over_measured_ratio": nominal / s["measured_threshold"] if s["measured_threshold"] else float("inf"),
+            "predicted_over_measured_ratio": nominal / s["measured_threshold"]
+            if s["measured_threshold"]
+            else float("inf"),
         }
 
     # Predicted-over-measured ratio by mode, RANKING systems only. A system whose measured
@@ -291,18 +326,28 @@ def run(config: dict, target: float | None = None, scales=None, mode: str = "com
     mode_comparison = {}
     for s in ranking:
         thr_c = derepression_threshold(s, target, 1.0, "common")
-        row = {"has_measured_background": s["measured_background"] is not None,
-               "measured_background_circular": s["measured_background_circular"],
-               "common": {"nominal_threshold_sites": thr_c,
-                          "predicted_over_measured_ratio": thr_c / s["measured_threshold"]}}
+        row = {
+            "has_measured_background": s["measured_background"] is not None,
+            "measured_background_circular": s["measured_background_circular"],
+            "common": {
+                "nominal_threshold_sites": thr_c,
+                "predicted_over_measured_ratio": thr_c / s["measured_threshold"],
+            },
+        }
         if s["measured_background"] is None:
             row["per_system"] = {"reported": False, "reason": "no independent measured background"}
         elif s["measured_background_circular"]:
-            row["per_system"] = {"reported": False, "reason": "CIRCULAR: measured background equals measured_threshold_sites"}
+            row["per_system"] = {
+                "reported": False,
+                "reason": "CIRCULAR: measured background equals measured_threshold_sites",
+            }
         else:
             thr_p = derepression_threshold(s, target, 1.0, "per_system")
-            row["per_system"] = {"reported": True, "nominal_threshold_sites": thr_p,
-                                 "predicted_over_measured_ratio": thr_p / s["measured_threshold"]}
+            row["per_system"] = {
+                "reported": True,
+                "nominal_threshold_sites": thr_p,
+                "predicted_over_measured_ratio": thr_p / s["measured_threshold"],
+            }
         mode_comparison[s["name"]] = row
 
     # Affinity-scale sweep, RANKING systems only. Robustness check, not a finding (see note).
@@ -315,22 +360,30 @@ def run(config: dict, target: float | None = None, scales=None, mode: str = "com
     ordering_values = list(orderings.values())
     ordering_invariant = all(o == ordering_values[0] for o in ordering_values)
 
-    support_citations = [{
-        "name": s["name"], "threshold_axis": s["threshold_axis"],
-        "measured_threshold_sites": s["measured_threshold"],
-        "measured_threshold_source": s["measured_threshold_source"],
-        "role": "SUPPORT ONLY: independent evidence that molecular-titration thresholds exist. This "
-        "is a target-production threshold on a DIFFERENT axis from the added-competing-site "
-        "thresholds; it is NOT placed in the ranking, Table B, or the scale sweep.",
-    } for s in support]
+    support_citations = [
+        {
+            "name": s["name"],
+            "threshold_axis": s["threshold_axis"],
+            "measured_threshold_sites": s["measured_threshold"],
+            "measured_threshold_source": s["measured_threshold_source"],
+            "role": "SUPPORT ONLY: independent evidence that molecular-titration thresholds exist. This "
+            "is a target-production threshold on a DIFFERENT axis from the added-competing-site "
+            "thresholds; it is NOT placed in the ranking, Table B, or the scale sweep.",
+        }
+        for s in support
+    ]
 
     return {
         "experiment": "competitive-derepression comparative statics (conservation-law operator)",
         "house_rules": "bisection on monotone residual; deterministic CPU; anchors carry source + VERIFY",
         "background_mode": mode,
         "threshold_target": target,
-        "x_grid_copies_per_cell": {"min": x_grid[0], "max": x_grid[-1], "n": len(x_grid),
-                                   "note": "geometric, 6 points/decade, deterministic"},
+        "x_grid_copies_per_cell": {
+            "min": x_grid[0],
+            "max": x_grid[-1],
+            "n": len(x_grid),
+            "note": "geometric, 6 points/decade, deterministic",
+        },
         "ranking_systems": [s["name"] for s in ranking],
         "support_citations": support_citations,
         "systems": per_system,
@@ -358,30 +411,55 @@ def run(config: dict, target: float | None = None, scales=None, mode: str = "com
 
 
 def _markdown(results: dict) -> str:
-    lines = ["# Competitive-derepression comparative statics", "",
-             f"background_mode = {results['background_mode']}  |  threshold_target = {results['threshold_target']}", "",
-             "| system | guide_total_M | operator log-slope | baseline log-slopes | "
-             "operator threshold (sites) | measured threshold (sites) |",
-             "|---|---|---|---|---|---|"]
+    lines = [
+        "# Competitive-derepression comparative statics",
+        "",
+        f"background_mode = {results['background_mode']}  |  threshold_target = {results['threshold_target']}",
+        "",
+        "| system | guide_total_M | operator log-slope | baseline log-slopes | "
+        "operator threshold (sites) | measured threshold (sites) |",
+        "|---|---|---|---|---|---|",
+    ]
     for name, s in results["systems"].items():
         if s["role"] != "ranking":
             continue
         bslopes = ", ".join(f"{k}={v:g}" for k, v in s["baseline_loglog_slopes"].items())
-        lines.append(f"| {name} | {s['guide_total_M']:g} | {s['operator_loglog_slope']:.3f} | "
-                     f"{bslopes} | {s['nominal_threshold_sites']:.4g} | {s['measured_threshold_sites']:g} |")
-    lines += ["", "## Predicted/measured threshold ratio by background mode (ranking systems only)", "",
-              "| system | common | per_system |", "|---|---|---|"]
+        lines.append(
+            f"| {name} | {s['guide_total_M']:g} | {s['operator_loglog_slope']:.3f} | "
+            f"{bslopes} | {s['nominal_threshold_sites']:.4g} | {s['measured_threshold_sites']:g} |"
+        )
+    lines += [
+        "",
+        "## Predicted/measured threshold ratio by background mode (ranking systems only)",
+        "",
+        "| system | common | per_system |",
+        "|---|---|---|",
+    ]
     for name, row in results["mode_comparison_predicted_over_measured_ratio"].items():
         ps = row["per_system"]
-        ps_str = f"{ps['predicted_over_measured_ratio']:.3g}" if ps.get("reported") else "CIRCULAR (not reported)"
-        lines.append(f"| {name} | {row['common']['predicted_over_measured_ratio']:.3g} | {ps_str} |")
+        ps_str = (
+            f"{ps['predicted_over_measured_ratio']:.3g}"
+            if ps.get("reported")
+            else "CIRCULAR (not reported)"
+        )
+        lines.append(
+            f"| {name} | {row['common']['predicted_over_measured_ratio']:.3g} | {ps_str} |"
+        )
     lines += ["", "## Support citations (not ranked, different axis)"]
     for c in results["support_citations"]:
-        lines.append(f"- {c['name']} ({c['threshold_axis']}): measured threshold {c['measured_threshold_sites']:g}. "
-                     f"{c['measured_threshold_source']}")
+        lines.append(
+            f"- {c['name']} ({c['threshold_axis']}): measured threshold {c['measured_threshold_sites']:g}. "
+            f"{c['measured_threshold_source']}"
+        )
     sw = results["affinity_scale_sweep"]
-    lines += ["", "Robustness footnote (not a finding): " + sw["robustness_note_not_a_finding"], "",
-              results["capability_statement"], "", results["background_mode_note"]]
+    lines += [
+        "",
+        "Robustness footnote (not a finding): " + sw["robustness_note_not_a_finding"],
+        "",
+        results["capability_statement"],
+        "",
+        results["background_mode_note"],
+    ]
     return "\n".join(lines) + "\n"
 
 
@@ -391,8 +469,12 @@ def main() -> int:
     ap.add_argument("--outdir", type=Path, default=DEFAULT_OUTDIR)
     ap.add_argument("--target", type=float, default=None)
     ap.add_argument("--scales", type=str, default=None, help="comma-separated affinity scales")
-    ap.add_argument("--background-mode", choices=("common", "per_system"), default="common",
-                    help="common (default, ordering-only, calibration-free) or per_system (measured backgrounds)")
+    ap.add_argument(
+        "--background-mode",
+        choices=("common", "per_system"),
+        default="common",
+        help="common (default, ordering-only, calibration-free) or per_system (measured backgrounds)",
+    )
     args = ap.parse_args()
 
     config = json.loads(args.config.read_text())
@@ -401,30 +483,48 @@ def main() -> int:
 
     args.outdir.mkdir(parents=True, exist_ok=True)
     suffix = f"_{args.background_mode}"
-    (args.outdir / f"cerna_derepression{suffix}.json").write_text(json.dumps(results, indent=2), encoding="utf-8")
-    (args.outdir / f"cerna_derepression{suffix}.md").write_text(_markdown(results), encoding="utf-8")
+    (args.outdir / f"cerna_derepression{suffix}.json").write_text(
+        json.dumps(results, indent=2), encoding="utf-8"
+    )
+    (args.outdir / f"cerna_derepression{suffix}.md").write_text(
+        _markdown(results), encoding="utf-8"
+    )
 
     print("Competitive-derepression comparative statics (conservation-law operator)")
-    print(f"  background_mode = {results['background_mode']}   threshold_target = {results['threshold_target']}")
-    print(f"  {'system':<12}{'guide_M':>12}{'op_slope':>10}{'op_thresh':>14}{'meas_thresh':>14}  baseline_slopes")
+    print(
+        f"  background_mode = {results['background_mode']}   threshold_target = {results['threshold_target']}"
+    )
+    print(
+        f"  {'system':<12}{'guide_M':>12}{'op_slope':>10}{'op_thresh':>14}{'meas_thresh':>14}  baseline_slopes"
+    )
     for name, s in results["systems"].items():
         bslopes = ",".join(f"{v:g}" for v in s["baseline_loglog_slopes"].values())
-        print(f"  {name:<12}{s['guide_total_M']:>12g}{s['operator_loglog_slope']:>10.3f}"
-              f"{s['nominal_threshold_sites']:>14.4g}{s['measured_threshold_sites']:>14g}  [{bslopes}]")
+        print(
+            f"  {name:<12}{s['guide_total_M']:>12g}{s['operator_loglog_slope']:>10.3f}"
+            f"{s['nominal_threshold_sites']:>14.4g}{s['measured_threshold_sites']:>14g}  [{bslopes}]"
+        )
     print(f"  ranking systems (added-competing-site axis): {results['ranking_systems']}")
     print("  predicted/measured threshold RATIO by background mode (ranking systems only):")
     print(f"    {'system':<12}{'common':>12}{'per_system':>16}")
     for name, row in results["mode_comparison_predicted_over_measured_ratio"].items():
         ps = row["per_system"]
-        ps_str = f"{ps['predicted_over_measured_ratio']:.3g}" if ps.get("reported") else "CIRCULAR/skip"
+        ps_str = (
+            f"{ps['predicted_over_measured_ratio']:.3g}" if ps.get("reported") else "CIRCULAR/skip"
+        )
         print(f"    {name:<12}{row['common']['predicted_over_measured_ratio']:>12.3g}{ps_str:>16}")
     for c in results["support_citations"]:
-        print(f"  SUPPORT (not ranked): {c['name']} on axis '{c['threshold_axis']}', measured threshold "
-              f"{c['measured_threshold_sites']:g} ({c['measured_threshold_source'][:40]}...)")
+        print(
+            f"  SUPPORT (not ranked): {c['name']} on axis '{c['threshold_axis']}', measured threshold "
+            f"{c['measured_threshold_sites']:g} ({c['measured_threshold_source'][:40]}...)"
+        )
     sw = results["affinity_scale_sweep"]
-    print(f"  robustness footnote (not a finding): ordering {' < '.join(sw['ordering_by_scale'][str(sw['scales'][0])])} "
-          "is monotone in M by construction; the scale sweep confirms a monotone function is monotone.")
-    print(f"  wrote {args.outdir / 'cerna_derepression.json'} and {args.outdir / 'cerna_derepression.md'}")
+    print(
+        f"  robustness footnote (not a finding): ordering {' < '.join(sw['ordering_by_scale'][str(sw['scales'][0])])} "
+        "is monotone in M by construction; the scale sweep confirms a monotone function is monotone."
+    )
+    print(
+        f"  wrote {args.outdir / 'cerna_derepression.json'} and {args.outdir / 'cerna_derepression.md'}"
+    )
     return 0
 
 

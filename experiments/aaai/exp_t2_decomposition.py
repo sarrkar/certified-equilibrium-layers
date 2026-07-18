@@ -49,7 +49,9 @@ def operator_metrics(matrix) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--seed", type=int, default=0, help="RNG seed (logged; result is deterministic)")
+    parser.add_argument(
+        "--seed", type=int, default=0, help="RNG seed (logged; result is deterministic)"
+    )
     parser.add_argument("--out-dir", type=Path, default=OUT)
     args = parser.parse_args()
     print(f"[t2-decomp] seed={args.seed}")

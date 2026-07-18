@@ -66,7 +66,9 @@ def run() -> dict:
     with_site = df[df["site_count"] > 0]
     site_cells = df["site_count"] > 0
     # Real signal check: site-bearing cells should be more repressed (more negative log-TPM-FC).
-    mean_rep_site = float(df.loc[site_cells, "log_tpm_repression"].mean()) if site_cells.any() else None
+    mean_rep_site = (
+        float(df.loc[site_cells, "log_tpm_repression"].mean()) if site_cells.any() else None
+    )
     mean_rep_nosite = (
         float(df.loc[~site_cells & df["has_3utr"], "log_tpm_repression"].mean())
         if (~site_cells & df["has_3utr"]).any()
@@ -82,7 +84,9 @@ def run() -> dict:
             "mirbase_id": seeds[mirna]["mirbase_id"],
             "seed_dg": float(grp["seed_dg"].iloc[0]),
             "n_with_seed_site": int(s.sum()),
-            "mean_repression_site": float(grp.loc[s, "log_tpm_repression"].mean()) if s.any() else None,
+            "mean_repression_site": float(grp.loc[s, "log_tpm_repression"].mean())
+            if s.any()
+            else None,
         }
 
     corpus = {
@@ -134,7 +138,9 @@ def run() -> dict:
 def main() -> int:
     out = run()
     RESULTS.mkdir(parents=True, exist_ok=True)
-    (RESULTS / "corpus_built.json").write_text(json.dumps(out["corpus"], indent=2), encoding="utf-8")
+    (RESULTS / "corpus_built.json").write_text(
+        json.dumps(out["corpus"], indent=2), encoding="utf-8"
+    )
     (RESULTS / "corpus_split.json").write_text(json.dumps(out["split"], indent=2), encoding="utf-8")
 
     c, s = out["corpus"], out["split"]

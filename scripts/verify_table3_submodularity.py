@@ -54,12 +54,12 @@ from design_validation import (  # noqa: E402
     solve_f,
 )
 
-SEED = "UAUAGAG"                                    # Schlegel Ttr seed (design_validation.main)
+SEED = "UAUAGAG"  # Schlegel Ttr seed (design_validation.main)
 # Appendix-K guide-pool regimes (design_principle_validation.py run(): M_REGIMES).
 REGIMES = {"subsaturating": 0.02, "balanced": 0.1, "saturating": 0.5}
 DELTAS = [0.7, 1.5, 3.0]
-P = [2, 3, 4, 5, 6, 7]                              # 6-nt seed core g2..g7 (see docstring); 64 subsets
-FULL_SEED_WINDOW = {2, 3, 4, 5, 6, 7, 8}           # on-target is fully paired (matches phi_and_ontarget)
+P = [2, 3, 4, 5, 6, 7]  # 6-nt seed core g2..g7 (see docstring); 64 subsets
+FULL_SEED_WINDOW = {2, 3, 4, 5, 6, 7, 8}  # on-target is fully paired (matches phi_and_ontarget)
 SUBMOD_TOL = 1e-12
 MONOTONE_TOL = 1e-12
 
@@ -109,12 +109,15 @@ def analyze(gmap: dict) -> dict:
         for b in all_subsets(rest):
             d_b = gmap[b | {e}] - gmap[b]
             min_marginal = min(min_marginal, d_b)
-            for a in all_subsets(b):                 # A subset of B (includes A = B)
+            for a in all_subsets(b):  # A subset of B (includes A = B)
                 d_a = gmap[a | {e}] - gmap[a]
                 max_viol = max(max_viol, d_b - d_a)
                 n_triples += 1
-    return {"max_violation": float(max_viol), "min_marginal_gain": float(min_marginal),
-            "n_triples": n_triples}
+    return {
+        "max_violation": float(max_viol),
+        "min_marginal_gain": float(min_marginal),
+        "n_triples": n_triples,
+    }
 
 
 def compute() -> dict:
@@ -123,7 +126,9 @@ def compute() -> dict:
     gene_ids = list(d1["ensembl_gene_id"].astype(str))
     types = build_sites(SEED, utr, gene_ids)
     if not types:
-        raise ValueError("no real off-target sites built from Schlegel Ttr seed; refusing to proceed")
+        raise ValueError(
+            "no real off-target sites built from Schlegel Ttr seed; refusing to proceed"
+        )
     n_sites = len(types)
 
     # Proof of faithful reuse: coupled_phi equals the committed design_validation.phi_and_ontarget.
@@ -133,7 +138,9 @@ def compute() -> dict:
         for s in (frozenset(), frozenset({2, 5}), frozenset(P)):
             ref = dv.phi_and_ontarget(types, s, m_chk)[0]
             if abs(coupled_phi(types, s, m_chk, delta) - ref) > 1e-12:
-                raise AssertionError(f"coupled_phi diverged from phi_and_ontarget at delta={delta}, S={set(s)}")
+                raise AssertionError(
+                    f"coupled_phi diverged from phi_and_ontarget at delta={delta}, S={set(s)}"
+                )
 
     subsets = all_subsets(P)
     cells = {}
@@ -160,7 +167,9 @@ def main() -> int:
     arr1 = np.array([r1["cells"][k]["coupled"]["max_violation"] for k in order], dtype=np.float64)
     arr2 = np.array([r2["cells"][k]["coupled"]["max_violation"] for k in order], dtype=np.float64)
     if not np.array_equal(arr1, arr2):
-        raise AssertionError("non-deterministic: coupled max_violation arrays differ between two runs")
+        raise AssertionError(
+            "non-deterministic: coupled max_violation arrays differ between two runs"
+        )
     md5 = hashlib.md5(arr1.tobytes()).hexdigest()
 
     cells = r1["cells"]
@@ -168,25 +177,39 @@ def main() -> int:
     print("=" * 92)
     print(f"real off-target sites (Schlegel Ttr UAUAGAG on rat 3'UTRs): {r1['n_sites']}")
     print(f"P = 6-nt seed core {P} -> {2 ** len(P)} subsets; triples per cell = 6 * 3^5")
-    print(f"\n  {'regime':<14}{'delta':>7}{'triples':>9}{'coupled max_viol':>18}{'coupled min marg':>18}"
-          f"{'iso max_viol':>15}{'iso submod':>12}")
+    print(
+        f"\n  {'regime':<14}{'delta':>7}{'triples':>9}{'coupled max_viol':>18}{'coupled min marg':>18}"
+        f"{'iso max_viol':>15}{'iso submod':>12}"
+    )
     failures = []
-    for (rn, d) in order:
+    for rn, d in order:
         c = cells[(rn, d)]["coupled"]
         iso = cells[(rn, d)]["isolated"]
         if c["n_triples"] != 1458:
             raise AssertionError(f"triple count {c['n_triples']} != 1458 at cell ({rn}, delta={d})")
         iso_submod = iso["max_violation"] <= SUBMOD_TOL
-        print(f"  {rn:<14}{d:>7.1f}{c['n_triples']:>9}{c['max_violation']:>18.4e}{c['min_marginal_gain']:>18.4e}"
-              f"{iso['max_violation']:>15.2e}{('yes' if iso_submod else 'no'):>12}")
+        print(
+            f"  {rn:<14}{d:>7.1f}{c['n_triples']:>9}{c['max_violation']:>18.4e}{c['min_marginal_gain']:>18.4e}"
+            f"{iso['max_violation']:>15.2e}{('yes' if iso_submod else 'no'):>12}"
+        )
         if c["max_violation"] <= 0.0:
-            failures.append((rn, d, f"coupled max_violation {c['max_violation']:.3e} <= 0 (NOT supermodular)"))
+            failures.append(
+                (rn, d, f"coupled max_violation {c['max_violation']:.3e} <= 0 (NOT supermodular)")
+            )
         if c["min_marginal_gain"] < -MONOTONE_TOL:
-            failures.append((rn, d, f"coupled min marginal gain {c['min_marginal_gain']:.3e} < 0 "
-                                    "(monotonicity lost)"))
+            failures.append(
+                (
+                    rn,
+                    d,
+                    f"coupled min marginal gain {c['min_marginal_gain']:.3e} < 0 "
+                    "(monotonicity lost)",
+                )
+            )
 
-    print(f"\n  determinism: two runs bitwise identical = {np.array_equal(arr1, arr2)}; "
-          f"md5(flattened coupled max_violation) = {md5}")
+    print(
+        f"\n  determinism: two runs bitwise identical = {np.array_equal(arr1, arr2)}; "
+        f"md5(flattened coupled max_violation) = {md5}"
+    )
 
     if failures:
         print(f"\nASSERTION FAILED in {len(failures)} cell(s) (guard: stop, do not paste a table):")
@@ -194,8 +217,10 @@ def main() -> int:
             print(f"  (regime={rn}, delta={d}): {why}")
         return 1
 
-    print("\nGUARDS PASSED: every coupled max_violation > 0 (supermodular); every coupled marginal gain "
-          ">= 0 (monotone); triple count 1458 per cell.\n")
+    print(
+        "\nGUARDS PASSED: every coupled max_violation > 0 (supermodular); every coupled marginal gain "
+        ">= 0 (monotone); triple count 1458 per cell.\n"
+    )
     print(latex_table(cells, order))
     return 0
 
@@ -203,31 +228,43 @@ def main() -> int:
 def latex_table(cells: dict, order: list) -> str:
     """Paste-ready tab:submod. Reconstructed layout (paper tex absent from repo): regimes x delta, coupled
     max_violation filled; isolated yes/no shown, Balanced row called out explicitly."""
+
     def num(x: float) -> str:
         return f"{x:.3e}".replace("e-0", "e-").replace("e+0", "e+")
 
     lines = [
         "% tab:submod  (coupled max increasing-differences violation of g(S); isolated submodularity)",
         "% VERIFY cells filled from verify_table3_submodularity.py (real Schlegel Ttr sites).",
-        r"\begin{table}[t]", r"\centering",
-        r"\begin{tabular}{lccc}", r"\toprule",
-        r"regime & $\delta=0.7$ & $\delta=1.5$ & $\delta=3.0$ \\", r"\midrule",
+        r"\begin{table}[t]",
+        r"\centering",
+        r"\begin{tabular}{lccc}",
+        r"\toprule",
+        r"regime & $\delta=0.7$ & $\delta=1.5$ & $\delta=3.0$ \\",
+        r"\midrule",
     ]
     for rn in REGIMES:
         vals = " & ".join(num(cells[(rn, d)]["coupled"]["max_violation"]) for d in DELTAS)
         lines.append(f"{rn} (coupled) & {vals} \\\\")
     lines.append(r"\midrule")
     for rn in REGIMES:
-        yn = " & ".join("yes" if cells[(rn, d)]["isolated"]["max_violation"] <= SUBMOD_TOL else "no"
-                        for d in DELTAS)
+        yn = " & ".join(
+            "yes" if cells[(rn, d)]["isolated"]["max_violation"] <= SUBMOD_TOL else "no"
+            for d in DELTAS
+        )
         lines.append(f"{rn} (isolated submodular) & {yn} \\\\")
-    lines += [r"\bottomrule", r"\end{tabular}",
-              r"\caption{Coupled $g(S)$ is supermodular (max increasing-differences violation $>0$) in "
-              r"every regime and $\delta$; the isolated model is submodular. Complementarity is created "
-              r"by the shared guide pool.}",
-              r"\label{tab:submod}", r"\end{table}"]
-    bal = " ; ".join(f"delta={d}: {'yes' if cells[('balanced', d)]['isolated']['max_violation'] <= SUBMOD_TOL else 'no'}"
-                     for d in DELTAS)
+    lines += [
+        r"\bottomrule",
+        r"\end{tabular}",
+        r"\caption{Coupled $g(S)$ is supermodular (max increasing-differences violation $>0$) in "
+        r"every regime and $\delta$; the isolated model is submodular. Complementarity is created "
+        r"by the shared guide pool.}",
+        r"\label{tab:submod}",
+        r"\end{table}",
+    ]
+    bal = " ; ".join(
+        f"delta={d}: {'yes' if cells[('balanced', d)]['isolated']['max_violation'] <= SUBMOD_TOL else 'no'}"
+        for d in DELTAS
+    )
     lines.append(f"% Balanced isolated cells (yes/no): {bal}")
     return "\n".join(lines)
 

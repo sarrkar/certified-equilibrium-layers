@@ -81,7 +81,9 @@ def build() -> dict:
                 "operator": ift["operator"],
                 "fixed_point_residual": ift["checks"]["fixed_point_residual"],
                 "appnp_layer_vs_closed_form": ift["checks"]["appnp_layer_vs_closed_form"],
-                "ift_grad_vs_finite_diff_max_rel_error": ift["checks"]["ift_grad_vs_finite_diff_max_rel_error"],
+                "ift_grad_vs_finite_diff_max_rel_error": ift["checks"][
+                    "ift_grad_vs_finite_diff_max_rel_error"
+                ],
                 "spectral_radius_rho_S": ift["checks"]["spectral_radius_rho_S"],
                 "contraction_factor": ift["checks"]["contraction_factor"],
                 "unique_fixed_point": ift["checks"]["unique_fixed_point"],
@@ -100,12 +102,16 @@ def build() -> dict:
                 "pre_registered": tg["pre_registered"],
                 "criterion_1_margin": {
                     "mean_spearman_learned": tg["criterion_1_margin"]["mean_spearman_learned"],
-                    "mean_spearman_baseline": tg["criterion_1_margin"]["mean_spearman_baseline_seedcount"],
+                    "mean_spearman_baseline": tg["criterion_1_margin"][
+                        "mean_spearman_baseline_seedcount"
+                    ],
                     "delta": tg["criterion_1_margin"]["delta"],
                     "required_margin": tg["criterion_1_margin"]["required_margin"],
                     "pass": tg["criterion_1_margin"]["pass"],
                 },
-                "criterion_2_sgna_direction_reproduced": tg["criterion_2_sgna_direction"]["reproduced"],
+                "criterion_2_sgna_direction_reproduced": tg["criterion_2_sgna_direction"][
+                    "reproduced"
+                ],
                 "verdict": tg["verdict"],
             },
             "criterion1_retrain_learned": {
@@ -173,16 +179,28 @@ def main() -> int:
     c2 = m["results"]["criterion_2_modification_discrimination"]
     c1 = m["results"]["criterion_1_transfer"]
     print(f"[result-set] {m['title']}")
-    print(f"  criterion 2 (modification discrimination): {c2['verdict']} (with certificate={c2['with_certificate']})")
+    print(
+        f"  criterion 2 (modification discrimination): {c2['verdict']} (with certificate={c2['with_certificate']})"
+    )
     sd = c2["evidence"]["subgate_d4d1"]
-    print(f"    sub-gate D4<D1: E_D1={sd['monotone_E_D1']:.2f} E_D4={sd['monotone_E_D4']:.2f} -> {sd['subgate']}")
+    print(
+        f"    sub-gate D4<D1: E_D1={sd['monotone_E_D1']:.2f} E_D4={sd['monotone_E_D4']:.2f} -> {sd['subgate']}"
+    )
     ip = c2["evidence"]["ift_propagation"]
-    print(f"    IFT propagation: residual={ip['fixed_point_residual']:.1e} grad_rel_err={ip['ift_grad_vs_finite_diff_max_rel_error']:.1e} -> {ip['verdict']}")
-    print(f"  criterion 1 (transfer): {c1['verdict']} (failed twice pre-registered={c1['failed_twice_pre_registered']})")
+    print(
+        f"    IFT propagation: residual={ip['fixed_point_residual']:.1e} grad_rel_err={ip['ift_grad_vs_finite_diff_max_rel_error']:.1e} -> {ip['verdict']}"
+    )
+    print(
+        f"  criterion 1 (transfer): {c1['verdict']} (failed twice pre-registered={c1['failed_twice_pre_registered']})"
+    )
     tgm = c1["attempts"]["transfer_gate_count_based"]["criterion_1_margin"]
-    print(f"    count-based: delta={tgm['delta']:+.4f} (req {tgm['required_margin']}) -> {c1['attempts']['transfer_gate_count_based']['verdict']}")
+    print(
+        f"    count-based: delta={tgm['delta']:+.4f} (req {tgm['required_margin']}) -> {c1['attempts']['transfer_gate_count_based']['verdict']}"
+    )
     crm = c1["attempts"]["criterion1_retrain_learned"]["margins"]
-    print(f"    learned:     pooled={crm['pooled_mean']:+.4f} Schlegel={crm['schlegel_mean']:+.4f} Patel={crm['patel_mean']:+.4f} -> {c1['attempts']['criterion1_retrain_learned']['verdict']}")
+    print(
+        f"    learned:     pooled={crm['pooled_mean']:+.4f} Schlegel={crm['schlegel_mean']:+.4f} Patel={crm['patel_mean']:+.4f} -> {c1['attempts']['criterion1_retrain_learned']['verdict']}"
+    )
     print(f"  Stage G generator: {m['stage_g_generator']['status']}")
     print(f"[result-set] wrote {OUT}")
     return 0

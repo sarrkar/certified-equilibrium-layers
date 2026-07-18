@@ -18,7 +18,9 @@ sys.path.insert(0, str(REPO / "src"))
 
 from cascade.data import mirna_aux as ma  # noqa: E402
 
-CACHES_PRESENT = ma.MATRIX_PATH.exists() and ma.SEEDS_PATH.exists() and ma.REFSEQ2SYMBOL_PATH.exists()
+CACHES_PRESENT = (
+    ma.MATRIX_PATH.exists() and ma.SEEDS_PATH.exists() and ma.REFSEQ2SYMBOL_PATH.exists()
+)
 CASCADE_OT = REPO / "results" / "cascade_ot"
 
 
@@ -57,13 +59,23 @@ def test_seeds_and_build_subset_real() -> None:
     df = ma.build_examples(limit=40)  # 40 transcripts x 17 miRNAs
     assert len(df) == 40 * 17
     assert set(df.columns) >= {
-        "mirna", "seed", "refseq", "symbol", "log_tpm_repression",
-        "has_3utr", "best_site_type", "site_count", "seed_dg",
+        "mirna",
+        "seed",
+        "refseq",
+        "symbol",
+        "log_tpm_repression",
+        "has_3utr",
+        "best_site_type",
+        "site_count",
+        "seed_dg",
     }
     # Real signal direction: site-bearing transcripts are more repressed (lower log-TPM).
     site = df["site_count"] > 0
     if site.any() and (~site & df["has_3utr"]).any():
-        assert df.loc[site, "log_tpm_repression"].mean() <= df.loc[~site & df["has_3utr"], "log_tpm_repression"].mean() + 1.0
+        assert (
+            df.loc[site, "log_tpm_repression"].mean()
+            <= df.loc[~site & df["has_3utr"], "log_tpm_repression"].mean() + 1.0
+        )
 
 
 def test_committed_corpus_and_frozen_split() -> None:

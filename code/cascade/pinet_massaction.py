@@ -108,7 +108,9 @@ def verify() -> int:
     knockdown, dG = huesken_seed_dg(raw_dir, cache_root)
     n = len(dG)
     a, b = _mass_action_line(dG, knockdown)
-    print(f"[pinet] Huesken N={n} | mass-action line a={a:.4f} b={b:.4f} | dG in [{dG.min():.2f},{dG.max():.2f}]")
+    print(
+        f"[pinet] Huesken N={n} | mass-action line a={a:.4f} b={b:.4f} | dG in [{dG.min():.2f},{dG.max():.2f}]"
+    )
 
     # (1) Residual on all Huesken: project a real-scale prediction onto the polytope.
     proj = MassActionPolytopeProjection(dG, a, b)
@@ -117,7 +119,9 @@ def verify() -> int:
     x_pred = logit_kd + rng.standard_normal(n)  # a perturbed real prediction to project
     y = proj.project(x_pred)
     resid = proj.residual_inf(y)
-    print(f"[pinet] (1) float64 constraint residual ||A y - b||_inf = {resid:.3e}  (< 1e-12: {resid < 1e-12})")
+    print(
+        f"[pinet] (1) float64 constraint residual ||A y - b||_inf = {resid:.3e}  (< 1e-12: {resid < 1e-12})"
+    )
 
     # (2) IFT gradient vs central finite differences on a 100-example minibatch.
     m = 100
@@ -134,7 +138,9 @@ def verify() -> int:
     for i in range(m):
         g_fd[i] = float((loss(x0.at[i].add(eps)) - loss(x0.at[i].add(-eps))) / (2 * eps))
     max_diff = float(np.max(np.abs(g_ift - g_fd)))
-    print(f"[pinet] (2) IFT grad vs finite-diff max|diff| = {max_diff:.3e}  (< 1e-6: {max_diff < 1e-6})")
+    print(
+        f"[pinet] (2) IFT grad vs finite-diff max|diff| = {max_diff:.3e}  (< 1e-6: {max_diff < 1e-6})"
+    )
 
     ok = resid < 1e-12 and max_diff < 1e-6
     print(f"[pinet] VERDICT: {'PASS' if ok else 'FAIL'} (residual<1e-12 and FD-agreement<1e-6)")
