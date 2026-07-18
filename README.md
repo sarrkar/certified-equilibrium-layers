@@ -1,11 +1,55 @@
 # CASCADE
 
-Interpretable GNN for siRNA seed-mediated off-target prediction.
+Interpretable modeling of siRNA seed-mediated off-target activity and competitive
+endogenous RNA (ceRNA) derepression, built on a certified conservation-law equilibrium
+operator with provable comparative statics.
 
-CASCADE extends CCMP (FiLM-conditioned per-concept heterogeneous message
-passing, K=9 concept channels) and preserves its by-construction zero
-cross-concept leakage property (L_k = 0). The full project contract,
-including hard engineering rules, lives in [OUTLINE.md](OUTLINE.md).
+CASCADE extends CCMP (FiLM-conditioned per-concept heterogeneous message passing, K=9
+concept channels) and preserves its by-construction zero cross-concept leakage property
+(L_k = 0). The full project contract, including hard engineering rules, lives in
+[OUTLINE.md](OUTLINE.md).
+
+## The certified operator
+
+A limited guide pool is shared across all target sites. The single-pool equilibrium
+
+```
+M = f + sum_i x_i * sigma(f, K_i),   sigma(f, K) = f / (K + f)
+```
+
+is solved for the free guide `f` by bisection on the monotone residual (never a Picard
+map). The reduced residual Jacobian `D = 1 + sum_i x_i * sigma'(f) >= 1` is a nonsingular
+M-matrix by construction, which certifies the SIGN of every comparative static: raising a
+competitor's abundance lowers every other site's equilibrium occupancy (competitors couple
+only through the shared pool). Magnitude is not claimed; only the certified sign is. The
+closed-form comparative static is checked against a finite-difference re-solve to ~1e-6.
+
+## Experiments
+
+Every script is deterministic and bitwise-reproducible on rerun, reads only real measured
+data (loaders raise on missing input, no synthetic fallback), is ruff clean, and contains
+no em-dashes. Run any of them directly with `python scripts/<name>.py`.
+
+| area | script(s) | output |
+|---|---|---|
+| Certified-direction panel (seed-matched vs background KS attenuation) | `certified_panel_filtered.py`, `make_fig2.py` | `results/figures/fig2_certified_panel.pdf` |
+| Panel statistics: bootstrap CIs, permutation null, isoform fragility | `panel_statistics.py` | `results/panel_statistics.json` |
+| Second (non-biological) instantiation: competitive Langmuir adsorption | `adsorption_operator.py`, `make_fig4_adsorption.py` | `results/adsorption_operator.json`, `results/figures/fig4_adsorption.pdf` |
+| Symbolic == code == numeric Jacobian consistency (adsorption) | `verify_adsorption_jacobian.py` | stdout |
+| Held-out derepression (Denzler 2016 quantitative, Mukherji 2011 qualitative) | `derepression_heldout.py` | `results/derepression_heldout.json` |
+| Trainable certified-monotone equilibrium layer on McGeary GSE140217 | `learned_layer.py` | `results/learned_layer.json`, `results/figures/fig5_learned_layer.pdf` |
+| Read-only recovery of the trainable-layer reproducibility fields | `recover_training_fields.py` | stdout + `app:training` LaTeX |
+| 1B decision example: scorer-blind, operator- and Denzler-resolved miR-122 titration | `decision_example.py` | `results/decision_example.json` |
+| Table 3: coupled supermodularity vs isolated submodularity of g(S) | `verify_table3_submodularity.py` | stdout |
+| Certified comparative-statics theory verified at scale on the real corpus | `theory_realdata_verification.py` | `results/theory_realdata_verification.json` |
+
+Key results: the certified sign holds where testable and sourced; the operator is
+domain-general (the M-matrix comparative static holds on a purely physical adsorption
+instance, 4/4 measured antagonism steps matched); the held-out derepression thresholds are
+predicted within an order of magnitude from copy numbers alone; and the certified
+monotonicity survives learning (the trainable layer keeps `D > 0` at every training step
+while reaching magnitude parity with a same-capacity feedforward baseline that structurally
+cannot express competitor coupling).
 
 ## Quickstart
 
@@ -22,6 +66,7 @@ See [OUTLINE.md](OUTLINE.md) for the canonical repository layout.
 
 ## Reproducibility
 
-Every theorem has a matching verification script under [verify/](verify/).
-Every script accepts `--seed` and logs it. A single `make repro` reproduces
-the headline numbers from cached data without network access.
+Every theorem has a matching verification script under [verify/](verify/) or `scripts/`,
+and every experiment fixes and records its seeds. Reruns are bitwise identical (md5 printed
+where a run emits an artifact). No network access is required to reproduce the headline
+numbers from cached data.
